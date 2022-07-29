@@ -4,7 +4,6 @@
  * Created on: 7/16/2022 (en-US)
  */
 
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,64 +19,69 @@ namespace MyUnityTools.SceneLoading
             _loadingSceneInfo = new LoadSceneInfo(loadingSceneBuildIndex);
         }
 
-        public void TransitionToSceneByIndex(int index) => TransitionToSceneByIndexAsync(index);
+        public void TransitionToSceneByIndex(int index) => TransitionToSceneAsync(new LoadSceneInfo(index));
 
-        public void TransitionToSceneByName(string name) => TransitionToSceneByNameAsync(name);
+        public void TransitionToSceneByName(string name) => TransitionToSceneAsync(new LoadSceneInfo(name));
 
-        public void SwitchToSceneByIndex(int index) => SwitchToSceneByIndexAsync(index);
+        public void SwitchToSceneByIndex(int index) => SwitchToSceneAsync(new LoadSceneInfo(index));
 
-        public void SwitchToSceneByName(string name) => SwitchToSceneByNameAsync(name);
+        public void SwitchToSceneByName(string name) => SwitchToSceneAsync(new LoadSceneInfo(name));
 
-        public void UnloadSceneByIndex(int index) => UnloadSceneByIndexAsync(index);
+        public void UnloadSceneByIndex(int index) => _ = UnloadSceneAsync(new LoadSceneInfo(index));
 
-        public void UnloadSceneByName(string name) => UnloadSceneByNameAsync(name);
+        public void UnloadSceneByName(string name) => _ = UnloadSceneAsync(new LoadSceneInfo(name));
 
-        public void LoadSceneByIndex(int index, bool setActive) => LoadSceneByIndexAsync(index, setActive);
+        public void LoadSceneByIndex(int index, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(index), setActive);
 
-        public void LoadSceneByName(string name, bool setActive) => LoadSceneByNameAsync(name, setActive);
+        public void LoadSceneByName(string name, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(name), setActive);
 
-        public Task TransitionToSceneByIndexAsync(int index, CancellationToken token = default) => TransitionToSceneFlowAsync(new LoadSceneInfo(index), token);
+        public Task TransitionToSceneAsync(LoadSceneInfo sceneInfo) => TransitionToSceneFlowAsync(sceneInfo);
 
-        public Task TransitionToSceneByNameAsync(string name, CancellationToken token = default) => TransitionToSceneFlowAsync(new LoadSceneInfo(name), token);
+        public Task SwitchToSceneAsync(LoadSceneInfo sceneInfo) => SwitchToSceneFlowAsync(sceneInfo);
 
-        public Task SwitchToSceneByIndexAsync(int index, CancellationToken token = default) => SwitchToSceneFlowAsync(new LoadSceneInfo(index), token);
+        public async Task UnloadSceneAsync(LoadSceneInfo sceneInfo)
+        {
+            var operation = sceneInfo.UnloadSceneAsync();
+            while (!operation.isDone)
+                await Task.Yield();
+        }
 
-        public Task SwitchToSceneByNameAsync(string name, CancellationToken token = default) => SwitchToSceneFlowAsync(new LoadSceneInfo(name), token);
+        public async Task LoadSceneAsync(LoadSceneInfo sceneInfo, bool setActive = false)
+        {
+            var operation = sceneInfo.LoadSceneAsync();
+            while (!operation.isDone)
+                await Task.Yield();
 
-        public Task UnloadSceneByIndexAsync(int index, CancellationToken token = default) => UnloadSceneAsync(new LoadSceneInfo(index), token);
+            if (setActive)
+                SceneManager.SetActiveScene(sceneInfo.GetScene());
+        }
 
-        public Task UnloadSceneByNameAsync(string name, CancellationToken token = default) => UnloadSceneAsync(new LoadSceneInfo(name), token);
-
-        public Task LoadSceneByIndexAsync(int index, bool setActive, CancellationToken token = default) => LoadSceneAsync(new LoadSceneInfo(index), setActive, token);
-
-        public Task LoadSceneByNameAsync(string name, bool setActive, CancellationToken token = default) => LoadSceneAsync(new LoadSceneInfo(name), setActive, token);
-
-        async Task TransitionToSceneFlowAsync(LoadSceneInfo loadSceneInfo, CancellationToken token)
+        async Task TransitionToSceneFlowAsync(LoadSceneInfo loadSceneInfo)
         {
             var currentSceneInfo = new LoadSceneInfo(SceneManager.GetActiveScene().buildIndex);
-            await LoadSceneAsync(_loadingSceneInfo, true, token);
+            await LoadSceneAsync(_loadingSceneInfo, true);
 
             var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
             while (!loadingBehavior.Active)
                 await Task.Yield();
 
-            await LoadSceneAsyncWithReport(loadSceneInfo, loadingBehavior.UpdateLoadingProgress, token);
+            await LoadSceneAsyncWithReport(loadSceneInfo, loadingBehavior.UpdateLoadingProgress);
             loadingBehavior.CompleteLoading();
-            _ = UnloadSceneAsync(currentSceneInfo, token);
+            _ = UnloadSceneAsync(currentSceneInfo);
 
             while (loadingBehavior.Active)
                 await Task.Yield();
-            _ = UnloadSceneAsync(_loadingSceneInfo, token);
+            _ = UnloadSceneAsync(_loadingSceneInfo);
         }
 
-        async Task SwitchToSceneFlowAsync(LoadSceneInfo loadSceneInfo, CancellationToken token)
+        async Task SwitchToSceneFlowAsync(LoadSceneInfo loadSceneInfo)
         {
             var currentSceneInfo = new LoadSceneInfo(SceneManager.GetActiveScene().buildIndex);
-            await LoadSceneAsync(loadSceneInfo, true, token);
-            _ = UnloadSceneAsync(currentSceneInfo, token);
+            await LoadSceneAsync(loadSceneInfo, true);
+            _ = UnloadSceneAsync(currentSceneInfo);
         }
 
-        async Task LoadSceneAsyncWithReport(LoadSceneInfo loadSceneInfo, SceneLoadProgressDelegate progressCallback, CancellationToken token)
+        async Task LoadSceneAsyncWithReport(LoadSceneInfo loadSceneInfo, SceneLoadProgressDelegate progressCallback)
         {
             var operation = loadSceneInfo.LoadSceneAsync();
             while (!operation.isDone)
@@ -86,23 +90,6 @@ namespace MyUnityTools.SceneLoading
                 await Task.Yield();
             }
             SceneManager.SetActiveScene(loadSceneInfo.GetScene());
-        }
-
-        async Task LoadSceneAsync(LoadSceneInfo loadSceneInfo, bool setActive, CancellationToken token)
-        {
-            var operation = loadSceneInfo.LoadSceneAsync();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (setActive)
-                SceneManager.SetActiveScene(loadSceneInfo.GetScene());
-        }
-
-        async Task UnloadSceneAsync(LoadSceneInfo loadSceneInfo, CancellationToken token)
-        {
-            var operation = loadSceneInfo.UnloadSceneAsync();
-            while (!operation.isDone)
-                await Task.Yield();
         }
     }
 }

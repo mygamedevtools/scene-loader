@@ -25,7 +25,7 @@ namespace MyUnityTools.SceneLoading
             _text.SetText("0");
         }
 
-        void UpdateText(float progress) => _text.SetText(Mathf.FloorToInt(progress * 100).ToString());
+        void UpdateText(float progress) => _text.SetText(Mathf.CeilToInt(progress * 100).ToString());
     }
 }
 #endif
