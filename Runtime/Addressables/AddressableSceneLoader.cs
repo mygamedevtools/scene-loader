@@ -5,6 +5,7 @@
  */
 
 using MyUnityTools.SceneLoading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -15,12 +16,14 @@ namespace MyUnityTools.SceneLoader.Addressables
 {
     public class AddressableSceneLoader
     {
+        readonly List<AsyncOperationHandle<SceneInstance>> _loadedSceneHandles;
         readonly AssetReference _loadingSceneReference;
 
         AsyncOperationHandle<SceneInstance> _activeSceneHandle;
 
         public AddressableSceneLoader(AssetReference loadingSceneReference)
         {
+            _loadedSceneHandles = new List<AsyncOperationHandle<SceneInstance>>();
             _loadingSceneReference = loadingSceneReference;
         }
 
@@ -30,15 +33,48 @@ namespace MyUnityTools.SceneLoader.Addressables
             await operation.Task;
             if (setActive)
                 _activeSceneHandle = operation;
+            _loadedSceneHandles.Add(operation);
             return operation;
         }
 
         public Task<SceneInstance> TransitionToSceneAsync(AssetReference sceneReference) => TransitionToSceneFlowAsync(sceneReference);
 
         public Task<SceneInstance> SwitchToSceneAsync(AssetReference sceneReference) => SwitchToSceneFlowAsync(sceneReference);
-        
-        public Task UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle) => UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(sceneHandle).Task;
-        public Task UnloadSceneAsync(SceneInstance scene) => UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(scene).Task;
+
+        public Task UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle)
+        {
+            var operation = UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(sceneHandle);
+            _loadedSceneHandles.Remove(sceneHandle);
+            return operation.Task;
+        }
+        public Task UnloadSceneAsync(SceneInstance scene)
+        {
+            var operation = UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(scene);
+            _loadedSceneHandles.Remove(GetLoadedSceneHandle(scene));
+            return operation.Task;
+        }
+        public Task UnloadSceneAsync(string sceneName)
+        {
+            var loadedSceneHandle = GetLoadedSceneHandle(sceneName);
+            var operation = UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(loadedSceneHandle);
+            _loadedSceneHandles.Remove(loadedSceneHandle);
+            return operation.Task;
+        }
+
+        public AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(SceneInstance sceneInstance)
+        {
+            foreach (var operationHandle in _loadedSceneHandles)
+                if (operationHandle.Result.Scene == sceneInstance.Scene)
+                    return operationHandle;
+            return default;
+        }
+        public AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(string sceneName)
+        {
+            foreach (var operationHandle in _loadedSceneHandles)
+                if (operationHandle.Result.Scene.name == sceneName)
+                    return operationHandle;
+            return default;
+        }
 
         async Task<SceneInstance> TransitionToSceneFlowAsync(AssetReference sceneReference)
         {
@@ -70,6 +106,7 @@ namespace MyUnityTools.SceneLoader.Addressables
             var operation = sceneReference.LoadSceneAsync(UnityEngine.SceneManagement.LoadSceneMode.Additive);
             await operation.Task;
             _activeSceneHandle = operation;
+            _loadedSceneHandles.Add(operation);
 
             if (currentSceneHandle.IsValid())
                 _ = UnloadSceneAsync(currentSceneHandle);
@@ -85,6 +122,7 @@ namespace MyUnityTools.SceneLoader.Addressables
                 progressCallback?.Invoke(operation.PercentComplete);
                 await Task.Yield();
             }
+            _loadedSceneHandles.Add(operation);
             return operation;
         }
     }
