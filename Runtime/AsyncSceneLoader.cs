@@ -19,21 +19,17 @@ namespace MyUnityTools.SceneLoading
             _loadingSceneInfo = new LoadSceneInfo(loadingSceneBuildIndex);
         }
 
-        public void TransitionToSceneByIndex(int index) => TransitionToSceneAsync(new LoadSceneInfo(index));
+        public void TransitionToScene(string name) => TransitionToSceneAsync(new LoadSceneInfo(name));
+        public void TransitionToScene(int index) => TransitionToSceneAsync(new LoadSceneInfo(index));
 
-        public void TransitionToSceneByName(string name) => TransitionToSceneAsync(new LoadSceneInfo(name));
+        public void SwitchToScene(string name) => SwitchToSceneAsync(new LoadSceneInfo(name));
+        public void SwitchToScene(int index) => SwitchToSceneAsync(new LoadSceneInfo(index));
 
-        public void SwitchToSceneByIndex(int index) => SwitchToSceneAsync(new LoadSceneInfo(index));
+        public void UnloadScene(string name) => _ = UnloadSceneAsync(new LoadSceneInfo(name));
+        public void UnloadScene(int index) => _ = UnloadSceneAsync(new LoadSceneInfo(index));
 
-        public void SwitchToSceneByName(string name) => SwitchToSceneAsync(new LoadSceneInfo(name));
-
-        public void UnloadSceneByIndex(int index) => _ = UnloadSceneAsync(new LoadSceneInfo(index));
-
-        public void UnloadSceneByName(string name) => _ = UnloadSceneAsync(new LoadSceneInfo(name));
-
-        public void LoadSceneByIndex(int index, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(index), setActive);
-
-        public void LoadSceneByName(string name, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(name), setActive);
+        public void LoadScene(string name, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(name), setActive);
+        public void LoadScene(int index, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(index), setActive);
 
         public Task TransitionToSceneAsync(LoadSceneInfo sceneInfo) => TransitionToSceneFlowAsync(sceneInfo);
 

@@ -1,5 +1,5 @@
 /**
- * AsyncSceneLoader.cs
+ * LoadSceneInfo.cs
  * Created by: João Borks [joao.borks@gmail.com]
  * Created on: 7/16/2022 (en-US)
  */

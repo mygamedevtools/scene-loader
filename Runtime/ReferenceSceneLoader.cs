@@ -30,7 +30,7 @@ namespace MyUnityTools.SceneLoading
         //    }
         //#endif
 
-        //public void ReloadCurrentScene() => _ = LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+        //public void ReloadCurrentScene() => _ = LoadSceneAsync(SceneManager.GetActiveScene().buildIndex)
 
         //public void LoadPreviousScene() => _ = LoadSceneAsync(SceneManager.GetActiveScene().buildIndex - 1);
 

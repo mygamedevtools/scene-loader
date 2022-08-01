@@ -8,20 +8,16 @@ namespace MyUnityTools.SceneLoading
 {
     public interface ISceneLoader
     {
-        void TransitionToSceneByIndex(int index);
+        void TransitionToScene(string name);
+        void TransitionToScene(int index);
 
-        void TransitionToSceneByName(string name);
+        void SwitchToScene(string name);
+        void SwitchToScene(int index);
 
-        void SwitchToSceneByIndex(int index);
+        void UnloadScene(string name);
+        void UnloadScene(int index);
 
-        void SwitchToSceneByName(string name);
-
-        void UnloadSceneByIndex(int index);
-
-        void UnloadSceneByName(string name);
-
-        void LoadSceneByIndex(int index, bool setActive = false);
-
-        void LoadSceneByName(string name, bool setActive = false);
+        void LoadScene(string name, bool setActive = false);
+        void LoadScene(int index, bool setActive = false);
     }
 }
