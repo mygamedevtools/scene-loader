@@ -106,7 +106,7 @@ namespace MyUnityTools.SceneLoader.Addressables
             while (!loadingBehavior.Active)
                 await Task.Yield();
 
-            _activeSceneHandle = await LoadSceneAsyncWithReport(sceneInfo, loadingBehavior.UpdateLoadingProgress);
+            _activeSceneHandle = await LoadSceneAsyncWithReport(sceneInfo, loadingBehavior.Report);
             loadingBehavior.CompleteLoading();
 
             if (currentSceneHandle.IsValid())

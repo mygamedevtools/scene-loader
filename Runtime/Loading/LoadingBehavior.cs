@@ -11,7 +11,7 @@ namespace MyUnityTools.SceneLoading
 {
     public delegate void SceneLoadProgressDelegate(float progress);
     
-    public class LoadingBehavior : MonoBehaviour
+    public class LoadingBehavior : MonoBehaviour, IProgress<float>
     {
         public event SceneLoadProgressDelegate OnProgress;
         public event Action OnLoadingComplete;
@@ -47,6 +47,6 @@ namespace MyUnityTools.SceneLoading
                 SetLoadingActive(false);
         }
 
-        public void UpdateLoadingProgress(float progress) => OnProgress?.Invoke(progress / _ratio);
+        public void Report(float progress) => OnProgress?.Invoke(progress / _ratio);
     }
 }
