@@ -28,8 +28,8 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
         public void UnloadScene(string name) => UnloadSceneAsync(new LoadSceneInfo(name)).Forget();
         public void UnloadScene(int index) => UnloadSceneAsync(new LoadSceneInfo(index)).Forget();
 
-        public void LoadScene(string name, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(name), setActive);
-        public void LoadScene(int index, bool setActive) => _ = LoadSceneAsync(new LoadSceneInfo(index), setActive);
+        public void LoadScene(string name, bool setActive) => LoadSceneAsync(new LoadSceneInfo(name), setActive).Forget();
+        public void LoadScene(int index, bool setActive) => LoadSceneAsync(new LoadSceneInfo(index), setActive).Forget();
 
         public UniTask TransitionToSceneAsync(LoadSceneInfo sceneInfo) => TransitionToSceneFlowAsync(sceneInfo);
 
@@ -51,16 +51,17 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
             await LoadSceneAsync(_loadingSceneInfo, true);
 
             var loadingBehavior = UnityEngine.Object.FindObjectOfType<LoadingBehavior>();
-            while (!loadingBehavior.Active)
-                await UniTask.Yield();
+
+            await UniTask.WaitWhile(() => !loadingBehavior.Active);
 
             await LoadSceneAsyncWithReport(loadSceneInfo, loadingBehavior);
             loadingBehavior.CompleteLoading();
-            _ = UnloadSceneAsync(currentSceneInfo);
 
-            while (loadingBehavior.Active)
-                await UniTask.Yield();
-            _ = UnloadSceneAsync(_loadingSceneInfo);
+            UnloadSceneAsync(currentSceneInfo).Forget();
+
+            await UniTask.WaitWhile(() => loadingBehavior.Active);
+
+            UnloadSceneAsync(_loadingSceneInfo).Forget();
         }
 
         async UniTask SwitchToSceneFlowAsync(LoadSceneInfo loadSceneInfo)
