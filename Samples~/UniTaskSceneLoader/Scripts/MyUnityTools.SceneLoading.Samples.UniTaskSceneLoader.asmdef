@@ -1,9 +1,8 @@
 {
-    "name": "MyUnityTools.SceneLoading.UniTask",
+    "name": "MyUnityTools.SceneLoading.Samples.UniTaskSceneLoader",
     "rootNamespace": "",
     "references": [
-        "GUID:eee6d035ccac42b4e845b99014468585",
-        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+        "GUID:eee6d035ccac42b4e845b99014468585"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

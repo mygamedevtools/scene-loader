@@ -1,3 +1,4 @@
+#if ENABLE_UNITASK
 /**
  * UniTaskSceneLoader.cs
  * Created by: João Borks [joao.borks@gmail.com]
@@ -78,3 +79,4 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
         }
     }
 }
+#endif

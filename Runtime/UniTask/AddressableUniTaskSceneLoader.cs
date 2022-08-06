@@ -1,3 +1,4 @@
+#if ENABLE_ADDRESSABLES && ENABLE_UNITASK
 /**
  * AddressableUniTaskSceneLoader.cs
  * Created by: João Borks [joao.borks@gmail.com]
@@ -134,3 +135,4 @@ namespace MyUnityTools.SceneLoading.Addressables.UniTaskSupport
         }
     }
 }
+#endif

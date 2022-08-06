@@ -1,3 +1,4 @@
+#if ENABLE_ADDRESSABLES
 /**
  * AddressableSceneLoader.cs
  * Created by: João Borks [joao.borks@gmail.com]
@@ -28,3 +29,4 @@ namespace MyUnityTools.SceneLoader.Addressables
         public AsyncOperationHandle<SceneInstance> LoadSceneAsync() => _loadSceneAsyncDelegate();
     }
 }
+#endif

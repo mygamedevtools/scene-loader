@@ -1,13 +1,10 @@
 {
-    "name": "MyUnityTools.SceneLoading.Addressables.UniTask",
+    "name": "MyUnityTools.SceneLoading.Samples.AddressableSceneLoader",
     "rootNamespace": "",
     "references": [
         "GUID:eee6d035ccac42b4e845b99014468585",
-        "GUID:e9c2f506c8a997d40bef7e73bb04c786",
         "GUID:9e24947de15b9834991c9d8411ea37cf",
-        "GUID:84651a3751eca9349aac36a66bba901b",
-        "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:593a5b492d29ac6448b1ebf7f035ef33"
+        "GUID:84651a3751eca9349aac36a66bba901b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -16,15 +13,9 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "ENABLE_UNITASK",
         "ENABLE_ADDRESSABLES"
     ],
     "versionDefines": [
-        {
-            "name": "com.cysharp.unitask",
-            "expression": "2",
-            "define": "ENABLE_UNITASK"
-        },
         {
             "name": "com.unity.addressables",
             "expression": "1.19",
