@@ -4,7 +4,7 @@
  * Created on: 7/28/2022 (en-US)
  */
 
-using MyUnityTools.SceneLoader.Addressables;
+using MyUnityTools.SceneLoading.Addressables;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -29,8 +29,6 @@ namespace MyUnityTools.SceneLoading.Samples
             var bootstrapper = FindObjectOfType<Bootstrapper>();
             _sceneLoader = bootstrapper.SceneLoader;
         }
-
-        public void Setup(AddressableSceneLoader sceneLoader) => _sceneLoader = sceneLoader;
 
         public void TransitionToScene(string runtimeKey) => _sceneLoader.TransitionToSceneAsync(runtimeKey);
 

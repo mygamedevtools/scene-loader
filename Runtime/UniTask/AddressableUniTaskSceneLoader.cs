@@ -6,7 +6,6 @@
  */
 
 using Cysharp.Threading.Tasks;
-using MyUnityTools.SceneLoader.Addressables;
 using System;
 using System.Collections.Generic;
 using UnityEngine.AddressableAssets;

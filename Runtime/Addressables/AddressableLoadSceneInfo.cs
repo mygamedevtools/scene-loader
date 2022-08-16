@@ -9,7 +9,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoader.Addressables
+namespace MyUnityTools.SceneLoading.Addressables
 {
     public readonly struct AddressableLoadSceneInfo
     {

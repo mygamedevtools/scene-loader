@@ -1,0 +1,16 @@
+{
+    "name": "MyUnityTools.SceneLoading.Authoring",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "SCENE_LOADER_AUTHORING"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
