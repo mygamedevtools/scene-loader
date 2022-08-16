@@ -28,15 +28,12 @@ namespace MyUnityTools.SceneLoading.Addressables
         }
 
         public Task<SceneInstance> TransitionToSceneAsync(AssetReference sceneReference) => TransitionToSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference));
-
         public Task<SceneInstance> TransitionToSceneAsync(string sceneRuntimeKey) => TransitionToSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey));
 
         public Task<SceneInstance> SwitchToSceneAsync(AssetReference sceneReference) => SwitchToSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference));
-
         public Task<SceneInstance> SwitchToSceneAsync(string sceneRuntimeKey) => SwitchToSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey));
 
         public Task<SceneInstance> LoadSceneAsync(AssetReference sceneReference, bool setActive = false) => LoadSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference), setActive);
-
         public Task<SceneInstance> LoadSceneAsync(string sceneRuntimeKey, bool setActive = false) => LoadSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey), setActive);
 
         public Task UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle)

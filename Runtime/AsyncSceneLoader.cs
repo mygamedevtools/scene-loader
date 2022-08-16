@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace MyUnityTools.SceneLoading
 {
-    public class AsyncSceneLoader : ISceneLoader
+    public class AsyncSceneLoader : ISceneLoader, IAsyncSceneLoader
     {
         readonly LoadSceneInfo _loadingSceneInfo;
 

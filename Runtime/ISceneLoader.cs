@@ -1,6 +1,6 @@
 /**
  * ISceneLoader.cs
- * Created by: Jo„o Borks [joao.borks@gmail.com]
+ * Created by: Jo√£o Borks [joao.borks@gmail.com]
  * Created on: 7/16/2022 (en-US)
  */
 

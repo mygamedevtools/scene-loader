@@ -28,15 +28,12 @@ namespace MyUnityTools.SceneLoading.Addressables.UniTaskSupport
         }
 
         public UniTask<SceneInstance> TransitionToSceneAsync(AssetReference sceneReference) => TransitionToSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference));
-
         public UniTask<SceneInstance> TransitionToSceneAsync(string sceneRuntimeKey) => TransitionToSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey));
 
         public UniTask<SceneInstance> SwitchToSceneAsync(AssetReference sceneReference) => SwitchToSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference));
-
         public UniTask<SceneInstance> SwitchToSceneAsync(string sceneRuntimeKey) => SwitchToSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey));
 
         public UniTask<SceneInstance> LoadSceneAsync(AssetReference sceneReference, bool setActive = false) => LoadSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference), setActive);
-
         public UniTask<SceneInstance> LoadSceneAsync(string sceneRuntimeKey, bool setActive = false) => LoadSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey), setActive);
 
         public UniTask UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle)
