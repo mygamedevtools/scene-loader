@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 namespace MyUnityTools.SceneLoading
 {
     /// <summary>
-    /// Interface to standardize scene operations.
+    /// Interface to standardize scene information.
     /// Can be created with either the target scene's build index (<see cref="LoadSceneInfoIndex"/>) or the scene's name (<see cref="LoadSceneInfoName"/>).
     /// </summary>
     public interface ILoadSceneInfo
