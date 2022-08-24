@@ -27,10 +27,7 @@ namespace MyUnityTools.SceneLoading
 
         float _ratio;
 
-        void Awake()
-        {
-            _ratio = _reduceLoadRatio ? .9f : 1f;
-        }
+        void Awake() => _ratio = _reduceLoadRatio ? .9f : 1f;
 
         void Start()
         {

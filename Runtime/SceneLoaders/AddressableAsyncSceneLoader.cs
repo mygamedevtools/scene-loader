@@ -12,46 +12,53 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoading.Addressables
+namespace MyUnityTools.SceneLoading.AddressablesSupport
 {
-    public class AddressableSceneLoader
+    public class AddressableAsyncSceneLoader : IAddressableAsyncSceneLoader
     {
         readonly List<AsyncOperationHandle<SceneInstance>> _loadedSceneHandles;
-        readonly AddressableLoadSceneInfo _loadingSceneInfo;
+        readonly IAddressableLoadSceneInfo _loadingSceneInfo;
 
         AsyncOperationHandle<SceneInstance> _activeSceneHandle;
 
-        public AddressableSceneLoader(AssetReference loadingSceneReference)
+        public AddressableAsyncSceneLoader(AssetReference loadingSceneReference)
         {
             _loadedSceneHandles = new List<AsyncOperationHandle<SceneInstance>>();
-            _loadingSceneInfo = new AddressableLoadSceneInfo(loadingSceneReference);
+            _loadingSceneInfo = new AddressableLoadSceneInfoAsset(loadingSceneReference);
         }
 
-        public Task<SceneInstance> TransitionToSceneAsync(AssetReference sceneReference) => TransitionToSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference));
-        public Task<SceneInstance> TransitionToSceneAsync(string sceneRuntimeKey) => TransitionToSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey));
+        public void TransitionToScene(IAddressableLoadSceneInfo sceneInfo) => TransitionToSceneAsync(sceneInfo);
 
-        public Task<SceneInstance> SwitchToSceneAsync(AssetReference sceneReference) => SwitchToSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference));
-        public Task<SceneInstance> SwitchToSceneAsync(string sceneRuntimeKey) => SwitchToSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey));
+        public void SwitchToScene(IAddressableLoadSceneInfo sceneInfo) => SwitchToSceneAsync(sceneInfo);
 
-        public Task<SceneInstance> LoadSceneAsync(AssetReference sceneReference, bool setActive = false) => LoadSceneFlowAsync(new AddressableLoadSceneInfo(sceneReference), setActive);
-        public Task<SceneInstance> LoadSceneAsync(string sceneRuntimeKey, bool setActive = false) => LoadSceneFlowAsync(new AddressableLoadSceneInfo(sceneRuntimeKey), setActive);
+        public void LoadScene(IAddressableLoadSceneInfo sceneInfo, bool setActive) => LoadSceneAsync(sceneInfo, setActive);
+
+        public void UnloadScene(AsyncOperationHandle<SceneInstance> sceneHandle) => UnloadSceneAsync(sceneHandle);
+        public void UnloadScene(SceneInstance scene) => UnloadSceneAsync(scene);
+        public void UnloadScene(string sceneName) => UnloadSceneAsync(sceneName);
+
+        public Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneInfo sceneInfo) => TransitionToSceneFlowAsync(sceneInfo);
+
+        public Task<SceneInstance> SwitchToSceneAsync(IAddressableLoadSceneInfo sceneInfo) => SwitchToSceneFlowAsync(sceneInfo);
+
+        public Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneInfo sceneInfo, bool setActive = false) => LoadSceneFlowAsync(sceneInfo, setActive);
 
         public Task UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle)
         {
-            var operation = UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(sceneHandle);
+            var operation = Addressables.UnloadSceneAsync(sceneHandle);
             _loadedSceneHandles.Remove(sceneHandle);
             return operation.Task;
         }
         public Task UnloadSceneAsync(SceneInstance scene)
         {
-            var operation = UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(scene);
+            var operation = Addressables.UnloadSceneAsync(scene);
             _loadedSceneHandles.Remove(GetLoadedSceneHandle(scene));
             return operation.Task;
         }
         public Task UnloadSceneAsync(string sceneName)
         {
             var loadedSceneHandle = GetLoadedSceneHandle(sceneName);
-            var operation = UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(loadedSceneHandle);
+            var operation = Addressables.UnloadSceneAsync(loadedSceneHandle);
             _loadedSceneHandles.Remove(loadedSceneHandle);
             return operation.Task;
         }
@@ -71,7 +78,7 @@ namespace MyUnityTools.SceneLoading.Addressables
             return default;
         }
 
-        async Task<AsyncOperationHandle<SceneInstance>> LoadSceneAsyncWithReport(AddressableLoadSceneInfo sceneInfo, SceneLoadProgressDelegate progressCallback)
+        async Task<AsyncOperationHandle<SceneInstance>> LoadSceneAsyncWithReport(IAddressableLoadSceneInfo sceneInfo, SceneLoadProgressDelegate progressCallback)
         {
             var operation = sceneInfo.LoadSceneAsync();
             while (!operation.IsDone)
@@ -83,7 +90,7 @@ namespace MyUnityTools.SceneLoading.Addressables
             return operation;
         }
 
-        async Task<SceneInstance> LoadSceneFlowAsync(AddressableLoadSceneInfo sceneInfo, bool setActive)
+        async Task<SceneInstance> LoadSceneFlowAsync(IAddressableLoadSceneInfo sceneInfo, bool setActive)
         {
             var operation = sceneInfo.LoadSceneAsync();
             await operation.Task;
@@ -93,7 +100,7 @@ namespace MyUnityTools.SceneLoading.Addressables
             return operation.Result;
         }
 
-        async Task<SceneInstance> TransitionToSceneFlowAsync(AddressableLoadSceneInfo sceneInfo)
+        async Task<SceneInstance> TransitionToSceneFlowAsync(IAddressableLoadSceneInfo sceneInfo)
         {
             var currentSceneHandle = _activeSceneHandle;
 
@@ -116,7 +123,7 @@ namespace MyUnityTools.SceneLoading.Addressables
             return _activeSceneHandle.Result;
         }
 
-        async Task<SceneInstance> SwitchToSceneFlowAsync(AddressableLoadSceneInfo sceneInfo)
+        async Task<SceneInstance> SwitchToSceneFlowAsync(IAddressableLoadSceneInfo sceneInfo)
         {
             var currentSceneHandle = _activeSceneHandle;
 

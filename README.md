@@ -46,10 +46,10 @@ Keep that in mind when using the scene loader utilities.
 Usage
 ---
 
-There are four scene loaders that you can use, depending on your project necessities:
+There are **four** scene loaders that you can use, depending on your project necessities:
 1. `AsyncSceneLoader`: simple scene loader with `awaitable` instructions.
 2. `UniTaskSceneLoader`: the `AsyncSceneLoader` with `UniTask` instead of `Task`.
-3. `AddressableSceneLoader`: a scene loader that handles Addressable scenes with `awaitable` instructions.
+3. `AddressableAsyncSceneLoader`: a scene loader that handles Addressable scenes with `awaitable` instructions.
 4. `AddressableUniTaskSceneLoader`: the `AddressableSceneLoader` with `UniTask` instead of `Task`.
 
 ---
