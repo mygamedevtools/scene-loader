@@ -1,15 +1,18 @@
+#if ENABLE_UNITASK
 /**
- * ISceneLoader.cs
+ * ISceneLoaderUniTask.cs
  * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 7/16/2022 (en-US)
+ * Created on: 8/15/2022 (en-US)
  */
 
-namespace MyUnityTools.SceneLoading
+using Cysharp.Threading.Tasks;
+
+namespace MyUnityTools.SceneLoading.UniTaskSupport
 {
     /// <summary>
-    /// Interface to standardize scene operations.
+    /// Interface to standardize async scene operations with <see cref="UniTask"/>.
     /// </summary>
-    public interface ISceneLoader
+    public interface ISceneLoaderUniTask : ISceneLoader
     {
         /// <summary>
         /// Triggers a scene transition.
@@ -32,16 +35,18 @@ namespace MyUnityTools.SceneLoading
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
+        /// <returns>The transition awaitable <see cref="UniTask"/>.</returns>
+        UniTask TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
 
         /// <summary>
-        /// Unloads the given scene from the current scene stack.
+        /// Unloads the given scene asynchronously from the current scene stack.
         /// </summary>
         /// <param name="sceneInfo">
         /// Target scene info.
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// </param>
-        void UnloadScene(ILoadSceneInfo sceneInfo);
+        /// <returns>The unload awaitable <see cref="Task"/>.</returns>
+        UniTask UnloadSceneAsync(ILoadSceneInfo sceneInfo);
 
         /// <summary>
         /// Loads a scene additively on top of the current scene stack, optionally marking it as the active scene
@@ -52,6 +57,8 @@ namespace MyUnityTools.SceneLoading
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// </param>
         /// <param name="setActive">Should the loaded scene be marked as active? Equivalent to calling <see cref="UnityEngine.SceneManagement.SceneManager.SetActiveScene(UnityEngine.SceneManagement.Scene)"/>.</param>
-        void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false);
+        /// <returns>The load awaitable <see cref="UniTask"/>.</returns>
+        UniTask LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false);
     }
 }
+#endif

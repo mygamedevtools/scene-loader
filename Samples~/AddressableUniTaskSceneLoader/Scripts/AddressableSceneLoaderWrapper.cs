@@ -32,7 +32,7 @@ namespace MyUnityTools.SceneLoading.Samples
             _additiveSceneInfo = new AddressableLoadSceneInfoAsset(_additiveScene);
             _targetSceneInfo = new AddressableLoadSceneInfoAsset(_targetScene);
         }
-
+        
         public void TransitionToScene(string runtimeKey) => _sceneLoader.TransitionToScene(new AddressableLoadSceneInfoKey(runtimeKey));
 
         public void TransitionToScene() => _sceneLoader.TransitionToScene(_targetSceneInfo);

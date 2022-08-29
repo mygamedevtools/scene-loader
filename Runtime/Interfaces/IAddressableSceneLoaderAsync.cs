@@ -1,6 +1,6 @@
 #if ENABLE_ADDRESSABLES
 /**
- * IAddressableAsyncSceneLoader.cs
+ * IAddressableSceneLoaderAsync.cs
  * Created by: João Borks [joao.borks@gmail.com]
  * Created on: 7/26/2022 (en-US)
  */
@@ -11,7 +11,7 @@ using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace MyUnityTools.SceneLoading.AddressablesSupport
 {
-    public interface IAddressableAsyncSceneLoader : IAddressableSceneLoader
+    public interface IAddressableSceneLoaderAsync : IAddressableSceneLoader
     {
         Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneInfo sceneInfo);
         

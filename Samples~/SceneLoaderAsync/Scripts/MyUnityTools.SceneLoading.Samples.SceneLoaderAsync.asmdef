@@ -1,5 +1,5 @@
 {
-    "name": "MyUnityTools.SceneLoading.Samples.UniTaskSceneLoader",
+    "name": "MyUnityTools.SceneLoading.Samples.SceneLoaderAsync",
     "rootNamespace": "",
     "references": [
         "GUID:eee6d035ccac42b4e845b99014468585"
@@ -10,15 +10,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "ENABLE_UNITASK"
-    ],
-    "versionDefines": [
-        {
-            "name": "com.cysharp.unitask",
-            "expression": "2",
-            "define": "ENABLE_UNITASK"
-        }
-    ],
+    "defineConstraints": [],
+    "versionDefines": [],
     "noEngineReferences": false
 }

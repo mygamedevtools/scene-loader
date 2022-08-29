@@ -14,7 +14,7 @@ using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
 {
-    public class AddressableUniTaskSceneLoader : IAddressableUniTaskSceneLoader
+    public class AddressableUniTaskSceneLoader : IAddressableSceneLoaderUniTask
     {
         readonly List<AsyncOperationHandle<SceneInstance>> _loadedSceneHandles;
         readonly IAddressableLoadSceneInfo _loadingSceneInfo;

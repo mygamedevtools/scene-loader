@@ -1,6 +1,6 @@
 #if ENABLE_UNITASK
 /**
- * UniTaskSceneLoader.cs
+ * SceneLoaderUniTask.cs
  * Created by: João Borks [joao.borks@gmail.com]
  * Created on: 8/1/2022 (en-US)
  */
@@ -11,26 +11,15 @@ using UnityEngine.SceneManagement;
 
 namespace MyUnityTools.SceneLoading.UniTaskSupport
 {
-    public class UniTaskSceneLoader : IUniTaskSceneLoader
+    public class SceneLoaderUniTask : ISceneLoaderUniTask
     {
-        readonly ILoadSceneInfo _loadingSceneInfo;
-
-        public UniTaskSceneLoader(int loadingSceneBuildIndex = -1)
-        {
-            _loadingSceneInfo = new LoadSceneInfoIndex(loadingSceneBuildIndex);
-        }
-
-        public void TransitionToScene(ILoadSceneInfo sceneInfo) => TransitionToSceneAsync(sceneInfo);
-
-        public void SwitchToScene(ILoadSceneInfo sceneInfo) => SwitchToSceneAsync(sceneInfo);
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
 
         public void UnloadScene(ILoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo).Forget();
 
         public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive) => LoadSceneAsync(sceneInfo, setActive).Forget();
 
-        public UniTask TransitionToSceneAsync(ILoadSceneInfo sceneInfo) => TransitionToSceneFlowAsync(sceneInfo);
-
-        public UniTask SwitchToSceneAsync(ILoadSceneInfo sceneInfo) => SwitchToSceneFlowAsync(sceneInfo);
+        public UniTask TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo);
 
         public async UniTask UnloadSceneAsync(ILoadSceneInfo sceneInfo) => await sceneInfo.UnloadSceneAsync().ToUniTask();
 
@@ -42,26 +31,34 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
                 SceneManager.SetActiveScene(sceneInfo.GetScene());
         }
 
-        async UniTask TransitionToSceneFlowAsync(ILoadSceneInfo loadSceneInfo)
+        async UniTask TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo)
         {
             var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
-            await LoadSceneAsync(_loadingSceneInfo, true);
+            await LoadSceneAsync(intermediateSceneInfo, true);
 
             var loadingBehavior = UnityEngine.Object.FindObjectOfType<LoadingBehavior>();
+            if (loadingBehavior)
+            {
+                await UniTask.WaitWhile(() => !loadingBehavior.Active);
 
-            await UniTask.WaitWhile(() => !loadingBehavior.Active);
+                await LoadSceneAsyncWithReport(targetSceneInfo, loadingBehavior);
+                loadingBehavior.CompleteLoading();
 
-            await LoadSceneAsyncWithReport(loadSceneInfo, loadingBehavior);
-            loadingBehavior.CompleteLoading();
+                UnloadSceneAsync(currentSceneInfo).Forget();
 
-            UnloadSceneAsync(currentSceneInfo).Forget();
+                await UniTask.WaitWhile(() => loadingBehavior.Active);
 
-            await UniTask.WaitWhile(() => loadingBehavior.Active);
-
-            UnloadSceneAsync(_loadingSceneInfo).Forget();
+                UnloadSceneAsync(intermediateSceneInfo).Forget();
+            }
+            else
+            {
+                await LoadSceneAsync(targetSceneInfo, true);
+                UnloadSceneAsync(currentSceneInfo).Forget();
+                UnloadSceneAsync(intermediateSceneInfo).Forget();
+            }
         }
 
-        async UniTask SwitchToSceneFlowAsync(ILoadSceneInfo loadSceneInfo)
+        async UniTask TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo)
         {
             var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
             await LoadSceneAsync(loadSceneInfo, true);

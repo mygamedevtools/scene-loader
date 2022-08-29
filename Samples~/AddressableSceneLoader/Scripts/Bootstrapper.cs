@@ -4,7 +4,7 @@
  * Created on: 7/28/2022 (en-US)
  */
 
-using MyUnityTools.SceneLoading.Addressables;
+using MyUnityTools.SceneLoading.AddressablesSupport;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -12,7 +12,7 @@ namespace MyUnityTools.SceneLoading.Samples
 {
     public class Bootstrapper : MonoBehaviour
     {
-        public AddressableSceneLoader SceneLoader { get; private set; }
+        public IAddressableSceneLoader SceneLoader { get; private set; }
 
         [SerializeField]
         AssetReference _loadingSceneReference;
@@ -21,8 +21,8 @@ namespace MyUnityTools.SceneLoading.Samples
 
         void Start()
         {
-            SceneLoader = new AddressableSceneLoader(_loadingSceneReference);
-            _ = SceneLoader.LoadSceneAsync(_initialSceneReference, true);
+            SceneLoader = new AddressableAsyncSceneLoader(_loadingSceneReference);
+            SceneLoader.LoadScene(new AddressableLoadSceneInfoAsset(_initialSceneReference), true);
         }
     }
 }

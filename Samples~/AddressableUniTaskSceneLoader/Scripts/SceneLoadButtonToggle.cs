@@ -4,7 +4,7 @@
  * Created on: 7/28/2022 (en-US)
  */
 
-using MyUnityTools.SceneLoading.Addressables.UniTaskSupport;
+using MyUnityTools.SceneLoading.AddressablesSupport;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,7 +20,7 @@ namespace MyUnityTools.SceneLoading.Samples
         [SerializeField]
         string _additiveSceneName;
 
-        AddressableUniTaskSceneLoader _sceneLoader;
+        IAddressableSceneLoader _sceneLoader;
         Button _button;
 
         void Awake()
