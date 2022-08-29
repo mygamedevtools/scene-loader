@@ -1,5 +1,5 @@
 {
-    "name": "MyUnityTools.SceneLoading.Samples.AddressableUniTaskSceneLoader",
+    "name": "MyUnityTools.SceneLoading.Samples.AddressableSceneLoaderUniTask",
     "rootNamespace": "",
     "references": [
         "GUID:eee6d035ccac42b4e845b99014468585",

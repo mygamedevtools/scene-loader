@@ -5,25 +5,17 @@
  * Created on: 8/23/2022 (en-US)
  */
 
-using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.ResourceManagement.ResourceProviders;
-
 namespace MyUnityTools.SceneLoading.AddressablesSupport
 {
     public interface IAddressableSceneLoader
     {
-        void TransitionToScene(IAddressableLoadSceneInfo sceneInfo);
+        IAddressableSceneManager SceneManager { get; }
 
-        void SwitchToScene(IAddressableLoadSceneInfo sceneInfo);
+        void TransitionToScene(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
 
-        void LoadScene(IAddressableLoadSceneInfo sceneInfo, bool setActive = false); 
+        void LoadScene(IAddressableLoadSceneReference sceneReference, bool setActive = false); 
         
-        void UnloadScene(AsyncOperationHandle<SceneInstance> sceneHandle);
-        void UnloadScene(SceneInstance scene);
-        void UnloadScene(string sceneName);
-
-        AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(SceneInstance sceneInstance);
-        AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(string sceneName);
+        void UnloadScene(IAddressableLoadSceneInfo sceneInfo);
     }
 }
 #endif

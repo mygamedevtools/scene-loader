@@ -4,8 +4,8 @@
  * Created on: 7/16/2022 (en-US)
  */
 
-using System;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MyUnityTools.SceneLoading
@@ -42,7 +42,7 @@ namespace MyUnityTools.SceneLoading
             var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
             await LoadSceneAsync(intermediateSceneInfo, true);
 
-            var loadingBehavior = UnityEngine.Object.FindObjectOfType<LoadingBehavior>();
+            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
             if (loadingBehavior)
             {
                 while (!loadingBehavior.Active)
@@ -71,7 +71,7 @@ namespace MyUnityTools.SceneLoading
             _ = UnloadSceneAsync(currentSceneInfo);
         }
 
-        async Task LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, IProgress<float> progress)
+        async Task LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, System.IProgress<float> progress)
         {
             var operation = loadSceneInfo.LoadSceneAsync();
             while (!operation.isDone)

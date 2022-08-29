@@ -6,7 +6,7 @@
  */
 
 using Cysharp.Threading.Tasks;
-using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MyUnityTools.SceneLoading.UniTaskSupport
@@ -36,7 +36,7 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
             var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
             await LoadSceneAsync(intermediateSceneInfo, true);
 
-            var loadingBehavior = UnityEngine.Object.FindObjectOfType<LoadingBehavior>();
+            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
             if (loadingBehavior)
             {
                 await UniTask.WaitWhile(() => !loadingBehavior.Active);
@@ -65,7 +65,7 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
             _ = UnloadSceneAsync(currentSceneInfo);
         }
 
-        async UniTask LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, IProgress<float> progress)
+        async UniTask LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, System.IProgress<float> progress)
         {            
             await loadSceneInfo.LoadSceneAsync().ToUniTask(progress);
             SceneManager.SetActiveScene(loadSceneInfo.GetScene());

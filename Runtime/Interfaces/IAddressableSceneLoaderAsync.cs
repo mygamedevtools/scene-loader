@@ -6,22 +6,17 @@
  */
 
 using System.Threading.Tasks;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace MyUnityTools.SceneLoading.AddressablesSupport
 {
     public interface IAddressableSceneLoaderAsync : IAddressableSceneLoader
     {
-        Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneInfo sceneInfo);
-        
-        Task<SceneInstance> SwitchToSceneAsync(IAddressableLoadSceneInfo sceneInfo);
+        Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
 
-        Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneInfo sceneInfo, bool setActive = false);
+        Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
 
-        Task UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle);
-        Task UnloadSceneAsync(SceneInstance scene);
-        Task UnloadSceneAsync(string sceneName);
+        Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo);
     }
 }
 #endif

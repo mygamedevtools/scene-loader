@@ -50,7 +50,7 @@ namespace MyUnityTools.SceneLoading.Samples
             IEnumerator runNextFrame()
             {
                 yield return null;
-                var sceneIsLoaded = _sceneLoader.GetLoadedSceneHandle(_additiveSceneName).IsValid();
+                var sceneIsLoaded = _sceneLoader.SceneManager.GetLoadedSceneHandle(_additiveSceneName).IsValid();
                 _button.interactable = _reverse ? !sceneIsLoaded : sceneIsLoaded;
             }
         }

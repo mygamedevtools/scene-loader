@@ -16,14 +16,12 @@ namespace MyUnityTools.SceneLoading.Samples
         public IAddressableSceneLoader SceneLoader { get; private set; }
 
         [SerializeField]
-        AssetReference _loadingSceneReference;
-        [SerializeField]
         AssetReference _initialSceneReference;
 
         void Start()
         {
-            SceneLoader = new AddressableUniTaskSceneLoader(_loadingSceneReference);
-            SceneLoader.LoadScene(new AddressableLoadSceneInfoAsset(_initialSceneReference), true);
+            SceneLoader = new AddressableSceneLoaderUniTask(new AddressableSceneManager());
+            SceneLoader.LoadScene(new AddressableLoadSceneReferenceAsset(_initialSceneReference), true);
         }
     }
 }

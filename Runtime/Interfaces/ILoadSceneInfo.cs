@@ -33,7 +33,7 @@ namespace MyUnityTools.SceneLoading
         /// Gets a runtime struct representing the loaded scene.
         /// Used to pass as a parameter when calling <see cref="SceneManager.SetActiveScene(Scene)"/>.
         /// </summary>
-        /// <returns>The loaded scene struct, or an invalid scene if it hasn't been loaded.</returns>
+        /// <returns>The loaded scene struct, or an invalid scene (<see cref="Scene.IsValid"/> returns false) if it hasn't been loaded.</returns>
         Scene GetScene();
     }
 }
