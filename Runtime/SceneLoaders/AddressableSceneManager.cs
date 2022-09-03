@@ -55,22 +55,23 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
             return operation;
         }
 
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle)
+        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle, bool autoReleaseHandle)
         {
-            var operation = Addressables.UnloadSceneAsync(sceneHandle);
+            var operation = Addressables.UnloadSceneAsync(sceneHandle, autoReleaseHandle);
             _loadedScenes.Remove(sceneHandle);
             return operation;
         }
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(SceneInstance scene)
+        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(SceneInstance scene, bool autoReleaseHandle)
         {
-            var operation = Addressables.UnloadSceneAsync(scene);
-            _loadedScenes.Remove(GetLoadedSceneHandle(scene));
+            var loadedSceneHandle = GetLoadedSceneHandle(scene);
+            var operation = Addressables.UnloadSceneAsync(loadedSceneHandle, autoReleaseHandle);
+            _loadedScenes.Remove(loadedSceneHandle);
             return operation;
         }
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(string sceneName)
+        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(string sceneName, bool autoReleaseHandle)
         {
             var loadedSceneHandle = GetLoadedSceneHandle(sceneName);
-            var operation = Addressables.UnloadSceneAsync(loadedSceneHandle);
+            var operation = Addressables.UnloadSceneAsync(loadedSceneHandle, autoReleaseHandle);
             _loadedScenes.Remove(loadedSceneHandle);
             return operation;
         }

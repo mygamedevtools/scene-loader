@@ -45,7 +45,7 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
         /// Target scene info.
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// </param>
-        /// <returns>The unload awaitable <see cref="Task"/>.</returns>
+        /// <returns>The unload awaitable <see cref="UniTask"/>.</returns>
         UniTask UnloadSceneAsync(ILoadSceneInfo sceneInfo);
 
         /// <summary>

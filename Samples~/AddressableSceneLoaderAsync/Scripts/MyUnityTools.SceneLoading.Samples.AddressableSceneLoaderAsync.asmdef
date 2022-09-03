@@ -1,5 +1,5 @@
 {
-    "name": "MyUnityTools.SceneLoading.Samples.AddressableSceneLoade.Asyncr",
+    "name": "MyUnityTools.SceneLoading.Samples.AddressableSceneLoaderAsync",
     "rootNamespace": "",
     "references": [
         "GUID:eee6d035ccac42b4e845b99014468585",

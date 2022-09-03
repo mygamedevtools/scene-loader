@@ -56,7 +56,7 @@ namespace MyUnityTools.SceneLoading
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// </param>
         /// <param name="setActive">Should the loaded scene be marked as active? Equivalent to calling <see cref="UnityEngine.SceneManagement.SceneManager.SetActiveScene(UnityEngine.SceneManagement.Scene)"/>.</param>
-        /// <returns>The load awaitable <see cref="UniTask"/>.</returns>
+        /// <returns>The load awaitable <see cref="Task"/>.</returns>
         Task LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false);
     }
 }

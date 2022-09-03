@@ -27,6 +27,12 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
             _runtimeKey = sceneRuntimeKey;
         }
 
+        /// <summary>
+        /// Loads the provided scene asynchronously.
+        /// Internally calls <see cref="UnityEngine.AddressableAssets.Addressables.LoadSceneAsync(object, UnityEngine.SceneManagement.LoadSceneMode, bool, int)"/>.
+        /// </summary>
+        /// <param name="sceneManager">The reference to the <see cref="IAddressableSceneManager"/> that keeps track of the active scenes.</param>
+        /// <returns>The load <see cref="AsyncOperationHandle{TObject}"/>.</returns>
         public AsyncOperationHandle<SceneInstance> LoadSceneAsync(IAddressableSceneManager sceneManager) => sceneManager.LoadSceneAsync(_runtimeKey);
 
         public static implicit operator AddressableLoadSceneReferenceKey(string runtimeKey) => new AddressableLoadSceneReferenceKey(runtimeKey);
