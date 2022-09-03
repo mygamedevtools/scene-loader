@@ -54,7 +54,7 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
         {
             var currentSceneHandle = _sceneManager.GetActiveSceneHandle();
             var loadingScene = await intermediateSceneReference.LoadSceneAsync(_sceneManager).Task;
-            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
+            var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
 
             SceneInstance result;
 
@@ -77,7 +77,8 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
             else
             {
                 result = await LoadSceneAsync(sceneReference, true);
-                UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle)).Forget();
+                if (currentSceneHandle.IsValid())
+                    UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle)).Forget();
                 UnloadSceneAsync(new AddressableLoadSceneInfoInstance(loadingScene)).Forget();
             }
             return result;

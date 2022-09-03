@@ -36,7 +36,7 @@ namespace MyUnityTools.SceneLoading.UniTaskSupport
             var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
             await LoadSceneAsync(intermediateSceneInfo, true);
 
-            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
+            var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
             if (loadingBehavior)
             {
                 await UniTask.WaitWhile(() => !loadingBehavior.Active);
