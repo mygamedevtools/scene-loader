@@ -42,12 +42,12 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
 
         public Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo) => sceneInfo.UnloadSceneAsync(_sceneManager).Task;
 
-        async Task<AsyncOperationHandle<SceneInstance>> LoadSceneAsyncWithReport(IAddressableLoadSceneReference sceneReference, SceneLoadProgressDelegate progressCallback)
+        async Task<AsyncOperationHandle<SceneInstance>> LoadSceneAsyncWithReport(IAddressableLoadSceneReference sceneReference, System.IProgress<float> progress)
         {
             var operation = sceneReference.LoadSceneAsync(_sceneManager);
             while (!operation.IsDone)
             {
-                progressCallback?.Invoke(operation.PercentComplete);
+                progress.Report(operation.PercentComplete);
                 await Task.Yield();
             }
             _sceneManager.SetActiveSceneHandle(operation);
@@ -67,7 +67,7 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
                 while (!loadingBehavior.Active)
                     await Task.Yield();
 
-                var operation = await LoadSceneAsyncWithReport(sceneReference, loadingBehavior.Report);
+                var operation = await LoadSceneAsyncWithReport(sceneReference, loadingBehavior);
                 loadingBehavior.CompleteLoading();
 
                 if (currentSceneHandle.IsValid())

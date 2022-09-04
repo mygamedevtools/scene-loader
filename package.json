@@ -1,17 +1,47 @@
 {
-    "name": "com.myunitytools.sceneloader",
-    "version": "1.0.0",
-    "displayName": "My Unity Tools - Scene Loader",
-    "description": "Scene Loading tools and helpers.",
-    "unity": "2019.4",
-    "keywords": [],
-    "author": {
-      "name": "Jo\u00e3o Borks",
-      "email": "joao.borks@gmail.com.br",
-      "url": "https://github.com/JoaoBorks"
+  "name": "com.myunitytools.sceneloader",
+  "version": "1.0.0",
+  "displayName": "My Unity Tools - Scene Loader",
+  "description": "A package that standardizes the scene loading process among many different possibilities, including support for Coroutines, C# Tasks, UniTask and Addressables.",
+  "unity": "2019.4",
+  "keywords": [],
+  "author": {
+    "name": "Jo\u00e3o Borks",
+    "email": "joao.borks@gmail.com.br",
+    "url": "https://github.com/JoaoBorks"
+  },
+  "samples": [
+    {
+      "displayName": "Scene Loader Async",
+      "description": "Example implementation of the SceneLoaderAsync class.",
+      "path": "Samples~/SceneLoaderAsync"
     },
-    "hideInEditor": false,
-    "dependencies": {
+    {
+      "displayName": "Scene Loader Coroutine",
+      "description": "Example implementation of the SceneLoaderCoroutine class.",
+      "path": "Samples~/SceneLoaderCoroutine"
     },
-    "type": "tool"
-  }
+    {
+      "displayName": "Scene Loader UniTask",
+      "description": "Example implementation of the SceneLoaderUniTask class.",
+      "path": "Samples~/SceneLoaderUniTask"
+    },
+    {
+      "displayName": "Addressable Scene Loader Async",
+      "description": "Example implementation of the AddressableSceneLoaderAsync class.",
+      "path": "Samples~/AddressableSceneLoaderAsync"
+    },
+    {
+      "displayName": "Addressable Scene Loader Coroutine",
+      "description": "Example implementation of the AddressableSceneLoaderCoroutine class.",
+      "path": "Samples~/AddressableSceneLoaderCoroutine"
+    },
+    {
+      "displayName": "Addressable Scene Loader UniTask",
+      "description": "Example implementation of the AddressableSceneLoaderUniTask class.",
+      "path": "Samples~/AddressableSceneLoaderUniTask"
+    }
+  ],
+  "hideInEditor": false,
+  "type": "tool"
+}

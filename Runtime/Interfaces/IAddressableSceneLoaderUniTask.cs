@@ -38,7 +38,7 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
         /// or runtime key (<see cref="AddressableLoadSceneReferenceKey"/>).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        /// <returns>The transition awaitable <see cref="UniTask{TResult}"/>"/> with the resulting <see cref="SceneInstance"/>.</returns>
+        /// <returns>The transition awaitable <see cref="UniTask{TResult}"/> with the resulting <see cref="SceneInstance"/>.</returns>
         UniTask<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
         /// Should the loaded scene be marked as active?
         /// Equivalent to calling <see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{UnityEngine.ResourceManagement.ResourceProviders.SceneInstance})"/>.
         /// </param>
-        /// <returns>The load awaitable <see cref="UniTask{TResult}"/>"/> with the resulting <see cref="SceneInstance"/>.</returns>
+        /// <returns>The load awaitable <see cref="UniTask{TResult}"/> with the resulting <see cref="SceneInstance"/>.</returns>
         UniTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
 
         /// <summary>

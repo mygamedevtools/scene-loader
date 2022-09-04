@@ -1,0 +1,16 @@
+{
+    "name": "MyUnityTools.SceneLoading.Samples.SceneLoaderCoroutine",
+    "rootNamespace": "",
+    "references": [
+        "GUID:eee6d035ccac42b4e845b99014468585"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

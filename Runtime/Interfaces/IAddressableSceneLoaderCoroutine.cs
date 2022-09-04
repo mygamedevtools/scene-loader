@@ -1,19 +1,18 @@
 #if ENABLE_ADDRESSABLES
 /**
- * IAddressableSceneLoaderAsync.cs
+ * IAddressableSceneLoaderCoroutine.cs
  * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 7/26/2022 (en-US)
+ * Created on: 9/4/2022 (en-US)
  */
 
-using System.Threading.Tasks;
-using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine;
 
 namespace MyUnityTools.SceneLoading.AddressablesSupport
 {
     /// <summary>
-    /// Interface to standardize async addressable scene operations.
+    /// Interface to standardize <see cref="Coroutine"/> addressable scene operations.
     /// </summary>
-    public interface IAddressableSceneLoaderAsync : IAddressableSceneLoader
+    public interface IAddressableSceneLoaderCoroutine : IAddressableSceneLoader
     {
         /// <summary>
         /// Triggers a scene transition asynchronously.
@@ -38,8 +37,8 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
         /// or runtime key (<see cref="AddressableLoadSceneReferenceKey"/>).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        /// <returns>The transition awaitable <see cref="Task{TResult}"/> with the resulting <see cref="SceneInstance"/>.</returns>
-        Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
+        /// <returns>The transition <see cref="Coroutine"/>.</returns>
+        Coroutine TransitionToSceneRoutine(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
 
         /// <summary>
         /// Loads a scene additively asynchronously on top of the current scene stack, optionally marking it as the active scene
@@ -54,8 +53,8 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
         /// Should the loaded scene be marked as active?
         /// Equivalent to calling <see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{UnityEngine.ResourceManagement.ResourceProviders.SceneInstance})"/>.
         /// </param>
-        /// <returns>The load awaitable <see cref="Task{TResult}"/> with the resulting <see cref="SceneInstance"/>.</returns>
-        Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
+        /// <returns>The load <see cref="Coroutine"/>.</returns>
+        Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive = false);
 
         /// <summary>
         /// Unloads the given scene asynchronously from the current scene stack.
@@ -66,8 +65,8 @@ namespace MyUnityTools.SceneLoading.AddressablesSupport
         /// its <see cref="UnityEngine.ResourceManagement.ResourceProviders.SceneInstance"/> (<see cref="AddressableLoadSceneInfoInstance"/>),
         /// or its name (<see cref="AddressableLoadSceneInfoName"/>).
         /// </param>
-        /// <returns>The unload awaitable <see cref="Task"/>.</returns>
-        Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo);
+        /// <returns>The unload awaitable <see cref="Coroutine"/>.</returns>
+        Coroutine UnloadSceneRoutine(IAddressableLoadSceneInfo sceneInfo);
     }
 }
 #endif
