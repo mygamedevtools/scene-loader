@@ -48,7 +48,7 @@ Loading scenes with this package implies that the scenes **will always be loaded
 
 Before we go into each one, let's understand how we got there. There are some core differences between loading scenes with the `SceneManager` and via Addressables.
 
-- | SceneManager | Addressables
+x | SceneManager | Addressables
  --- | --- | ---
 Scene Reference | Build Index, Scene Name or Path | Asset Reference, Address Runtime Key
 Active Scene | Managed through `SceneManager` | None
