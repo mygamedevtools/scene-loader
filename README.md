@@ -1,8 +1,8 @@
-![License](https://img.shields.io/github/license/joaoborks/myunitytools-sceneloader)
-![Release](https://img.shields.io/github/v/release/joaoborks/myunitytools-sceneloader?sort=semver)
-![Last Commit](https://img.shields.io/github/last-commit/joaoborks/myunitytools-sceneloader)
+![License](https://img.shields.io/github/license/myunitytools/scene-loader)
+![Release](https://img.shields.io/github/v/release/myunitytools/scene-loader?sort=semver)
+![Last Commit](https://img.shields.io/github/last-commit/myunitytools/scene-loader)
 
-My Unity Tools - Scene Loading
+Scene Loader
 ===
 
 _A package that standardizes the scene loading process among many different possibilities, including support for Coroutines, C# Tasks, UniTask and Addressables._
@@ -12,7 +12,7 @@ Installation
 
 #### - For 2019.1+: [Installing from a git URL](https://docs.unity3d.com/Manual/upm-ui-giturl.html) _(requires [Git](https://git-scm.com/) installed and added to the PATH)_
 You can open the Package Manager and then click on the `+` button on the top left corner. 
-From there select `Add package from git URL...`, type `https://github.com/joaoborks/myunitytools-sceneloader.git` and click `Add`. 
+From there select `Add package from git URL...`, type `https://github.com/myunitytools/scene-loader.git` and click `Add`. 
 The package will be imported by the Package Manager.
 
 #### - Other Package Manager supported versions: Add manually to manifest
@@ -20,7 +20,7 @@ You should add this to your `manifest.json` under the `Packages` folder on the r
 ```
 {
   "dependencies": {
-	  "com.myunitytools.sceneloader": "https://github.com/joaoborks/myunitytools-sceneloader.git"
+	  "com.myunitytools.scene-loader": "https://github.com/myunitytools/scene-loader.git"
   }
 }
 ```
@@ -302,4 +302,4 @@ Check if your Addressables Play Mode Script is `Use Asset Database`, otherwise y
 
 ---
 
-Don't hesitate to create [issues](https://github.com/joaoborks/myunitytools-sceneloader/issues) for suggestions and bugs. Have fun!
+Don't hesitate to create [issues](https://github.com/myunitytools/scene-loader/issues) for suggestions and bugs. Have fun!
