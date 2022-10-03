@@ -8,7 +8,7 @@
 using System.Threading.Tasks;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     /// <summary>
     /// Interface to standardize async addressable scene operations.

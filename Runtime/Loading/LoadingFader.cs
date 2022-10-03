@@ -7,7 +7,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     public class LoadingFader : MonoBehaviour
     {

@@ -8,7 +8,7 @@
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     /// <summary>
     /// Interface to standardize addressable scene unload info.

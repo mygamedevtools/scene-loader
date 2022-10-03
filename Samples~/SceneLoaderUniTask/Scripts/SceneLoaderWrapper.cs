@@ -4,10 +4,10 @@
  * Created on: 7/16/2022 (en-US)
  */
 
-using MyUnityTools.SceneLoading.UniTaskSupport;
+using MyGameDevTools.SceneLoading.UniTaskSupport;
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading.Samples
+namespace MyGameDevTools.SceneLoading.Samples
 {
     public class SceneLoaderWrapper : MonoBehaviour
     {

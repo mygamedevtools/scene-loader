@@ -7,7 +7,7 @@
 
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     /// <summary>
     /// Interface to standardize <see cref="Coroutine"/> addressable scene operations.

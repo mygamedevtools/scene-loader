@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
 {
     public class AddressableSceneLoaderUniTask : IAddressableSceneLoaderUniTask
     {

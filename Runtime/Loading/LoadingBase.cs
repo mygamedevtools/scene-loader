@@ -7,7 +7,7 @@
 using System;
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Base class to standardize the loading screen behavior.

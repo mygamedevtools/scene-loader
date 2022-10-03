@@ -8,7 +8,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     public class AddressableSceneLoaderCoroutine : IAddressableSceneLoaderCoroutine
     {

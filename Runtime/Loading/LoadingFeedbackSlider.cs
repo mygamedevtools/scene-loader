@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     [RequireComponent(typeof(Slider))]
     public class LoadingFeedbackSlider : MonoBehaviour

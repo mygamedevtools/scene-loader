@@ -6,7 +6,7 @@
 
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Interface to standardize <see cref="Coroutine"/> scene operations.

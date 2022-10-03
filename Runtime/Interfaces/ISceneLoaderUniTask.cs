@@ -7,7 +7,7 @@
 
 using Cysharp.Threading.Tasks;
 
-namespace MyUnityTools.SceneLoading.UniTaskSupport
+namespace MyGameDevTools.SceneLoading.UniTaskSupport
 {
     /// <summary>
     /// Interface to standardize async scene operations with <see cref="UniTask"/>.

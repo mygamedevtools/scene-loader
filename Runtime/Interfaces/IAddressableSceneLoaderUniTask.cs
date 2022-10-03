@@ -8,7 +8,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport.UniTaskSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
 {
     /// <summary>
     /// Interface to standardize async addressable scene operations with <see cref="UniTask"/>.

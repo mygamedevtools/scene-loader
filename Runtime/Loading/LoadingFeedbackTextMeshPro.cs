@@ -8,7 +8,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     [RequireComponent(typeof(TextMeshProUGUI))]
     public class LoadingFeedbackTextMeshPro : MonoBehaviour

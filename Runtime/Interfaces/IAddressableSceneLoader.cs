@@ -5,7 +5,7 @@
  * Created on: 8/23/2022 (en-US)
  */
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     /// <summary>
     /// Interface to standardize addressable scene operations.

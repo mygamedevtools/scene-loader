@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace MyUnityTools.SceneLoading.Samples
+namespace MyGameDevTools.SceneLoading.Samples
 {
     [RequireComponent(typeof(Button))]
     public class SceneLoadButtonToggle : MonoBehaviour
