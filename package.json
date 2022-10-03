@@ -1,6 +1,6 @@
 {
-  "name": "com.myunitytools.scene-loader",
-  "version": "1.0.0",
+  "name": "com.mygamedevtools.scene-loader",
+  "version": "1.2.0",
   "displayName": "Scene Loader",
   "description": "A package that standardizes the scene loading process among many different possibilities, including support for Coroutines, C# Tasks, UniTask and Addressables.",
   "unity": "2019.4",
@@ -8,7 +8,7 @@
   "author": {
     "name": "My Unity Tools",
     "email": "joao.borks@gmail.com.br",
-    "url": "https://github.com/myunitytools"
+    "url": "https://github.com/mygamedevtools"
   },
   "samples": [
     {
