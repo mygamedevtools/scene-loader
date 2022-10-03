@@ -13,6 +13,6 @@ All notable changes to this project will be documented in this file. This projec
 ## [1.0.0] - 2022-09-05
 - Initial Release.
 
-[1.2.0]: https://github.com/myunitytools/scene-loader/compare/1.1.0...1.2.0
-[1.1.0]: https://github.com/myunitytools/scene-loader/compare/1.0.0...1.1.0
-[1.0.0]: https://github.com/myunitytools/scene-loader/compare/f2b6582...1.0.0
+[1.2.0]: https://github.com/mygamedevtools/scene-loader/compare/1.1.0...1.2.0
+[1.1.0]: https://github.com/mygamedevtools/scene-loader/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/mygamedevtools/scene-loader/compare/f2b6582...1.0.0
