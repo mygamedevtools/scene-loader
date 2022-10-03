@@ -9,7 +9,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     /// <summary>
     /// Interface to standardize addressable scene load reference.

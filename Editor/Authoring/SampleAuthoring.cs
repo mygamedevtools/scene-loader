@@ -8,11 +8,11 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 
-namespace MyUnityTools.SceneLoading.Authoring
+namespace MyGameDevTools.SceneLoading.Authoring
 {
     public static class SampleAuthoring
     {
-        static readonly string _packagesPath = Path.Join(Application.dataPath, "../Packages/com.myunitytools.sceneloader/Samples~");
+        static readonly string _packagesPath = Path.Join(Application.dataPath, "../Packages/com.mygamedevtools.scene-loader/Samples~");
         static readonly string _assetsPath = Path.Combine(Application.dataPath, "Samples");
 
         [MenuItem("Authoring/Move to Package")]

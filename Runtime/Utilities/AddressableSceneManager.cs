@@ -11,7 +11,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     public class AddressableSceneManager : IAddressableSceneManager
     {

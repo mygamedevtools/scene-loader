@@ -4,7 +4,7 @@
  * Created on: 7/16/2022 (en-US)
  */
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Interface to standardize scene operations.

@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace MyUnityTools.SceneLoading.AddressablesSupport
+namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     public class AddressableSceneLoaderAsync : IAddressableSceneLoaderAsync
     {

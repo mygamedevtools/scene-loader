@@ -4,13 +4,13 @@
  * Created on: 7/28/2022 (en-US)
  */
 
-using MyUnityTools.SceneLoading.AddressablesSupport;
+using MyGameDevTools.SceneLoading.AddressablesSupport;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace MyUnityTools.SceneLoading.Samples
+namespace MyGameDevTools.SceneLoading.Samples
 {
     [RequireComponent(typeof(Button))]
     public class SceneLoadButtonToggle : MonoBehaviour

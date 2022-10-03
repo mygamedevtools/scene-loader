@@ -4,11 +4,11 @@
  * Created on: 7/28/2022 (en-US)
  */
 
-using MyUnityTools.SceneLoading.AddressablesSupport;
+using MyGameDevTools.SceneLoading.AddressablesSupport;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace MyUnityTools.SceneLoading.Samples
+namespace MyGameDevTools.SceneLoading.Samples
 {
     public class Bootstrapper : MonoBehaviour
     {

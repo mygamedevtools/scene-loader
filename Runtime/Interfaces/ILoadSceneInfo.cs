@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Interface to standardize scene information.

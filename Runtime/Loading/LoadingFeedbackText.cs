@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     [RequireComponent(typeof(Text))]
     public class LoadingFeedbackText : MonoBehaviour

@@ -6,7 +6,7 @@
 
 using UnityEngine;
 
-namespace MyUnityTools.SceneLoading.Samples
+namespace MyGameDevTools.SceneLoading.Samples
 {
     public class SceneLoaderWrapper : MonoBehaviour
     {

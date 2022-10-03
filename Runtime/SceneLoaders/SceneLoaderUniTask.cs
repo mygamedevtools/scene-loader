@@ -9,7 +9,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace MyUnityTools.SceneLoading.UniTaskSupport
+namespace MyGameDevTools.SceneLoading.UniTaskSupport
 {
     public class SceneLoaderUniTask : ISceneLoaderUniTask
     {

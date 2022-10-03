@@ -6,7 +6,7 @@
 
 using System.Threading.Tasks;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Interface to standardize async scene operations.

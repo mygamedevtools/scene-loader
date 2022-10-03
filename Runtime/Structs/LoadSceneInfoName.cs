@@ -7,7 +7,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace MyUnityTools.SceneLoading
+namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Struct to manage scene operations with the scene's name. Implements <see cref="ILoadSceneInfo"/>.

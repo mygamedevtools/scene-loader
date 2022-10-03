@@ -3,6 +3,9 @@ Change Log
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.0] - 2022-10-03
+- Fixed: Updated assembly definition and namespaces names to reflect the organization name changes.
+
 ## [1.2.0] - 2022-10-03
 - Changed: Updated organization name to comply with [Unity Package Guidelines](https://unity.com/legal/terms-of-service/software/package-guidelines).
 
