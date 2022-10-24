@@ -1,4 +1,5 @@
 ![License](https://img.shields.io/github/license/mygamedevtools/scene-loader)
+[![openupm](https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.mygamedevtools.scene-loader/)
 ![Release](https://img.shields.io/github/v/release/mygamedevtools/scene-loader?sort=semver)
 ![Last Commit](https://img.shields.io/github/last-commit/mygamedevtools/scene-loader)
 
@@ -10,20 +11,21 @@ _A package that standardizes the scene loading process among many different poss
 Installation
 ---
 
-#### - For 2019.1+: [Installing from a git URL](https://docs.unity3d.com/Manual/upm-ui-giturl.html) _(requires [Git](https://git-scm.com/) installed and added to the PATH)_
-You can open the Package Manager and then click on the `+` button on the top left corner. 
-From there select `Add package from git URL...`, type `https://github.com/mygamedevtools/scene-loader.git` and click `Add`. 
-The package will be imported by the Package Manager.
+### OpenUPM
 
-#### - Other Package Manager supported versions: Add manually to manifest
-You should add this to your `manifest.json` under the `Packages` folder on the root of your Unity Project:
+This package is available on the [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader) registry. Add the package via the [openupm-cli](https://github.com/openupm/openupm-cli):
+
 ```
-{
-  "dependencies": {
-	  "com.mygamedevtools.scene-loader": "https://github.com/mygamedevtools/scene-loader.git"
-  }
-}
+openupm add com.mygamedevtools.scene-loader
 ```
+
+### [Installing from Git](https://docs.unity3d.com/Manual/upm-ui-giturl.html) _(requires [Git](https://git-scm.com/) installed and added to the PATH)_
+
+1. Open `Edit/Project Settings/Package Manager`.
+2. Click <kbd>+</kbd>.
+3. Select `Add package from git URL...`.
+4. Paste `com.mygamedevtools.scene-loader` into name.
+5. Click `Add`.
 
 Overview
 ---
