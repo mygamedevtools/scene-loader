@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Release
+      uses: cycjimmy/semantic-release-action@v3.1.2
+      with:
+        extra_plugins: |
+          @semantic-release/changelog
+          @semantic-release/git
+        branch: main
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
