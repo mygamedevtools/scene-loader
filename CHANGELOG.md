@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/mygamedevtools/scene-loader/compare/1.3.1...1.4.0) (2022-10-25)
+
+
+### Features
+
+* Add CI configuration ([9bb2de8](https://github.com/mygamedevtools/scene-loader/commit/9bb2de8fa695337f08d6f70a5a3aeb4e772cac0f))
+
 ## [1.3.1] - 2022-10-24
 - Added: OpenUPM documentation.
 
