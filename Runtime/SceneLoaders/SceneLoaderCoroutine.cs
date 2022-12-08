@@ -53,9 +53,9 @@ namespace MyGameDevTools.SceneLoading
             {
                 yield return new WaitUntil(() => loadingBehavior.Active);
 
+                yield return UnloadSceneRoutine(currentSceneInfo);
                 yield return LoadSceneRoutineWithReport(targetSceneInfo, loadingBehavior);
                 loadingBehavior.CompleteLoading();
-                UnloadSceneRoutine(currentSceneInfo);
 
                 yield return new WaitWhile(() => loadingBehavior.Active);
 
@@ -63,17 +63,16 @@ namespace MyGameDevTools.SceneLoading
             }
             else
             {
+                yield return UnloadSceneRoutine(currentSceneInfo);
                 yield return LoadSceneRoutine(targetSceneInfo, true);
-                UnloadSceneRoutine(currentSceneInfo);
                 UnloadSceneRoutine(intermediateSceneInfo);
             }
         }
 
         IEnumerator TransitionDirectlyRoutine(ILoadSceneInfo targetSceneInfo)
         {
-            var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
+            yield return UnloadSceneRoutine(new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex));
             yield return LoadSceneRoutine(targetSceneInfo, true);
-            UnloadSceneRoutine(currentSceneInfo);
         }
 
         IEnumerator LoadSceneRoutineWithReport(ILoadSceneInfo loadSceneInfo, System.IProgress<float> progress)
