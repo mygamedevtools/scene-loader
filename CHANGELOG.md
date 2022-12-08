@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/mygamedevtools/scene-loader/compare/1.4.0...1.4.1) (2022-12-08)
+
+
+### Bug Fixes
+
+* Unload scene before loading in transitions ([f6b8c7a](https://github.com/mygamedevtools/scene-loader/commit/f6b8c7a7c06d980be709687dfb3de5cf2761adb0))
+
 # [1.4.0](https://github.com/mygamedevtools/scene-loader/compare/1.3.1...1.4.0) (2022-10-25)
 
 
