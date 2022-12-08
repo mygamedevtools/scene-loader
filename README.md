@@ -24,7 +24,7 @@ openupm add com.mygamedevtools.scene-loader
 1. Open `Edit/Project Settings/Package Manager`.
 2. Click <kbd>+</kbd>.
 3. Select `Add package from git URL...`.
-4. Paste `com.mygamedevtools.scene-loader` into name.
+4. Paste `https://github.com/mygamedevtools/scene-loader.git` into url.
 5. Click `Add`.
 
 Overview
