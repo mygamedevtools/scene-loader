@@ -60,11 +60,11 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
             {
                 yield return new WaitUntil(() => loadingBehavior.Active);
 
+                if (currentSceneHandle.IsValid())
+                    yield return UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+
                 yield return LoadSceneRoutineWithReport(targetSceneReference, loadingBehavior);
                 loadingBehavior.CompleteLoading();
-
-                if (currentSceneHandle.IsValid())
-                    UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
 
                 yield return new WaitWhile(() => loadingBehavior.Active);
 
@@ -72,18 +72,17 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
             }
             else
             {
-                yield return LoadSceneRoutine(targetSceneReference, true);
                 if (currentSceneHandle.IsValid())
-                    UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                    yield return UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                yield return LoadSceneRoutine(targetSceneReference, true);
                 UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(loadingSceneHandle));
             }
         }
 
         IEnumerator TransitionDirectlyRoutine(IAddressableLoadSceneReference targetSceneReference)
         {
-            var currentSceneHandle = _sceneManager.GetActiveSceneHandle();
+            yield return UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(_sceneManager.GetActiveSceneHandle()));
             yield return LoadSceneRoutine(targetSceneReference, true);
-            UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
         }
 
         IEnumerator LoadSceneRoutineWithReport(IAddressableLoadSceneReference targetSceneReference, System.IProgress<float> progress)

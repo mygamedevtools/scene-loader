@@ -62,11 +62,11 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
             {
                 await UniTask.WaitWhile(() => !loadingBehavior.Active);
 
+                if (currentSceneHandle.IsValid())
+                    await UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+
                 var operation = await LoadSceneAsyncWithReport(sceneReference, loadingBehavior);
                 loadingBehavior.CompleteLoading();
-
-                if (currentSceneHandle.IsValid())
-                    UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle)).Forget();
 
                 await UniTask.WaitWhile(() => loadingBehavior.Active);
 
@@ -76,9 +76,9 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
             }
             else
             {
-                result = await LoadSceneAsync(sceneReference, true);
                 if (currentSceneHandle.IsValid())
-                    UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle)).Forget();
+                    await UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                result = await LoadSceneAsync(sceneReference, true);
                 UnloadSceneAsync(new AddressableLoadSceneInfoInstance(loadingScene)).Forget();
             }
             return result;
@@ -87,10 +87,9 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
         async UniTask<SceneInstance> TransitionDirectlyAsync(IAddressableLoadSceneReference sceneReference)
         {
             var currentSceneHandle = _sceneManager.GetActiveSceneHandle();
-            var loadedScene = await LoadSceneAsync(sceneReference, true);
-
             if (currentSceneHandle.IsValid())
-                _ = UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                await UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+            var loadedScene = await LoadSceneAsync(sceneReference, true);
 
             return loadedScene;
         }

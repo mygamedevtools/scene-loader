@@ -41,10 +41,9 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             {
                 await UniTask.WaitWhile(() => !loadingBehavior.Active);
 
+                await UnloadSceneAsync(currentSceneInfo);
                 await LoadSceneAsyncWithReport(targetSceneInfo, loadingBehavior);
                 loadingBehavior.CompleteLoading();
-
-                UnloadSceneAsync(currentSceneInfo).Forget();
 
                 await UniTask.WaitWhile(() => loadingBehavior.Active);
 
@@ -52,17 +51,16 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             }
             else
             {
+                await UnloadSceneAsync(currentSceneInfo);
                 await LoadSceneAsync(targetSceneInfo, true);
-                UnloadSceneAsync(currentSceneInfo).Forget();
                 UnloadSceneAsync(intermediateSceneInfo).Forget();
             }
         }
 
         async UniTask TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo)
         {
-            var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
+            await UnloadSceneAsync(new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex));
             await LoadSceneAsync(loadSceneInfo, true);
-            _ = UnloadSceneAsync(currentSceneInfo);
         }
 
         async UniTask LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, System.IProgress<float> progress)

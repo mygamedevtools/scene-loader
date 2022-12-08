@@ -48,9 +48,9 @@ namespace MyGameDevTools.SceneLoading
                 while (!loadingBehavior.Active)
                     await Task.Yield();
 
+                await UnloadSceneAsync(currentSceneInfo);
                 await LoadSceneAsyncWithReport(targetSceneInfo, loadingBehavior);
                 loadingBehavior.CompleteLoading();
-                _ = UnloadSceneAsync(currentSceneInfo);
 
                 while (loadingBehavior.Active)
                     await Task.Yield();
@@ -58,17 +58,16 @@ namespace MyGameDevTools.SceneLoading
             }
             else
             {
+                await UnloadSceneAsync(currentSceneInfo);
                 await LoadSceneAsync(targetSceneInfo, true);
-                _ = UnloadSceneAsync(currentSceneInfo);
                 _ = UnloadSceneAsync(intermediateSceneInfo);
             }
         }
 
         async Task TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo)
         {
-            var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
+            await UnloadSceneAsync(new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex));
             await LoadSceneAsync(loadSceneInfo, true);
-            _ = UnloadSceneAsync(currentSceneInfo);
         }
 
         async Task LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, System.IProgress<float> progress)
