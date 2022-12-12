@@ -11,9 +11,9 @@ namespace MyGameDevTools.SceneLoading
     public class LoadingBehavior : LoadingBase
     {
         [SerializeField, Tooltip("Should it wait for an animation or script to allow starting the transition? If not, then enable this toggle.")]
-        bool _autoStart;
+        bool _autoStart = true;
         [SerializeField, Tooltip("Should it wait for an animation or script to allow finishing the transition? If not, then enable this toggle.")]
-        bool _autoFinish;
+        bool _autoFinish = true;
 
         void Start()
         {
