@@ -17,13 +17,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
     /// </summary>
     public interface IAddressableLoadSceneReference
     {
-        /// <summary>
-        /// Loads the provided scene asynchronously.
-        /// Internally calls <see cref="UnityEngine.AddressableAssets.Addressables.LoadSceneAsync(object, LoadSceneMode, bool, int)"/>.
-        /// </summary>
-        /// <param name="sceneManager">The reference to the <see cref="IAddressableSceneManager"/> that keeps track of the active scenes.</param>
-        /// <returns>The load <see cref="AsyncOperationHandle{TObject}"/>.</returns>
-        AsyncOperationHandle<SceneInstance> LoadSceneAsync(IAddressableSceneManager sceneManager);
+        object RuntimeKey { get; }
     }
 }
 #endif

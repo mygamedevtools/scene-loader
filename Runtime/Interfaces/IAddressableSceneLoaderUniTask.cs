@@ -6,6 +6,7 @@
  */
 
 using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
@@ -43,7 +44,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
 
         /// <summary>
         /// Loads a scene additively asynchronously on top of the current scene stack, optionally marking it as the active scene
-        /// (<see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{UnityEngine.ResourceManagement.ResourceProviders.SceneInstance})"/>).
+        /// (<see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{SceneInstance})"/>).
         /// </summary>
         /// <param name="sceneInfo">
         /// The scene that's going to be loaded.
@@ -52,10 +53,10 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
         /// </param>
         /// <param name="setActive">
         /// Should the loaded scene be marked as active?
-        /// Equivalent to calling <see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{UnityEngine.ResourceManagement.ResourceProviders.SceneInstance})"/>.
+        /// Equivalent to calling <see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{SceneInstance})"/>.
         /// </param>
         /// <returns>The load awaitable <see cref="UniTask{TResult}"/> with the resulting <see cref="SceneInstance"/>.</returns>
-        UniTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
+        UniTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null);
 
         /// <summary>
         /// Unloads the given scene asynchronously from the current scene stack.
@@ -63,7 +64,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
         /// <param name="sceneInfo">
         /// Target scene info.
         /// Can be the scene's addressable <see cref="UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{TObject}"/> (<see cref="AddressableLoadSceneInfoOperationHandle"/>),
-        /// its <see cref="UnityEngine.ResourceManagement.ResourceProviders.SceneInstance"/> (<see cref="AddressableLoadSceneInfoInstance"/>),
+        /// its <see cref="SceneInstance"/> (<see cref="AddressableLoadSceneInfoInstance"/>),
         /// or its name (<see cref="AddressableLoadSceneInfoName"/>).
         /// </param>
         /// <returns>The unload awaitable <see cref="UniTask"/>.</returns>

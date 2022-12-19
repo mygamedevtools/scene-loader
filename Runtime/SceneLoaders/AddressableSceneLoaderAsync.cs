@@ -5,10 +5,10 @@
  * Created on: 7/26/2022 (en-US)
  */
 
+using System;
 using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
+using Object = UnityEngine.Object;
 
 namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
@@ -29,35 +29,16 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
         public void UnloadScene(IAddressableLoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo);
 
-        public async Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false)
-        {
-            var operation = sceneReference.LoadSceneAsync(_sceneManager);
-            await operation.Task;
-            if (setActive)
-                _sceneManager.SetActiveSceneHandle(operation);
-            return operation.Result;
-        }
+        public async Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null) => await _sceneManager.LoadSceneAsync(sceneReference, setActive, progress);
 
         public Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference) => intermediateSceneReference == null ? TransitionDirectlyAsync(targetSceneReference) : TransitionToSceneFlowAsync(targetSceneReference, intermediateSceneReference);
 
-        public Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo) => sceneInfo.UnloadSceneAsync(_sceneManager).Task;
-
-        async Task<AsyncOperationHandle<SceneInstance>> LoadSceneAsyncWithReport(IAddressableLoadSceneReference sceneReference, System.IProgress<float> progress)
-        {
-            var operation = sceneReference.LoadSceneAsync(_sceneManager);
-            while (!operation.IsDone)
-            {
-                progress.Report(operation.PercentComplete);
-                await Task.Yield();
-            }
-            _sceneManager.SetActiveSceneHandle(operation);
-            return operation;
-        }
+        public Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo) => _sceneManager.UnloadSceneAsync(sceneInfo);
 
         async Task<SceneInstance> TransitionToSceneFlowAsync(IAddressableLoadSceneReference sceneReference, IAddressableLoadSceneReference intermediateSceneReference)
         {
-            var currentSceneHandle = _sceneManager.GetActiveSceneHandle();
-            var loadingScene = await intermediateSceneReference.LoadSceneAsync(_sceneManager).Task;
+            var currentScene = _sceneManager.GetActiveScene();
+            var loadingScene = await LoadSceneAsync(intermediateSceneReference);
             var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
 
             SceneInstance result;
@@ -67,22 +48,20 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
                 while (!loadingBehavior.Active)
                     await Task.Yield();
 
-                if (currentSceneHandle.IsValid())
-                    await UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                if (currentScene.Scene.IsValid())
+                    await UnloadSceneAsync(new AddressableLoadSceneInfoInstance(currentScene));
 
-                var operation = await LoadSceneAsyncWithReport(sceneReference, loadingBehavior);
+                result = await LoadSceneAsync(sceneReference, true, loadingBehavior);
                 loadingBehavior.CompleteLoading();
 
                 while (loadingBehavior.Active)
                     await Task.Yield();
                 _ = UnloadSceneAsync(new AddressableLoadSceneInfoInstance(loadingScene));
-
-                result = operation.Result;
             }
             else
             {
-                if (currentSceneHandle.IsValid())
-                    await UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                if (currentScene.Scene.IsValid())
+                    await UnloadSceneAsync(new AddressableLoadSceneInfoInstance(currentScene));
                 result = await LoadSceneAsync(sceneReference, true);
                 _ = UnloadSceneAsync(new AddressableLoadSceneInfoInstance(loadingScene));
             }
@@ -91,9 +70,9 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
         async Task<SceneInstance> TransitionDirectlyAsync(IAddressableLoadSceneReference sceneReference)
         {
-            var currentSceneHandle = _sceneManager.GetActiveSceneHandle();
-            if (currentSceneHandle.IsValid())
-                await UnloadSceneAsync(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+            var currentScene = _sceneManager.GetActiveScene();
+            if (currentScene.Scene.IsValid())
+                await UnloadSceneAsync(new AddressableLoadSceneInfoInstance(currentScene));
             var loadedScene = await LoadSceneAsync(sceneReference, true);
 
             return loadedScene;

@@ -5,8 +5,11 @@
  * Created on: 9/4/2022 (en-US)
  */
 
+using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
@@ -31,70 +34,83 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
         public Coroutine TransitionToSceneRoutine(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference) => _routineBehaviour.StartCoroutine(intermediateSceneReference == null ? TransitionDirectlyRoutine(targetSceneReference) : TransitionWithIntermediateRoutine(targetSceneReference, intermediateSceneReference));
 
-        public Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive) => _routineBehaviour.StartCoroutine(LoadRoutine(sceneReference, setActive));
+        public Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null) => _routineBehaviour.StartCoroutine(LoadRoutine(sceneReference, setActive, progress));
 
         public Coroutine UnloadSceneRoutine(IAddressableLoadSceneInfo sceneInfo) => _routineBehaviour.StartCoroutine(UnloadRoutine(sceneInfo));
 
-        IEnumerator LoadRoutine(IAddressableLoadSceneReference sceneReference, bool setActive)
+        IEnumerator LoadRoutine(IAddressableLoadSceneReference sceneReference, bool setActive, IProgress<float> progress)
         {
-            var operation = sceneReference.LoadSceneAsync(_sceneManager);
-            yield return operation;
-            if (setActive)
-                _sceneManager.SetActiveSceneHandle(operation);
+            yield return new WaitTask(_sceneManager.LoadSceneAsync(sceneReference, setActive, progress));
         }
 
         IEnumerator UnloadRoutine(IAddressableLoadSceneInfo sceneInfo)
         {
-            yield return sceneInfo.UnloadSceneAsync(_sceneManager);
+            yield return new WaitTask(_sceneManager.UnloadSceneAsync(sceneInfo));
         }
 
         IEnumerator TransitionWithIntermediateRoutine(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference)
         {
-            var currentSceneHandle = _sceneManager.GetActiveSceneHandle();
-            var loadingSceneHandle = intermediateSceneReference.LoadSceneAsync(_sceneManager);
-            yield return loadingSceneHandle;
-            _sceneManager.SetActiveSceneHandle(loadingSceneHandle);
+            var currentScene = _sceneManager.GetActiveScene();
+
+            var sceneLoadTask = _sceneManager.LoadSceneAsync(intermediateSceneReference);
+            yield return new WaitUntil(() => sceneLoadTask.IsCompleted);
+            var loadingScene = sceneLoadTask.Result;
 
             var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
             if (loadingBehavior)
             {
                 yield return new WaitUntil(() => loadingBehavior.Active);
 
-                if (currentSceneHandle.IsValid())
-                    yield return UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                if (currentScene.Scene.IsValid())
+                    yield return UnloadSceneRoutine(new AddressableLoadSceneInfoInstance(currentScene));
 
-                yield return LoadSceneRoutineWithReport(targetSceneReference, loadingBehavior);
+                sceneLoadTask = _sceneManager.LoadSceneAsync(targetSceneReference, true, loadingBehavior);
+                yield return new WaitUntil(() => sceneLoadTask.IsCompleted);
                 loadingBehavior.CompleteLoading();
 
                 yield return new WaitWhile(() => loadingBehavior.Active);
 
-                UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(loadingSceneHandle));
+                UnloadSceneRoutine(new AddressableLoadSceneInfoInstance(loadingScene));
             }
             else
             {
-                if (currentSceneHandle.IsValid())
-                    yield return UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(currentSceneHandle));
+                if (currentScene.Scene.IsValid())
+                    yield return UnloadSceneRoutine(new AddressableLoadSceneInfoInstance(currentScene));
                 yield return LoadSceneRoutine(targetSceneReference, true);
-                UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(loadingSceneHandle));
+                UnloadSceneRoutine(new AddressableLoadSceneInfoInstance(loadingScene));
             }
         }
 
         IEnumerator TransitionDirectlyRoutine(IAddressableLoadSceneReference targetSceneReference)
         {
-            yield return UnloadSceneRoutine(new AddressableLoadSceneInfoOperationHandle(_sceneManager.GetActiveSceneHandle()));
+            var currentScene = _sceneManager.GetActiveScene();
+            if (currentScene.Scene.IsValid())
+                yield return UnloadSceneRoutine(new AddressableLoadSceneInfoInstance(currentScene));
             yield return LoadSceneRoutine(targetSceneReference, true);
         }
+    }
 
-        IEnumerator LoadSceneRoutineWithReport(IAddressableLoadSceneReference targetSceneReference, System.IProgress<float> progress)
+    public class WaitTask : IEnumerator
+    {
+        readonly Task _task;
+
+        public object Current => null;
+
+        public WaitTask(Task task)
         {
-            var operation = targetSceneReference.LoadSceneAsync(_sceneManager);
-            while (!operation.IsDone)
-            {
-                progress.Report(operation.PercentComplete);
-                yield return null;
-            }
-            _sceneManager.SetActiveSceneHandle(operation);
+            _task = task;
         }
+
+        public bool MoveNext()
+        {
+            // We cannot throw inside coroutines, but we can use Debug.LogError instead
+            if (_task.IsFaulted)
+                Debug.LogError(_task.Exception);
+
+            return !_task.IsCompleted;
+        }
+
+        public void Reset() { }
     }
 }
 #endif

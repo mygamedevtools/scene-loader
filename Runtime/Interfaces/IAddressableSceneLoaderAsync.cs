@@ -5,6 +5,7 @@
  * Created on: 7/26/2022 (en-US)
  */
 
+using System;
 using System.Threading.Tasks;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
@@ -55,7 +56,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         /// Equivalent to calling <see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{UnityEngine.ResourceManagement.ResourceProviders.SceneInstance})"/>.
         /// </param>
         /// <returns>The load awaitable <see cref="Task{TResult}"/> with the resulting <see cref="SceneInstance"/>.</returns>
-        Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
+        Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null);
 
         /// <summary>
         /// Unloads the given scene asynchronously from the current scene stack.

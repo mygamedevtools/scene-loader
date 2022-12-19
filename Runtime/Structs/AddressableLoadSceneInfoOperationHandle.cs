@@ -5,7 +5,6 @@
  * Created on: 8/24/2022 (en-US)
  */
 
-using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
@@ -17,6 +16,8 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
     /// </summary>
     public readonly struct AddressableLoadSceneInfoOperationHandle : IAddressableLoadSceneInfo
     {
+        public object Info => _sceneHandle;
+
         readonly AsyncOperationHandle<SceneInstance> _sceneHandle;
 
         /// <summary>
@@ -27,8 +28,6 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         {
             _sceneHandle = sceneHandle;
         }
-
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(IAddressableSceneManager sceneManager, bool autoReleaseHandle) => sceneManager.UnloadSceneAsync(_sceneHandle, autoReleaseHandle);
 
         public static implicit operator AddressableLoadSceneInfoOperationHandle(AsyncOperationHandle<SceneInstance> sceneHandle) => new AddressableLoadSceneInfoOperationHandle(sceneHandle);
     }

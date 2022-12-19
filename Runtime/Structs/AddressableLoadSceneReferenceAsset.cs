@@ -6,8 +6,6 @@
  */
 
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
@@ -17,6 +15,8 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
     /// </summary>
     public readonly struct AddressableLoadSceneReferenceAsset : IAddressableLoadSceneReference
     {
+        public object RuntimeKey => _sceneReference.RuntimeKey;
+
         readonly AssetReference _sceneReference;
 
         /// <summary>
@@ -27,14 +27,6 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         {
             _sceneReference = sceneReference;
         }
-
-        /// <summary>
-        /// Loads the provided scene asynchronously.
-        /// Internally calls <see cref="AssetReference.LoadAssetAsync{TObject}"/>.
-        /// </summary>
-        /// <param name="sceneManager">The reference to the <see cref="IAddressableSceneManager"/> that keeps track of the active scenes.</param>
-        /// <returns>The load <see cref="AsyncOperationHandle{TObject}"/>.</returns>
-        public AsyncOperationHandle<SceneInstance> LoadSceneAsync(IAddressableSceneManager sceneManager) => sceneManager.LoadSceneAsync(_sceneReference);
 
         public static implicit operator AddressableLoadSceneReferenceAsset(AssetReference sceneReference) => new AddressableLoadSceneReferenceAsset(sceneReference);
     }

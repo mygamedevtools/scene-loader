@@ -16,6 +16,8 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
     /// </summary>
     public readonly struct AddressableLoadSceneInfoInstance : IAddressableLoadSceneInfo
     {
+        public object Info => _sceneInstance;
+
         readonly SceneInstance _sceneInstance;
 
         /// <summary>
@@ -26,8 +28,6 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         {
             _sceneInstance = sceneInstance;
         }
-
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(IAddressableSceneManager sceneManager, bool autoReleaseHandle) => sceneManager.UnloadSceneAsync(_sceneInstance, autoReleaseHandle);
 
         public static implicit operator AddressableLoadSceneInfoInstance(SceneInstance scene) => new AddressableLoadSceneInfoInstance(scene);
     }

@@ -5,6 +5,7 @@
  * Created on: 9/4/2022 (en-US)
  */
 
+using System;
 using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading.AddressablesSupport
@@ -54,7 +55,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         /// Equivalent to calling <see cref="IAddressableSceneManager.SetActiveSceneHandle(UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle{UnityEngine.ResourceManagement.ResourceProviders.SceneInstance})"/>.
         /// </param>
         /// <returns>The load <see cref="Coroutine"/>.</returns>
-        Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive = false);
+        Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null);
 
         /// <summary>
         /// Unloads the given scene asynchronously from the current scene stack.

@@ -5,6 +5,10 @@
  * Created on: 8/24/2022 (en-US)
  */
 
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
@@ -16,6 +20,8 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
     /// </summary>
     public readonly struct AddressableLoadSceneReferenceKey : IAddressableLoadSceneReference
     {
+        public object RuntimeKey => _runtimeKey;
+
         readonly string _runtimeKey;
 
         /// <summary>
@@ -26,14 +32,6 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         {
             _runtimeKey = sceneRuntimeKey;
         }
-
-        /// <summary>
-        /// Loads the provided scene asynchronously.
-        /// Internally calls <see cref="UnityEngine.AddressableAssets.Addressables.LoadSceneAsync(object, UnityEngine.SceneManagement.LoadSceneMode, bool, int)"/>.
-        /// </summary>
-        /// <param name="sceneManager">The reference to the <see cref="IAddressableSceneManager"/> that keeps track of the active scenes.</param>
-        /// <returns>The load <see cref="AsyncOperationHandle{TObject}"/>.</returns>
-        public AsyncOperationHandle<SceneInstance> LoadSceneAsync(IAddressableSceneManager sceneManager) => sceneManager.LoadSceneAsync(_runtimeKey);
 
         public static implicit operator AddressableLoadSceneReferenceKey(string runtimeKey) => new AddressableLoadSceneReferenceKey(runtimeKey);
     }
