@@ -5,7 +5,9 @@
  * Created on: 7/26/2022 (en-US)
  */
 
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
@@ -15,80 +17,88 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     public class AddressableSceneManager : IAddressableSceneManager
     {
-        readonly List<AsyncOperationHandle<SceneInstance>> _loadedScenes = new List<AsyncOperationHandle<SceneInstance>>();
+        public int SceneCount => _loadedScenes.Count;
 
-        AsyncOperationHandle<SceneInstance> _activeSceneHandle;
+        readonly List<SceneInstance> _loadedScenes = new List<SceneInstance>();
 
-        public void SetActiveSceneHandle(AsyncOperationHandle<SceneInstance> sceneHandle)
-        {
-            if (!_loadedScenes.Contains(sceneHandle))
-                throw new System.InvalidOperationException($"Cannot set active the scene \"{sceneHandle.Result.Scene.name}\" that has not been loaded through this AddressableSceneManager.");
-            _activeSceneHandle = sceneHandle;
-        }
+        SceneInstance _activeScene;
+
         public void SetActiveScene(SceneInstance scene)
         {
-            var handle = GetLoadedSceneHandle(scene);
-            if (!handle.IsValid())
-                throw new System.InvalidOperationException($"Cannot set active the scene \"{scene.Scene.name}\" that has not been loaded through this AddressableSceneManager.");
-            _activeSceneHandle = handle;
+            if (!_loadedScenes.Contains(scene))
+                throw new InvalidOperationException($"Cannot set active the scene \"{scene.Scene.name}\" that has not been loaded through this {nameof(AddressableSceneManager)}.");
+            _activeScene = scene;
         }
         public void SetActiveScene(string sceneName)
         {
-            var handle = GetLoadedSceneHandle(sceneName);
-            if (!handle.IsValid())
-                throw new System.InvalidOperationException($"Cannot set active the scene \"{sceneName}\" that has not been loaded through this AddressableSceneManager.");
-            _activeSceneHandle = handle;
+            var sceneInstance = GetLoadedSceneByName(sceneName);
+            if (!sceneInstance.Scene.IsValid())
+                throw new InvalidOperationException($"Cannot set active the scene \"{sceneName}\" that has not been loaded through this {nameof(AddressableSceneManager)}.");
+            _activeScene = sceneInstance;
         }
 
-        public AsyncOperationHandle<SceneInstance> GetActiveSceneHandle() => _activeSceneHandle;
+        public async Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null)
+        {
+            await ValidateSceneReferenceAsync(sceneReference);
+            var operation = Addressables.LoadSceneAsync(sceneReference.RuntimeKey, LoadSceneMode.Additive);
 
-        public AsyncOperationHandle<SceneInstance> LoadSceneAsync(AssetReference sceneReference)
-        {
-            var operation = sceneReference.LoadSceneAsync(LoadSceneMode.Additive);
-            _loadedScenes.Add(operation);
-            return operation;
-        }
-        public AsyncOperationHandle<SceneInstance> LoadSceneAsync(string runtimeKey)
-        {
-            var operation = Addressables.LoadSceneAsync(runtimeKey, LoadSceneMode.Additive);
-            _loadedScenes.Add(operation);
-            return operation;
-        }
+            while (!operation.IsDone)
+            {
+                await Task.Yield();
+                progress?.Report(operation.PercentComplete);
+            }
 
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle, bool autoReleaseHandle)
-        {
-            var operation = Addressables.UnloadSceneAsync(sceneHandle, autoReleaseHandle);
-            _loadedScenes.Remove(sceneHandle);
-            return operation;
-        }
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(SceneInstance scene, bool autoReleaseHandle)
-        {
-            var loadedSceneHandle = GetLoadedSceneHandle(scene);
-            var operation = Addressables.UnloadSceneAsync(loadedSceneHandle, autoReleaseHandle);
-            _loadedScenes.Remove(loadedSceneHandle);
-            return operation;
-        }
-        public AsyncOperationHandle<SceneInstance> UnloadSceneAsync(string sceneName, bool autoReleaseHandle)
-        {
-            var loadedSceneHandle = GetLoadedSceneHandle(sceneName);
-            var operation = Addressables.UnloadSceneAsync(loadedSceneHandle, autoReleaseHandle);
-            _loadedScenes.Remove(loadedSceneHandle);
-            return operation;
+            if (operation.Status != AsyncOperationStatus.Succeeded)
+                throw new Exception($"Unable to load scene by reference: {sceneReference.RuntimeKey}.", operation.OperationException);
+
+            var scene = operation.Result;
+            _loadedScenes.Add(scene);
+            if (setActive)
+                SetActiveScene(scene);
+
+            return operation.Result;
         }
 
-        public AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(SceneInstance sceneInstance)
+        public async Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo)
         {
-            foreach (var operationHandle in _loadedScenes)
-                if (operationHandle.Result.Scene == sceneInstance.Scene)
-                    return operationHandle;
+            var scene = GetLoadedSceneByInfo(sceneInfo);
+            if (!_loadedScenes.Contains(scene))
+                throw new InvalidOperationException($"Cannot unload the scene \"{scene.Scene.name}\" that has not been loaded through this {nameof(AddressableSceneManager)}.");
+
+            var operation = Addressables.UnloadSceneAsync(scene, true);
+            _loadedScenes.Remove(scene);
+            await operation.Task;
+        }
+
+        public SceneInstance GetActiveScene() => _activeScene;
+
+        public SceneInstance GetLoadedSceneAt(int index) => _loadedScenes[index];
+
+        public SceneInstance GetLoadedSceneByName(string sceneName)
+        {
+            foreach (var sceneInstance in _loadedScenes)
+                if (sceneInstance.Scene.name == sceneName)
+                    return sceneInstance;
             return default;
         }
-        public AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(string sceneName)
+
+        async Task ValidateSceneReferenceAsync(IAddressableLoadSceneReference sceneReference)
         {
-            foreach (var operationHandle in _loadedScenes)
-                if (operationHandle.Result.Scene.name == sceneName)
-                    return operationHandle;
-            return default;
+            var validateOperation = Addressables.LoadResourceLocationsAsync(sceneReference.RuntimeKey);
+            await validateOperation.Task;
+            if (validateOperation.Result == null || validateOperation.Result.Count == 0)
+                throw new InvalidKeyException(sceneReference.RuntimeKey);
+        }
+
+        SceneInstance GetLoadedSceneByInfo(IAddressableLoadSceneInfo sceneInfo)
+        {
+            var info = sceneInfo.Info;
+            if (info is SceneInstance sceneInstance)
+                return sceneInstance;
+            else if (info is string sceneName)
+                return GetLoadedSceneByName(sceneName);
+            else
+                throw new Exception($"Unexpected {nameof(IAddressableLoadSceneInfo.Info)} type.");
         }
     }
 }
