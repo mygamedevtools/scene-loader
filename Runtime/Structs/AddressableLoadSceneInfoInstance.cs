@@ -14,9 +14,9 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
     /// Struct to manage addressable scene operations with the scene's <see cref="SceneInstance"/>.
     /// Implements <see cref="IAddressableLoadSceneInfo"/>.
     /// </summary>
-    public readonly struct AddressableLoadSceneInfoInstance : IAddressableLoadSceneInfo
+    public readonly struct AddressableLoadSceneInfoInstance : IAddressableLoadSceneReference
     {
-        public object Info => _sceneInstance;
+        public object RuntimeKey => _sceneInstance;
 
         readonly SceneInstance _sceneInstance;
 

@@ -27,13 +27,13 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport.UniTaskSupport
 
         public void LoadScene(IAddressableLoadSceneReference sceneReference, bool setActive) => LoadSceneAsync(sceneReference, setActive).Forget();
 
-        public void UnloadScene(IAddressableLoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo).Forget();
+        public void UnloadScene(IAddressableLoadSceneReference sceneInfo) => UnloadSceneAsync(sceneInfo).Forget();
 
         public async UniTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null) => await _sceneManager.LoadSceneAsync(sceneReference, setActive, progress);
 
         public UniTask<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference) => intermediateSceneReference == null ? TransitionDirectlyAsync(targetSceneReference) : TransitionToSceneFlowAsync(targetSceneReference, intermediateSceneReference);
 
-        public async UniTask UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo) => await _sceneManager.UnloadSceneAsync(sceneInfo);
+        public async UniTask UnloadSceneAsync(IAddressableLoadSceneReference sceneInfo) => await _sceneManager.UnloadSceneAsync(sceneInfo);
 
         async UniTask<SceneInstance> TransitionToSceneFlowAsync(IAddressableLoadSceneReference sceneReference, IAddressableLoadSceneReference intermediateSceneReference)
         {

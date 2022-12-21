@@ -16,17 +16,17 @@ namespace MyGameDevTools.SceneLoading.Tests
         public static IEnumerator UnloadRemainingScenes()
         {
             // The first scene is the Unity Test Runner's Scene, and we don't want to unload that
-            if (SceneManager.sceneCount == 1)
+            if (UnityEngine.SceneManagement.SceneManager.sceneCount == 1)
                 yield break;
 
-            SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(UnityEngine.SceneManagement.SceneManager.GetSceneAt(0));
 
             var interval = new WaitForEndOfFrame();
-            while (SceneManager.sceneCount > 1)
+            while (UnityEngine.SceneManagement.SceneManager.sceneCount > 1)
             {
                 var scene = GetLastLoadedScene();
                 if (scene.isLoaded)
-                    yield return SceneManager.UnloadSceneAsync(scene);
+                    yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(scene);
                 else
                     yield return interval;
             }
@@ -52,6 +52,6 @@ namespace MyGameDevTools.SceneLoading.Tests
             return sceneManager.GetLoadedSceneAt(sceneManager.SceneCount - 1).Scene;
         }
 
-        public static Scene GetLastLoadedScene() => SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
+        public static Scene GetLastLoadedScene() => UnityEngine.SceneManagement.SceneManager.GetSceneAt(UnityEngine.SceneManagement.SceneManager.sceneCount - 1);
     }
 }

@@ -15,25 +15,26 @@ namespace MyGameDevTools.SceneLoading
     /// </summary>
     public interface ILoadSceneInfo
     {
+        object Reference { get; }
         /// <summary>
         /// Unloads the provided scene asynchronously.
         /// Internally calls <see cref="SceneManager.UnloadSceneAsync(Scene)"/>.
         /// </summary>
         /// <returns>The unload <see cref="AsyncOperation"/>.</returns>
-        AsyncOperation UnloadSceneAsync();
+        //AsyncOperation UnloadSceneAsync();
 
         /// <summary>
         /// Loads the provided scene asynchronously.
         /// Internally calls <see cref="SceneManager.LoadSceneAsync(int)"/>.
         /// </summary>
         /// <returns>The load <see cref="AsyncOperation"/>.</returns>
-        AsyncOperation LoadSceneAsync();
+        //AsyncOperation LoadSceneAsync();
 
         /// <summary>
         /// Gets a runtime struct representing the loaded scene.
         /// Used to pass as a parameter when calling <see cref="SceneManager.SetActiveScene(Scene)"/>.
         /// </summary>
         /// <returns>The loaded scene struct, or an invalid scene (<see cref="Scene.IsValid"/> returns false) if it hasn't been loaded.</returns>
-        Scene GetScene();
+        //Scene GetScene();
     }
 }

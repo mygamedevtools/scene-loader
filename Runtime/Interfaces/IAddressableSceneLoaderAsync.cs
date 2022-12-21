@@ -68,7 +68,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         /// or its name (<see cref="AddressableLoadSceneInfoName"/>).
         /// </param>
         /// <returns>The unload awaitable <see cref="Task"/>.</returns>
-        Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo);
+        Task UnloadSceneAsync(IAddressableLoadSceneReference sceneInfo);
     }
 }
 #endif

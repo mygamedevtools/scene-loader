@@ -28,8 +28,6 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         /// <param name="sceneHandle">The loaded scene's <see cref="AsyncOperationHandle{TObject}"/>.</param>
         void SetActiveScene(SceneInstance scene);
 
-        void SetActiveScene(string sceneName);
-
         /// <summary>
         /// Loads the provided scene asynchronously.
         /// Internally calls <see cref="AssetReference.LoadAssetAsync{TObject}"/>.
@@ -45,7 +43,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         /// <param name="sceneHandle">The loaded scene's <see cref="AsyncOperationHandle{TObject}"/>.</param>
         /// <param name="autoReleaseHandle">Should the <see cref="AsyncOperationHandle{TObject}"/> be released automatically? Defaults to true.</param>
         /// <returns>The unload <see cref="AsyncOperationHandle{TObject}"/>.</returns>
-        ValueTask UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo);
+        ValueTask UnloadSceneAsync(IAddressableLoadSceneReference sceneInfo);
 
         /// <summary>
         /// Gets the active scene in the current addressable scene stack.

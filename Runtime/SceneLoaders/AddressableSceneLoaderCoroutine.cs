@@ -7,7 +7,6 @@
 
 using System;
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -30,20 +29,20 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
         public void LoadScene(IAddressableLoadSceneReference sceneReference, bool setActive) => LoadSceneRoutine(sceneReference, setActive);
 
-        public void UnloadScene(IAddressableLoadSceneInfo sceneInfo) => UnloadSceneRoutine(sceneInfo);
+        public void UnloadScene(IAddressableLoadSceneReference sceneInfo) => UnloadSceneRoutine(sceneInfo);
 
         public Coroutine TransitionToSceneRoutine(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference) => _routineBehaviour.StartCoroutine(intermediateSceneReference == null ? TransitionDirectlyRoutine(targetSceneReference) : TransitionWithIntermediateRoutine(targetSceneReference, intermediateSceneReference));
 
         public Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null) => _routineBehaviour.StartCoroutine(LoadRoutine(sceneReference, setActive, progress));
 
-        public Coroutine UnloadSceneRoutine(IAddressableLoadSceneInfo sceneInfo) => _routineBehaviour.StartCoroutine(UnloadRoutine(sceneInfo));
+        public Coroutine UnloadSceneRoutine(IAddressableLoadSceneReference sceneInfo) => _routineBehaviour.StartCoroutine(UnloadRoutine(sceneInfo));
 
         IEnumerator LoadRoutine(IAddressableLoadSceneReference sceneReference, bool setActive, IProgress<float> progress)
         {
             yield return new WaitTask(_sceneManager.LoadSceneAsync(sceneReference, setActive, progress).AsTask());
         }
 
-        IEnumerator UnloadRoutine(IAddressableLoadSceneInfo sceneInfo)
+        IEnumerator UnloadRoutine(IAddressableLoadSceneReference sceneInfo)
         {
             yield return new WaitTask(_sceneManager.UnloadSceneAsync(sceneInfo));
         }
@@ -88,33 +87,6 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
                 yield return UnloadSceneRoutine(new AddressableLoadSceneInfoInstance(currentScene));
             yield return LoadSceneRoutine(targetSceneReference, true);
         }
-    }
-
-    public class WaitTask : IEnumerator
-    {
-        readonly Task _task;
-
-        public object Current => null;
-
-        public WaitTask(Task task)
-        {
-            _task = task;
-        }
-        public WaitTask(ValueTask task)
-        {
-            _task = task.AsTask();
-        }
-
-        public bool MoveNext()
-        {
-            // We cannot throw inside coroutines, but we can use Debug.LogError instead
-            if (_task.IsFaulted)
-                Debug.LogError(_task.Exception);
-
-            return !_task.IsCompleted;
-        }
-
-        public void Reset() { }
     }
 }
 #endif

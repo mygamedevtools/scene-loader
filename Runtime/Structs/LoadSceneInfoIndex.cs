@@ -4,9 +4,6 @@
  * Created on: 8/24/2022 (en-US)
  */
 
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
@@ -14,6 +11,8 @@ namespace MyGameDevTools.SceneLoading
     /// </summary>
     public readonly struct LoadSceneInfoIndex : ILoadSceneInfo
     {
+        public object Reference => _buildIndex;
+
         readonly int _buildIndex;
 
         /// <summary>
@@ -26,11 +25,11 @@ namespace MyGameDevTools.SceneLoading
             _buildIndex = buildIndex;
         }
 
-        public AsyncOperation UnloadSceneAsync() => SceneManager.UnloadSceneAsync(_buildIndex);
+        //public AsyncOperation UnloadSceneAsync() => SceneManager.UnloadSceneAsync(_buildIndex);
 
-        public AsyncOperation LoadSceneAsync() => SceneManager.LoadSceneAsync(_buildIndex, LoadSceneMode.Additive);
+        //public AsyncOperation LoadSceneAsync() => SceneManager.LoadSceneAsync(_buildIndex, LoadSceneMode.Additive);
 
-        public Scene GetScene() => SceneManager.GetSceneByBuildIndex(_buildIndex);
+        //public Scene GetScene() => SceneManager.GetSceneByBuildIndex(_buildIndex);
 
         public static implicit operator LoadSceneInfoIndex(int buildIndex) => new LoadSceneInfoIndex(buildIndex);
     }
