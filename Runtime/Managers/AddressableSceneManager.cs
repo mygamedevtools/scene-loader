@@ -17,6 +17,10 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 {
     public class AddressableSceneManager : IAddressableSceneManager
     {
+        public event Action<SceneInstance, SceneInstance> ActiveSceneChanged;
+        public event Action<SceneInstance> SceneUnloaded;
+        public event Action<SceneInstance> SceneLoaded;
+
         public int SceneCount => _loadedScenes.Count;
 
         readonly List<SceneInstance> _loadedScenes = new List<SceneInstance>();
@@ -26,15 +30,11 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         public void SetActiveScene(SceneInstance scene)
         {
             if (!_loadedScenes.Contains(scene))
-                throw new InvalidOperationException($"Cannot set active the scene \"{scene.Scene.name}\" that has not been loaded through this {nameof(AddressableSceneManager)}.");
+                throw new InvalidOperationException($"Cannot set active the scene \"{scene.Scene.name}\" that has not been loaded through this {GetType().Name}.");
+
+            var previousScene = _activeScene;
             _activeScene = scene;
-        }
-        public void SetActiveScene(string sceneName)
-        {
-            var sceneInstance = GetLoadedSceneByName(sceneName);
-            if (!sceneInstance.Scene.IsValid())
-                throw new InvalidOperationException($"Cannot set active the scene \"{sceneName}\" that has not been loaded through this {nameof(AddressableSceneManager)}.");
-            _activeScene = sceneInstance;
+            ActiveSceneChanged?.Invoke(previousScene, scene);
         }
 
         public async ValueTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null)
@@ -53,13 +53,15 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
             var scene = operation.Result;
             _loadedScenes.Add(scene);
+            SceneLoaded?.Invoke(scene);
+
             if (setActive)
                 SetActiveScene(scene);
 
             return operation.Result;
         }
 
-        public async ValueTask UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo)
+        public async ValueTask UnloadSceneAsync(IAddressableLoadSceneReference sceneInfo)
         {
             var scene = GetLoadedSceneByInfo(sceneInfo);
             if (!_loadedScenes.Contains(scene))
@@ -67,6 +69,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
             var operation = Addressables.UnloadSceneAsync(scene, true);
             _loadedScenes.Remove(scene);
+            SceneUnloaded?.Invoke(scene);
             await operation.Task;
         }
 
@@ -90,9 +93,9 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
                 throw new InvalidKeyException(sceneReference.RuntimeKey);
         }
 
-        SceneInstance GetLoadedSceneByInfo(IAddressableLoadSceneInfo sceneInfo)
+        SceneInstance GetLoadedSceneByInfo(IAddressableLoadSceneReference sceneInfo)
         {
-            var info = sceneInfo.Info;
+            var info = sceneInfo.RuntimeKey;
             if (info is SceneInstance sceneInstance)
                 return sceneInstance;
             else if (info is string sceneName)

@@ -4,81 +4,76 @@
  * Created on: 7/16/2022 (en-US)
  */
 
+using System;
 using System.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneLoaderAsync : ISceneLoaderAsync
+    public class SceneLoaderAsync : ISceneLoader<ValueTask, ValueTask<Scene>, Scene, ILoadSceneInfo>
     {
+        public ISceneManager<Scene, ILoadSceneInfo> Manager => _manager;
+
+        readonly ISceneManager<Scene, ILoadSceneInfo> _manager;
+
+        public SceneLoaderAsync(ISceneManager<Scene, ILoadSceneInfo> manager)
+        {
+            _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
+        }
+
         public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
 
         public void UnloadScene(ILoadSceneInfo sceneInfo) => _ = UnloadSceneAsync(sceneInfo);
 
         public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive) => _ = LoadSceneAsync(sceneInfo, setActive);
 
-        public Task TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo);
+        public ValueTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo);
 
-        public async Task UnloadSceneAsync(ILoadSceneInfo sceneInfo)
+        public ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => _manager.LoadSceneAsync(sceneInfo, setActive, progress);
+
+        public ValueTask UnloadSceneAsync(ILoadSceneInfo sceneInfo) => _manager.UnloadSceneAsync(sceneInfo);
+
+        async ValueTask<Scene> TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo)
         {
-            var operation = sceneInfo.UnloadSceneAsync();
-            while (!operation.isDone)
-                await Task.Yield();
-        }
-
-        public async Task LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive)
-        {
-            var operation = sceneInfo.LoadSceneAsync();
-            while (!operation.isDone)
-                await Task.Yield();
-
-            if (setActive)
-                SceneManager.SetActiveScene(sceneInfo.GetScene());
-        }
-
-        async Task TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo)
-        {
-            var currentSceneInfo = new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex);
-            await LoadSceneAsync(intermediateSceneInfo, true);
+            var currentScene = _manager.GetActiveScene();
+            await _manager.LoadSceneAsync(intermediateSceneInfo);
 
             var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
+            Scene loadedScene;
             if (loadingBehavior)
             {
                 while (!loadingBehavior.Active)
                     await Task.Yield();
 
-                await UnloadSceneAsync(currentSceneInfo);
-                await LoadSceneAsyncWithReport(targetSceneInfo, loadingBehavior);
+                if (currentScene.IsValid())
+                    await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+
+                loadedScene = await _manager.LoadSceneAsync(targetSceneInfo, true, loadingBehavior);
                 loadingBehavior.CompleteLoading();
 
                 while (loadingBehavior.Active)
                     await Task.Yield();
+
                 _ = UnloadSceneAsync(intermediateSceneInfo);
             }
             else
             {
-                await UnloadSceneAsync(currentSceneInfo);
-                await LoadSceneAsync(targetSceneInfo, true);
+                if (currentScene.IsValid())
+                    await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+                loadedScene = await LoadSceneAsync(targetSceneInfo, true);
                 _ = UnloadSceneAsync(intermediateSceneInfo);
             }
+
+            return loadedScene;
         }
 
-        async Task TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo)
+        async ValueTask<Scene> TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo)
         {
-            await UnloadSceneAsync(new LoadSceneInfoIndex(SceneManager.GetActiveScene().buildIndex));
-            await LoadSceneAsync(loadSceneInfo, true);
-        }
-
-        async Task LoadSceneAsyncWithReport(ILoadSceneInfo loadSceneInfo, System.IProgress<float> progress)
-        {
-            var operation = loadSceneInfo.LoadSceneAsync();
-            while (!operation.isDone)
-            {
-                progress.Report(operation.progress);
-                await Task.Yield();
-            }
-            SceneManager.SetActiveScene(loadSceneInfo.GetScene());
+            var currentScene = _manager.GetActiveScene();
+            if (currentScene.IsValid())
+                await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+            return await LoadSceneAsync(loadSceneInfo, true);
         }
     }
 }

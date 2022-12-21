@@ -51,7 +51,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         /// its <see cref="UnityEngine.ResourceManagement.ResourceProviders.SceneInstance"/> (<see cref="AddressableLoadSceneInfoInstance"/>),
         /// or its name (<see cref="AddressableLoadSceneInfoName"/>).
         /// </param>
-        void UnloadScene(IAddressableLoadSceneInfo sceneInfo);
+        void UnloadScene(IAddressableLoadSceneReference sceneInfo);
 
         /// <summary>
         /// Loads a scene additively on top of the current scene stack, optionally marking it as the active scene

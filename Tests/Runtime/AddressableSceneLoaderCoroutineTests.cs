@@ -75,7 +75,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.IsTrue(workingScene.IsValid());
             Assert.AreEqual(workingScene.name, SceneBuilder.SceneNames[3]);
             Assert.AreNotEqual(workingScene, _sceneManager.GetActiveScene().Scene);
-            Assert.AreEqual(4, SceneManager.sceneCount);
+            Assert.AreEqual(4, UnityEngine.SceneManagement.SceneManager.sceneCount);
         }
 
         [UnityTest]
@@ -90,7 +90,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.IsTrue(workingScene.IsValid());
             Assert.AreEqual(workingScene.name, SceneBuilder.SceneNames[3]);
             Assert.AreEqual(workingScene, _sceneManager.GetActiveScene().Scene);
-            Assert.AreEqual(4, SceneManager.sceneCount);
+            Assert.AreEqual(4, UnityEngine.SceneManagement.SceneManager.sceneCount);
         }
 
         [UnityTest]
@@ -99,7 +99,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var sceneLoader = new AddressableSceneLoaderCoroutine(_sceneManager);
 
             LogAssert.Expect(LogType.Error, new Regex("(System\\.InvalidOperationException)"));
-            yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneInfoName(SceneBuilder.SceneNames[1]));
+            yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneReferenceKey(SceneBuilder.SceneNames[1]));
         }
 
         [UnityTest]
@@ -112,7 +112,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var workingScene = SceneLoaderTestUtilities.GetLastLoadedAddressableScene(_sceneManager);
             Assert.IsTrue(workingScene.isLoaded);
 
-            yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneInfoName(SceneBuilder.SceneNames[1]));
+            yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneReferenceKey(SceneBuilder.SceneNames[1]));
             Assert.IsFalse(workingScene.isLoaded);
         }
 
@@ -126,7 +126,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var workingScene = SceneLoaderTestUtilities.GetLastLoadedAddressableScene(_sceneManager);
             Assert.IsTrue(workingScene.isLoaded);
 
-            yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneInfoName(SceneBuilder.SceneNames[1]));
+            yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneReferenceKey(SceneBuilder.SceneNames[1]));
             Assert.IsFalse(workingScene.isLoaded);
         }
 
@@ -143,7 +143,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 var workingScene = SceneLoaderTestUtilities.GetLastLoadedAddressableScene(_sceneManager);
                 Assert.IsTrue(workingScene.isLoaded);
 
-                yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneInfoName(SceneBuilder.SceneNames[i]));
+                yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneReferenceKey(SceneBuilder.SceneNames[i]));
                 Assert.IsFalse(workingScene.isLoaded);
             }
         }
@@ -161,7 +161,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 var workingScene = SceneLoaderTestUtilities.GetLastLoadedAddressableScene(_sceneManager);
                 Assert.IsTrue(workingScene.isLoaded);
 
-                yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneInfoName(SceneBuilder.SceneNames[i]));
+                yield return sceneLoader.UnloadSceneRoutine(new AddressableLoadSceneReferenceKey(SceneBuilder.SceneNames[i]));
                 Assert.IsFalse(workingScene.isLoaded);
             }
         }

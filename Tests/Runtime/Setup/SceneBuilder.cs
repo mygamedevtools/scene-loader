@@ -39,7 +39,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 if (i == 0)
                 {
                     var loadingObject = new GameObject(nameof(LoadingBehavior), typeof(LoadingBehavior));
-                    SceneManager.MoveGameObjectToScene(loadingObject, scene);
+                    UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(loadingObject, scene);
                 }
 
                 var path = string.Format(fullPathFormat, SceneNames[i]);
