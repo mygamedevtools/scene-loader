@@ -32,6 +32,20 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.False(_manager.GetActiveScene().IsValid());
         }
 
+        [Test]
+        public void EmptyState()
+        {
+            Assert.False(_manager.GetLastLoadedScene().IsValid());
+            Assert.False(_manager.GetActiveScene().IsValid());
+        }
+
+        [Test]
+        public void GetLoadedSceneAt_IndexError()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _manager.GetLoadedSceneAt(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _manager.GetLoadedSceneAt(1));
+        }
+
         [UnityTest]
         public IEnumerator LoadScene_NotActive()
         {
@@ -64,6 +78,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator LoadScene_NotActive_Progress()
         {
             var progress = new SimpleProgress();
+            Assert.AreEqual(0, progress.Value);
             yield return new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), false, progress).AsTask());
             Assert.AreEqual(1, progress.Value);
         }
@@ -72,6 +87,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator LoadScene_Active_Progress()
         {
             var progress = new SimpleProgress();
+            Assert.AreEqual(0, progress.Value);
             yield return new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), true, progress).AsTask());
             Assert.AreEqual(1, progress.Value);
         }
@@ -116,6 +132,15 @@ namespace MyGameDevTools.SceneLoading.Tests
                 Assert.AreEqual(loadedScenes[i], _manager.GetLoadedSceneAt(i));
 
             Assert.AreEqual(loadedScenes[^1], _manager.GetActiveScene());
+        }
+
+        [Test]
+        public void LoadScene_NotInBuildSettings()
+        {
+            var sceneName = "not-a-real-scene";
+            LogAssert.Expect(UnityEngine.LogType.Error, $"Scene '{sceneName}' couldn't be loaded because it has not been added to the build settings or the AssetBundle has not been loaded.\nTo add a scene to the build settings use the menu File->Build Settings...");
+            var wait = new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(sceneName), false).AsTask());
+            Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
     }
 
