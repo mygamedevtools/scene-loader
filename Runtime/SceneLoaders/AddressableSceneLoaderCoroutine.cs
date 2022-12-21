@@ -40,7 +40,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
 
         IEnumerator LoadRoutine(IAddressableLoadSceneReference sceneReference, bool setActive, IProgress<float> progress)
         {
-            yield return new WaitTask(_sceneManager.LoadSceneAsync(sceneReference, setActive, progress));
+            yield return new WaitTask(_sceneManager.LoadSceneAsync(sceneReference, setActive, progress).AsTask());
         }
 
         IEnumerator UnloadRoutine(IAddressableLoadSceneInfo sceneInfo)
@@ -99,6 +99,10 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
         public WaitTask(Task task)
         {
             _task = task;
+        }
+        public WaitTask(ValueTask task)
+        {
+            _task = task.AsTask();
         }
 
         public bool MoveNext()

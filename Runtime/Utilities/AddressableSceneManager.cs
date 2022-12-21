@@ -37,7 +37,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
             _activeScene = sceneInstance;
         }
 
-        public async Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null)
+        public async ValueTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false, IProgress<float> progress = null)
         {
             await ValidateSceneReferenceAsync(sceneReference);
             var operation = Addressables.LoadSceneAsync(sceneReference.RuntimeKey, LoadSceneMode.Additive);
@@ -59,7 +59,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
             return operation.Result;
         }
 
-        public async Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo)
+        public async ValueTask UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo)
         {
             var scene = GetLoadedSceneByInfo(sceneInfo);
             if (!_loadedScenes.Contains(scene))
@@ -82,7 +82,7 @@ namespace MyGameDevTools.SceneLoading.AddressablesSupport
             return default;
         }
 
-        async Task ValidateSceneReferenceAsync(IAddressableLoadSceneReference sceneReference)
+        async ValueTask ValidateSceneReferenceAsync(IAddressableLoadSceneReference sceneReference)
         {
             var validateOperation = Addressables.LoadResourceLocationsAsync(sceneReference.RuntimeKey);
             await validateOperation.Task;
