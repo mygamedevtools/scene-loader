@@ -6,7 +6,6 @@
 
 using System.Collections;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -27,9 +26,8 @@ namespace MyGameDevTools.SceneLoading
 
         public bool MoveNext()
         {
-            // We cannot throw inside coroutines, but we can use Debug.LogError instead
             if (_task.IsFaulted)
-                Debug.LogError(_task.Exception);
+                throw _task.Exception;
 
             return !_task.IsCompleted;
         }
