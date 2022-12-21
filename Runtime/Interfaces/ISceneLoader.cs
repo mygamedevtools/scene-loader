@@ -4,7 +4,6 @@
  * Created on: 7/16/2022 (en-US)
  */
 
-using MyGameDevTools.SceneLoading.AddressablesSupport;
 using System;
 
 namespace MyGameDevTools.SceneLoading
@@ -12,9 +11,9 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// Interface to standardize scene operations.
     /// </summary>
-    public interface ISceneLoader<TAsync, TValueAsync, TScene, TInfo>
+    public interface ISceneLoader
     {
-        ISceneManager<TScene, TInfo> Manager { get; }
+        ISceneManager Manager { get; }
 
         /// <summary>
         /// Triggers a scene transition.
@@ -37,7 +36,7 @@ namespace MyGameDevTools.SceneLoading
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        void TransitionToScene(TInfo targetSceneInfo, TInfo intermediateSceneInfo = default);
+        void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default);
 
         /// <summary>
         /// Unloads the given scene from the current scene stack.
@@ -46,7 +45,7 @@ namespace MyGameDevTools.SceneLoading
         /// Target scene info.
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// </param>
-        void UnloadScene(TInfo sceneInfo);
+        void UnloadScene(ILoadSceneInfo sceneInfo);
 
         /// <summary>
         /// Loads a scene additively on top of the current scene stack, optionally marking it as the active scene
@@ -57,12 +56,6 @@ namespace MyGameDevTools.SceneLoading
         /// Can be the scene's build index (<see cref="LoadSceneInfoIndex"/>) or name (<see cref="LoadSceneInfoName"/>).
         /// </param>
         /// <param name="setActive">Should the loaded scene be marked as active? Equivalent to calling <see cref="SceneManager.SetActiveScene(Scene)"/>.</param>
-        void LoadScene(TInfo sceneInfo, bool setActive = false);
-
-        TValueAsync TransitionToSceneAsync(TInfo targetSceneReference, TInfo intermediateSceneReference = default);
-
-        TValueAsync LoadSceneAsync(TInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
-
-        TAsync UnloadSceneAsync(TInfo sceneInfo);
+        void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false);
     }
 }

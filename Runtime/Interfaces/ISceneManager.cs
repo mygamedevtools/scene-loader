@@ -6,29 +6,30 @@
 
 using System;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public interface ISceneManager<TScene, TInfo>
+    public interface ISceneManager
     {
-        event Action<TScene, TScene> ActiveSceneChanged;
-        event Action<TScene> SceneUnloaded;
-        event Action<TScene> SceneLoaded;
+        event Action<Scene, Scene> ActiveSceneChanged;
+        event Action<Scene> SceneUnloaded;
+        event Action<Scene> SceneLoaded;
 
         int SceneCount { get; }
 
-        void SetActiveScene(TScene scene);
+        void SetActiveScene(Scene scene);
 
-        ValueTask<TScene> LoadSceneAsync(TInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+        ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
 
-        ValueTask UnloadSceneAsync(TInfo sceneInfo);
+        ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo);
 
-        TScene GetActiveScene();
+        Scene GetActiveScene();
 
-        TScene GetLoadedSceneAt(int index);
+        Scene GetLoadedSceneAt(int index);
 
-        TScene GetLastLoadedScene();
+        Scene GetLastLoadedScene();
 
-        TScene GetLoadedSceneByName(string name);
+        Scene GetLoadedSceneByName(string name);
     }
 }
