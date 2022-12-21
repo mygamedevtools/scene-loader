@@ -7,19 +7,18 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneLoaderCoroutine : ISceneLoader<Coroutine, Coroutine, Scene, ILoadSceneInfo>
+    public class SceneLoaderCoroutine : ISceneLoaderAsync<Coroutine>
     {
-        public ISceneManager<Scene, ILoadSceneInfo> Manager => _manager;
+        public ISceneManager Manager => _manager;
 
-        readonly ISceneManager<Scene, ILoadSceneInfo> _manager;
+        readonly ISceneManager _manager;
         readonly RoutineBehaviour _routineBehaviour;
 
-        public SceneLoaderCoroutine(ISceneManager<Scene, ILoadSceneInfo> manager)
+        public SceneLoaderCoroutine(ISceneManager manager)
         {
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
             _routineBehaviour = RoutineBehaviour.Instance;
@@ -44,7 +43,7 @@ namespace MyGameDevTools.SceneLoading
 
         IEnumerator UnloadRoutine(ILoadSceneInfo sceneInfo)
         {
-            yield return new WaitTask(_manager.UnloadSceneAsync(sceneInfo));
+            yield return new WaitTask(_manager.UnloadSceneAsync(sceneInfo).AsTask());
         }
 
         IEnumerator TransitionWithIntermediateRoutine(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo)

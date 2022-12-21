@@ -11,13 +11,13 @@ using Object = UnityEngine.Object;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneLoaderAsync : ISceneLoader<ValueTask, ValueTask<Scene>, Scene, ILoadSceneInfo>
+    public class SceneLoaderAsync : ISceneLoaderAsync<ValueTask<Scene>>
     {
-        public ISceneManager<Scene, ILoadSceneInfo> Manager => _manager;
+        public ISceneManager Manager => _manager;
 
-        readonly ISceneManager<Scene, ILoadSceneInfo> _manager;
+        readonly ISceneManager _manager;
 
-        public SceneLoaderAsync(ISceneManager<Scene, ILoadSceneInfo> manager)
+        public SceneLoaderAsync(ISceneManager manager)
         {
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
@@ -32,7 +32,7 @@ namespace MyGameDevTools.SceneLoading
 
         public ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => _manager.LoadSceneAsync(sceneInfo, setActive, progress);
 
-        public ValueTask UnloadSceneAsync(ILoadSceneInfo sceneInfo) => _manager.UnloadSceneAsync(sceneInfo);
+        public ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo) => _manager.UnloadSceneAsync(sceneInfo);
 
         async ValueTask<Scene> TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo)
         {

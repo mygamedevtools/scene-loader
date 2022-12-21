@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneManager : ISceneManager<Scene, ILoadSceneInfo>
+    public class SceneManager : ISceneManager
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
@@ -47,7 +47,7 @@ namespace MyGameDevTools.SceneLoading
             foreach (var scene in _loadedScenes)
                 if (scene.name == name)
                     return scene;
-            return default;
+            throw new ArgumentException($"Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
         public Scene GetLastLoadedScene()
@@ -77,7 +77,7 @@ namespace MyGameDevTools.SceneLoading
             return scene;
         }
 
-        public async ValueTask UnloadSceneAsync(ILoadSceneInfo sceneInfo)
+        public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
         {
             var scene = GetSceneByInfo(sceneInfo);
             if (!_loadedScenes.Contains(scene))
@@ -91,6 +91,8 @@ namespace MyGameDevTools.SceneLoading
             SceneUnloaded?.Invoke(scene);
             if (_activeScene == scene)
                 SetActiveScene(GetLastLoadedScene());
+
+            return scene;
         }
 
         AsyncOperation GetLoadSceneOperation(ILoadSceneInfo sceneInfo)
