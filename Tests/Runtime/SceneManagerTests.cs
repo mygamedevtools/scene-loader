@@ -7,6 +7,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
@@ -14,6 +15,56 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneManagerTests
     {
+        static readonly ILoadSceneInfo[][] _loadSceneInfos_multiple = new ILoadSceneInfo[][]
+        {
+            new ILoadSceneInfo[]
+            {
+#if UNITY_EDITOR
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(2),
+                new LoadSceneInfoIndex(3)
+#else
+                new LoadSceneInfoIndex(2),
+                new LoadSceneInfoIndex(3),
+                new LoadSceneInfoIndex(4)
+#endif
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[2]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[3]),
+            },
+            new ILoadSceneInfo[]
+            {
+#if UNITY_EDITOR
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(1)
+#else
+                new LoadSceneInfoIndex(2),
+                new LoadSceneInfoIndex(2),
+                new LoadSceneInfoIndex(2)
+#endif
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+            }
+        };
+        static readonly ILoadSceneInfo[] _loadSceneInfos_single = new ILoadSceneInfo[]
+        {
+#if UNITY_EDITOR
+            new LoadSceneInfoIndex(1),
+#else
+            new LoadSceneInfoIndex(2),
+#endif
+            new LoadSceneInfoName(SceneBuilder.SceneNames[1])
+        };
+        static readonly bool[] _setActiveValues = new bool[] { true, false };
+
         ISceneManager _manager;
         int _scenesActivated;
         int _scenesUnloaded;
@@ -40,6 +91,26 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.Zero(_manager.SceneCount);
             Assert.False(_manager.GetActiveScene().IsValid());
+        }
+
+        [UnityTest]
+        public IEnumerator SetActive_NotThroughManager()
+        {
+            Scene loadedScene = default;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += assignLoadedScene;
+
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+            yield return new WaitUntil(() => loadedScene.IsValid());
+
+            Assert.Throws<InvalidOperationException>(() => _manager.SetActiveScene(loadedScene));
+
+            yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(SceneBuilder.SceneNames[1]);
+
+            void assignLoadedScene(Scene scene, LoadSceneMode loadSceneMode)
+            {
+                UnityEngine.SceneManagement.SceneManager.sceneLoaded -= assignLoadedScene;
+                loadedScene = scene;
+            }
         }
 
         [Test]
@@ -92,9 +163,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator LoadScene_NotActive()
+        public IEnumerator LoadScene([ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo, [ValueSource(nameof(_setActiveValues))] bool setActive)
         {
-            var loadTask = _manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask();
+            var loadTask = _manager.LoadSceneAsync(sceneInfo, setActive).AsTask();
 
             Scene eventScene = default;
             _manager.SceneLoaded += scene => eventScene = scene;
@@ -104,116 +175,62 @@ namespace MyGameDevTools.SceneLoading.Tests
             var loadedScene = loadTask.Result;
 
             Assert.AreEqual(1, _manager.SceneCount);
-            Assert.AreNotEqual(loadedScene, _manager.GetActiveScene());
+            Assert.That(setActive ? loadedScene == _manager.GetActiveScene() : loadedScene != _manager.GetActiveScene());
             Assert.AreEqual(loadedScene, _manager.GetLastLoadedScene());
             Assert.AreEqual(loadedScene, _manager.GetLoadedSceneByName(loadedScene.name));
             Assert.AreEqual(loadedScene, eventScene);
             Assert.AreEqual(1, _scenesLoaded);
             Assert.AreEqual(0, _scenesUnloaded);
-            Assert.AreEqual(0, _scenesActivated);
+            Assert.AreEqual(setActive ? 1 : 0, _scenesActivated);
         }
 
         [UnityTest]
-        public IEnumerator LoadScene_Active()
-        {
-            var loadTask = _manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), true).AsTask();
-
-            Scene eventScene = default;
-            _manager.SceneLoaded += scene => eventScene = scene;
-
-            yield return new WaitTask(loadTask);
-
-            var loadedScene = loadTask.Result;
-
-            Assert.AreEqual(1, _manager.SceneCount);
-            Assert.AreEqual(loadedScene, _manager.GetActiveScene());
-            Assert.AreEqual(loadedScene, _manager.GetLastLoadedScene());
-            Assert.AreEqual(loadedScene, _manager.GetLoadedSceneByName(loadedScene.name));
-            Assert.AreEqual(loadedScene, eventScene);
-            Assert.AreEqual(1, _scenesLoaded);
-            Assert.AreEqual(0, _scenesUnloaded);
-            Assert.AreEqual(1, _scenesActivated);
-        }
-
-        [UnityTest]
-        public IEnumerator LoadScene_NotActive_Progress()
+        public IEnumerator LoadScene_Progress([ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo, [ValueSource(nameof(_setActiveValues))] bool setActive)
         {
             var progress = new SimpleProgress();
             Assert.AreEqual(0, progress.Value);
-            yield return new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), false, progress).AsTask());
+            yield return new WaitTask(_manager.LoadSceneAsync(sceneInfo, setActive, progress).AsTask());
             Assert.AreEqual(1, progress.Value);
         }
 
         [UnityTest]
-        public IEnumerator LoadScene_Active_Progress()
+        public IEnumerator LoadScene_Multiple([ValueSource(nameof(_loadSceneInfos_multiple))] ILoadSceneInfo[] sceneInfos, [ValueSource(nameof(_setActiveValues))] bool setActive)
         {
-            var progress = new SimpleProgress();
-            Assert.AreEqual(0, progress.Value);
-            yield return new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), true, progress).AsTask());
-            Assert.AreEqual(1, progress.Value);
-        }
+            var length = sceneInfos.Length;
+            var loadedScenes = new Scene[length];
 
-        [UnityTest]
-        public IEnumerator LoadScene_NotActive_Multiple()
-        {
-            var loadedScenes = new Scene[3];
-
-            for (int i = 1; i <= loadedScenes.Length; i++)
+            for (int i = 0; i < length; i++)
             {
-                var loadTask = _manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[i])).AsTask();
+                var loadTask = _manager.LoadSceneAsync(sceneInfos[i], setActive).AsTask();
                 yield return new WaitTask(loadTask);
-                loadedScenes[i - 1] = loadTask.Result;
+                loadedScenes[i] = loadTask.Result;
             }
 
-            Assert.AreEqual(loadedScenes.Length, _manager.SceneCount);
+            Assert.AreEqual(length, _manager.SceneCount);
             Assert.AreEqual(loadedScenes[^1], _manager.GetLastLoadedScene());
 
-            for (int i = 0; i < loadedScenes.Length; i++)
+            for (int i = 0; i < length; i++)
                 Assert.AreEqual(loadedScenes[i], _manager.GetLoadedSceneAt(i));
 
-            Assert.AreNotEqual(loadedScenes[^1], _manager.GetActiveScene());
+            Assert.That(setActive ? loadedScenes[^1] == _manager.GetActiveScene() : loadedScenes[^1] != _manager.GetActiveScene());
             Assert.AreEqual(3, _scenesLoaded);
             Assert.AreEqual(0, _scenesUnloaded);
-            Assert.AreEqual(0, _scenesActivated);
-        }
-
-        [UnityTest]
-        public IEnumerator LoadScene_Active_Multiple()
-        {
-            var loadedScenes = new Scene[3];
-
-            for (int i = 1; i <= loadedScenes.Length; i++)
-            {
-                var loadTask = _manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[i]), true).AsTask();
-                yield return new WaitTask(loadTask);
-                loadedScenes[i - 1] = loadTask.Result;
-            }
-
-            Assert.AreEqual(loadedScenes.Length, _manager.SceneCount);
-            Assert.AreEqual(loadedScenes[^1], _manager.GetLastLoadedScene());
-
-            for (int i = 0; i < loadedScenes.Length; i++)
-                Assert.AreEqual(loadedScenes[i], _manager.GetLoadedSceneAt(i));
-
-            Assert.AreEqual(loadedScenes[^1], _manager.GetActiveScene());
-            Assert.AreEqual(3, _scenesLoaded);
-            Assert.AreEqual(0, _scenesUnloaded);
-            Assert.AreEqual(3, _scenesActivated);
+            Assert.AreEqual(setActive ? 3 : 0, _scenesActivated);
         }
 
         [Test]
         public void LoadScene_NotInBuildSettings()
         {
             var sceneName = "not-a-real-scene";
-            LogAssert.Expect(UnityEngine.LogType.Error, new System.Text.RegularExpressions.Regex("couldn't be loaded"));
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("couldn't be loaded"));
             var wait = new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(sceneName), false).AsTask());
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]
-        public IEnumerator UnloadScene_Active()
+        public IEnumerator UnloadScene([ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo, [ValueSource(nameof(_setActiveValues))] bool setActive)
         {
-            yield return new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), true).AsTask());
+            yield return new WaitTask(_manager.LoadSceneAsync(sceneInfo, setActive).AsTask());
 
             Scene eventScene = default;
             _manager.SceneUnloaded += scene => eventScene = scene;
@@ -230,30 +247,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(0, _manager.SceneCount);
             Assert.AreEqual(1, _scenesLoaded);
             Assert.AreEqual(1, _scenesUnloaded);
-            Assert.AreEqual(2, _scenesActivated, "Activated scenes did not match expectation");
-        }
-
-        [UnityTest]
-        public IEnumerator UnloadScene_NotActive()
-        {
-            yield return new WaitTask(_manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask());
-
-            Scene eventScene = default;
-            _manager.SceneUnloaded += scene => eventScene = scene;
-
-            var workingScene = SceneLoaderTestUtilities.GetLastLoadedScene();
-
-            var task = _manager.UnloadSceneAsync(new LoadSceneInfoScene(workingScene)).AsTask();
-            yield return new WaitTask(task);
-            var loadedScene = task.Result;
-            Assert.AreEqual(workingScene, loadedScene);
-            Assert.AreEqual(workingScene, eventScene);
-            Assert.IsFalse(workingScene.isLoaded);
-            Assert.IsFalse(_manager.GetActiveScene().IsValid());
-            Assert.AreEqual(0, _manager.SceneCount);
-            Assert.AreEqual(1, _scenesLoaded);
-            Assert.AreEqual(1, _scenesUnloaded);
-            Assert.AreEqual(0, _scenesActivated);
+            Assert.AreEqual(setActive ? 2 : 0, _scenesActivated, "Activated scenes did not match expectation");
         }
 
         [Test]
