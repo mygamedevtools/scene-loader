@@ -24,13 +24,5 @@ namespace MyGameDevTools.SceneLoading
         {
             _buildIndex = buildIndex;
         }
-
-        //public AsyncOperation UnloadSceneAsync() => SceneManager.UnloadSceneAsync(_buildIndex);
-
-        //public AsyncOperation LoadSceneAsync() => SceneManager.LoadSceneAsync(_buildIndex, LoadSceneMode.Additive);
-
-        //public Scene GetScene() => SceneManager.GetSceneByBuildIndex(_buildIndex);
-
-        public static implicit operator LoadSceneInfoIndex(int buildIndex) => new LoadSceneInfoIndex(buildIndex);
     }
 }

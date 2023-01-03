@@ -4,9 +4,6 @@
  * Created on: 8/24/2022 (en-US)
  */
 
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
@@ -27,13 +24,5 @@ namespace MyGameDevTools.SceneLoading
         {
             _sceneName = sceneName;
         }
-
-        //public AsyncOperation UnloadSceneAsync() => SceneManager.UnloadSceneAsync(_sceneName);
-
-        //public AsyncOperation LoadSceneAsync() => SceneManager.LoadSceneAsync(_sceneName, LoadSceneMode.Additive);
-
-        //public Scene GetScene() => SceneManager.GetSceneByName(_sceneName);
-
-        public static implicit operator LoadSceneInfoName(string sceneName) => new LoadSceneInfoName(sceneName);
     }
 }
