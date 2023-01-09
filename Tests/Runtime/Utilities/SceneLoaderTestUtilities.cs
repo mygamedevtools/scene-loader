@@ -8,28 +8,20 @@ using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Collections;
 using MyGameDevTools.SceneLoading.AddressablesSupport;
+using NUnit.Framework;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneLoaderTestUtilities
     {
-        public static IEnumerator UnloadRemainingScenes()
+        public static IEnumerator UnloadManagerScenes(ISceneManager sceneManager)
         {
-            // The first scene is the Unity Test Runner's Scene, and we don't want to unload that
-            if (UnityEngine.SceneManagement.SceneManager.sceneCount == 1)
-                yield break;
+            while (sceneManager.SceneCount > 0)
+                yield return new WaitTask(sceneManager.UnloadSceneAsync(new LoadSceneInfoScene(sceneManager.GetLastLoadedScene())).AsTask());
 
-            UnityEngine.SceneManagement.SceneManager.SetActiveScene(UnityEngine.SceneManagement.SceneManager.GetSceneAt(0));
-
-            var interval = new WaitForEndOfFrame();
-            while (UnityEngine.SceneManagement.SceneManager.sceneCount > 1)
-            {
-                var scene = GetLastLoadedScene();
-                if (scene.isLoaded)
-                    yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(scene);
-                else
-                    yield return interval;
-            }
+            Assert.Zero(sceneManager.SceneCount);
+            Assert.False(sceneManager.GetActiveScene().IsValid());
+            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.sceneCount);
         }
 
         public static IEnumerator UnloadRemainingAddressableScenes(IAddressableSceneManager sceneManager)
@@ -51,7 +43,5 @@ namespace MyGameDevTools.SceneLoading.Tests
                 return default;
             return sceneManager.GetLoadedSceneAt(sceneManager.SceneCount - 1).Scene;
         }
-
-        public static Scene GetLastLoadedScene() => UnityEngine.SceneManagement.SceneManager.GetSceneAt(UnityEngine.SceneManagement.SceneManager.sceneCount - 1);
     }
 }

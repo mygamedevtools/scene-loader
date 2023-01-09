@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -33,7 +34,7 @@ namespace MyGameDevTools.SceneLoading
             var previousScene = _activeScene;
             _activeScene = scene;
             if (validScene)
-                UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
+                UnitySceneManager.SetActiveScene(scene);
 
             ActiveSceneChanged?.Invoke(previousScene, scene);
         }
@@ -61,25 +62,36 @@ namespace MyGameDevTools.SceneLoading
         public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
         {
             var operation = GetLoadSceneOperation(sceneInfo);
+            Scene loadedScene = default;
+
+            UnitySceneManager.sceneLoaded += registerLoadedScene;
+
             while (!operation.isDone)
             {
                 await Task.Yield();
                 progress?.Report(operation.progress);
             }
 
-            var scene = GetSceneByInfo(sceneInfo);
-            _loadedScenes.Add(scene);
-            SceneLoaded?.Invoke(scene);
+            UnitySceneManager.sceneLoaded -= registerLoadedScene;
+
+            _loadedScenes.Add(loadedScene);
+            SceneLoaded?.Invoke(loadedScene);
 
             if (setActive)
-                SetActiveScene(scene);
+                SetActiveScene(loadedScene);
 
-            return scene;
+            return loadedScene;
+
+            void registerLoadedScene(Scene scene, LoadSceneMode loadSceneMode)
+            {
+                if (sceneInfo.IsReferenceToScene(scene))
+                    loadedScene = scene;
+            }
         }
 
         public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
         {
-            var scene = GetSceneByInfo(sceneInfo);
+            var scene = GetLastLoadedSceneByInfo(sceneInfo);
             if (!_loadedScenes.Contains(scene))
                 throw new InvalidOperationException($"Cannot unload the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
@@ -98,9 +110,11 @@ namespace MyGameDevTools.SceneLoading
         AsyncOperation GetLoadSceneOperation(ILoadSceneInfo sceneInfo)
         {
             if (sceneInfo.Reference is int index)
-                return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(index, LoadSceneMode.Additive);
+                return UnitySceneManager.LoadSceneAsync(index, LoadSceneMode.Additive);
             else if (sceneInfo.Reference is string name)
-                return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+                return UnitySceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+            else if (sceneInfo.Reference is Scene scene)
+                return UnitySceneManager.LoadSceneAsync(scene.buildIndex, LoadSceneMode.Additive);
             else
                 throw new Exception($"Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
         }
@@ -108,21 +122,25 @@ namespace MyGameDevTools.SceneLoading
         AsyncOperation GetUnloadSceneOperation(ILoadSceneInfo sceneInfo)
         {
             if (sceneInfo.Reference is int index)
-                return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(index);
+                return UnitySceneManager.UnloadSceneAsync(index);
             else if (sceneInfo.Reference is string name)
-                return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(name);
+                return UnitySceneManager.UnloadSceneAsync(name);
+            else if (sceneInfo.Reference is Scene scene)
+                return UnitySceneManager.UnloadSceneAsync(scene);
             else
                 throw new Exception($"Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
         }
 
-        Scene GetSceneByInfo(ILoadSceneInfo sceneInfo)
+        Scene GetLastLoadedSceneByInfo(ILoadSceneInfo sceneInfo)
         {
-            if (sceneInfo.Reference is int index)
-                return UnityEngine.SceneManagement.SceneManager.GetSceneByBuildIndex(index);
-            else if (sceneInfo.Reference is string name)
-                return UnityEngine.SceneManagement.SceneManager.GetSceneByName(name);
-            else
-                throw new Exception($"Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
+            var loadedSceneCount = UnitySceneManager.loadedSceneCount;
+            for (int i = loadedSceneCount - 1; i >= 0; i--)
+            {
+                var scene = UnitySceneManager.GetSceneAt(i);
+                if (sceneInfo.IsReferenceToScene(scene))
+                    return scene;
+            }
+            throw new ArgumentException($"Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo.Reference}");
         }
     }
 }

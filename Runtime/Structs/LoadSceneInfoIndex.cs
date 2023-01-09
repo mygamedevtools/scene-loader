@@ -4,6 +4,8 @@
  * Created on: 8/24/2022 (en-US)
  */
 
+using UnityEngine.SceneManagement;
+
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
@@ -24,5 +26,7 @@ namespace MyGameDevTools.SceneLoading
         {
             _buildIndex = buildIndex;
         }
+
+        public bool IsReferenceToScene(Scene scene) => scene.buildIndex == _buildIndex;
     }
 }
