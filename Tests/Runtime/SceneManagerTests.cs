@@ -77,20 +77,16 @@ namespace MyGameDevTools.SceneLoading.Tests
             _manager.ActiveSceneChanged += ReportSceneActivation;
             _manager.SceneUnloaded += ReportSceneUnloaded;
             _manager.SceneLoaded += ReportSceneLoaded;
+
+            _scenesActivated = 0;
+            _scenesUnloaded = 0;
+            _scenesLoaded = 0;
         }
 
         [UnityTearDown]
         public IEnumerator TearDown()
         {
-            while (_manager.SceneCount > 0)
-                yield return new WaitTask(_manager.UnloadSceneAsync(new LoadSceneInfoScene(_manager.GetLastLoadedScene())).AsTask());
-
-            _scenesActivated = 0;
-            _scenesUnloaded = 0;
-            _scenesLoaded = 0;
-
-            Assert.Zero(_manager.SceneCount);
-            Assert.False(_manager.GetActiveScene().IsValid());
+            yield return SceneLoaderTestUtilities.UnloadManagerScenes(_manager);
         }
 
         [UnityTest]
@@ -235,7 +231,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Scene eventScene = default;
             _manager.SceneUnloaded += scene => eventScene = scene;
 
-            var workingScene = SceneLoaderTestUtilities.GetLastLoadedScene();
+            var workingScene = _manager.GetLastLoadedScene();
 
             var task = _manager.UnloadSceneAsync(new LoadSceneInfoScene(workingScene)).AsTask();
             yield return new WaitTask(task);
