@@ -16,12 +16,10 @@ namespace MyGameDevTools.SceneLoading
         public ISceneManager Manager => _manager;
 
         readonly ISceneManager _manager;
-        readonly RoutineBehaviour _routineBehaviour;
 
         public SceneLoaderCoroutine(ISceneManager manager)
         {
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
-            _routineBehaviour = RoutineBehaviour.Instance;
         }
 
         public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
@@ -30,11 +28,11 @@ namespace MyGameDevTools.SceneLoading
 
         public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive) => LoadSceneAsync(sceneInfo, setActive);
 
-        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => _routineBehaviour.StartCoroutine(intermediateSceneInfo == null ? TransitionDirectlyRoutine(targetSceneInfo) : TransitionWithIntermediateRoutine(targetSceneInfo, intermediateSceneInfo));
+        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => RoutineBehaviour.Instance.StartCoroutine(intermediateSceneInfo == null ? TransitionDirectlyRoutine(targetSceneInfo) : TransitionWithIntermediateRoutine(targetSceneInfo, intermediateSceneInfo));
 
-        public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo) => _routineBehaviour.StartCoroutine(UnloadRoutine(sceneInfo));
+        public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo) => RoutineBehaviour.Instance.StartCoroutine(UnloadRoutine(sceneInfo));
 
-        public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => _routineBehaviour.StartCoroutine(LoadRoutine(sceneInfo, setActive, progress));
+        public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => RoutineBehaviour.Instance.StartCoroutine(LoadRoutine(sceneInfo, setActive, progress));
 
         IEnumerator LoadRoutine(ILoadSceneInfo sceneInfo, bool setActive, IProgress<float> progress)
         {
