@@ -95,11 +95,12 @@ namespace MyGameDevTools.SceneLoading
             if (!_loadedScenes.Contains(scene))
                 throw new InvalidOperationException($"Cannot unload the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
+            _loadedScenes.Remove(scene);
+
             var operation = GetUnloadSceneOperation(sceneInfo);
             while (!operation.isDone)
                 await Task.Yield();
 
-            _loadedScenes.Remove(scene);
             SceneUnloaded?.Invoke(scene);
             if (_activeScene == scene)
                 SetActiveScene(GetLastLoadedScene());
@@ -133,10 +134,10 @@ namespace MyGameDevTools.SceneLoading
 
         Scene GetLastLoadedSceneByInfo(ILoadSceneInfo sceneInfo)
         {
-            var loadedSceneCount = UnitySceneManager.loadedSceneCount;
-            for (int i = loadedSceneCount - 1; i >= 0; i--)
+            var sceneCount = SceneCount;
+            for (int i = sceneCount - 1; i >= 0; i--)
             {
-                var scene = UnitySceneManager.GetSceneAt(i);
+                var scene = _loadedScenes[i];
                 if (sceneInfo.IsReferenceToScene(scene))
                     return scene;
             }
