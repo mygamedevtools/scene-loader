@@ -55,7 +55,7 @@ namespace MyGameDevTools.SceneLoading
                 yield return new WaitUntil(() => loadingBehavior.Active);
 
                 if (currentScene.IsValid())
-                    yield return UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+                    yield return UnloadRoutine(new LoadSceneInfoScene(currentScene));
 
                 yield return new WaitTask(_manager.LoadSceneAsync(targetSceneInfo, true, loadingBehavior).AsTask());
                 loadingBehavior.CompleteLoading();
@@ -67,7 +67,7 @@ namespace MyGameDevTools.SceneLoading
             else
             {
                 if (currentScene.IsValid())
-                    yield return UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+                    yield return UnloadRoutine(new LoadSceneInfoScene(currentScene));
                 yield return LoadRoutine(targetSceneInfo, true, null);
                 UnloadSceneAsync(intermediateSceneInfo);
             }
@@ -77,7 +77,7 @@ namespace MyGameDevTools.SceneLoading
         {
             var currentScene = _manager.GetActiveScene();
             if (currentScene.IsValid())
-                yield return UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+                yield return UnloadRoutine(new LoadSceneInfoScene(currentScene));
             yield return LoadRoutine(targetSceneInfo, true, null);
         }
     }

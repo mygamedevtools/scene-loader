@@ -1,9 +1,15 @@
+#if ENABLE_UNITASK && !OVERRIDE_DISABLE_UNITASK
+#define USE_UNITASK
+#endif
 /**
  * SceneManager.cs
  * Created by: João Borks [joao.borks@gmail.com]
  * Created on: 2022-12-21
  */
 
+#if USE_UNITASK
+using Cysharp.Threading.Tasks;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,6 +27,7 @@ namespace MyGameDevTools.SceneLoading
 
         public int SceneCount => _loadedScenes.Count;
 
+        readonly List<Scene> _unloadingScenes = new List<Scene>();
         readonly List<Scene> _loadedScenes = new List<Scene>();
 
         Scene _activeScene;
@@ -56,7 +63,11 @@ namespace MyGameDevTools.SceneLoading
             if (SceneCount == 0)
                 return default;
 
-            return _loadedScenes[^1];
+            for (int i = SceneCount - 1; i >= 0; i--)
+                if (!_unloadingScenes.Contains(_loadedScenes[i]))
+                    return _loadedScenes[i];
+
+            return default;
         }
 
         public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
@@ -66,11 +77,15 @@ namespace MyGameDevTools.SceneLoading
 
             UnitySceneManager.sceneLoaded += registerLoadedScene;
 
+#if USE_UNITASK
+            await operation.ToUniTask(progress);
+#else
             while (!operation.isDone)
             {
                 await Task.Yield();
                 progress?.Report(operation.progress);
             }
+#endif
 
             UnitySceneManager.sceneLoaded -= registerLoadedScene;
 
@@ -94,17 +109,36 @@ namespace MyGameDevTools.SceneLoading
             var scene = GetLastLoadedSceneByInfo(sceneInfo);
             if (!_loadedScenes.Contains(scene))
                 throw new InvalidOperationException($"Cannot unload the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+            if (_unloadingScenes.Contains(scene))
+                return await WaitForSceneUnload(scene);
 
-            _loadedScenes.Remove(scene);
-
+            _unloadingScenes.Add(scene);
             var operation = GetUnloadSceneOperation(sceneInfo);
+#if USE_UNITASK
+            await operation.ToUniTask();
+#else
             while (!operation.isDone)
                 await Task.Yield();
+#endif
 
-            SceneUnloaded?.Invoke(scene);
+            _unloadingScenes.Remove(scene);
+            _loadedScenes.Remove(scene);
             if (_activeScene == scene)
                 SetActiveScene(GetLastLoadedScene());
 
+            SceneUnloaded?.Invoke(scene);
+
+            return scene;
+        }
+
+        async ValueTask<Scene> WaitForSceneUnload(Scene scene)
+        {
+#if USE_UNITASK
+            await UniTask.WaitUntil(() => !_unloadingScenes.Contains(scene));
+#else
+            while (_unloadingScenes.Contains(scene))
+                await Task.Yield();
+#endif
             return scene;
         }
 
