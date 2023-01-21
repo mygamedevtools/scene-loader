@@ -13,7 +13,7 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    public class SceneManagerTests
+    public class SceneManagerTests : SceneTestEnvironment
     {
         static readonly ILoadSceneInfo[][] _loadSceneInfos_multiple = new ILoadSceneInfo[][]
         {

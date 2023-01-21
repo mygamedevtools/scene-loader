@@ -7,6 +7,7 @@
 #if UNITY_EDITOR
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 #endif
@@ -26,7 +27,8 @@ namespace MyGameDevTools.SceneLoading.Tests
 #if UNITY_EDITOR
             var buildScenes = new List<EditorBuildSettingsScene>(SceneBuilder.SceneNames.Length);
 
-            SceneBuilder.BuildScenes(_scenePathBase, (i, s, p) => buildScenes.Add(new EditorBuildSettingsScene(p, true)));
+            if (!SceneBuilder.TryBuildScenes(_scenePathBase, (i, s, p) => buildScenes.Add(new EditorBuildSettingsScene(p, true))))
+                return;
 
             Debug.Log("Adding test scenes to build settings:\n" + string.Join("\n", buildScenes.Select(scene => scene.path)));
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Union(buildScenes).ToArray();
@@ -38,13 +40,16 @@ namespace MyGameDevTools.SceneLoading.Tests
 #if UNITY_EDITOR
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Where(scene => !scene.path.StartsWith(_scenePathBase)).ToArray();
 
+            if (!Directory.Exists(_scenePathBase))
+                return;
+
             AssetDatabase.DeleteAsset(_scenePathBase);
             AssetDatabase.Refresh();
 #endif
         }
 
-        [Test]
-        public void EnvironmentSetup_Test()
+        [OneTimeSetUp]
+        public void ValidateSceneEnvironment()
         {
 #if UNITY_EDITOR
             var builtScenes = EditorBuildSettings.scenes;

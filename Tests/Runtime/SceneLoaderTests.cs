@@ -16,7 +16,7 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    public class SceneLoaderTests
+    public class SceneLoaderTests : SceneTestEnvironment
     {
         static readonly ISceneManager _manager = new SceneManager();
 

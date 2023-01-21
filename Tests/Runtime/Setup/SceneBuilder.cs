@@ -22,11 +22,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         static readonly string _scenePathFormat = "/{0}.unity";
 #endif
 
-        public static void BuildScenes(string pathBase, Action<int, Scene, string> sceneSaved)
+        public static bool TryBuildScenes(string pathBase, Action<int, Scene, string> sceneSaved)
         {
 #if UNITY_EDITOR
             if (!Directory.Exists(pathBase))
                 Directory.CreateDirectory(pathBase);
+            else if (Directory.GetFiles(pathBase).Length >= SceneNames.Length)
+                return false;
 
             var fullPathFormat = pathBase + _scenePathFormat;
 
@@ -47,6 +49,9 @@ namespace MyGameDevTools.SceneLoading.Tests
                 EditorSceneManager.CloseScene(scene, true);
                 sceneSaved?.Invoke(i, scene, path);
             }
+            return true;
+#else
+            return false;
 #endif
         }
     }

@@ -27,7 +27,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
 #if UNITY_EDITOR
             var settings = AddressableAssetSettingsDefaultObject.Settings;
-            SceneBuilder.BuildScenes(_scenePathBase, (i, s, p) =>
+            SceneBuilder.TryBuildScenes(_scenePathBase, (i, s, p) =>
             {
                 var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(p), settings.DefaultGroup);
                 entry.SetAddress(SceneBuilder.SceneNames[i]);
