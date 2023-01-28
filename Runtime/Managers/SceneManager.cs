@@ -48,16 +48,6 @@ namespace MyGameDevTools.SceneLoading
 
         public Scene GetActiveScene() => _activeScene;
 
-        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index];
-
-        public Scene GetLoadedSceneByName(string name)
-        {
-            foreach (var scene in _loadedScenes)
-                if (scene.name == name)
-                    return scene;
-            throw new ArgumentException($"Could not find any loaded scene with the name '{name}'.", nameof(name));
-        }
-
         public Scene GetLastLoadedScene()
         {
             if (SceneCount == 0)
@@ -68,6 +58,16 @@ namespace MyGameDevTools.SceneLoading
                     return _loadedScenes[i];
 
             return default;
+        }
+
+        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index];
+
+        public Scene GetLoadedSceneByName(string name)
+        {
+            foreach (var scene in _loadedScenes)
+                if (scene.name == name)
+                    return scene;
+            throw new ArgumentException($"Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
         public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)

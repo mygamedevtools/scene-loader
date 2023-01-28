@@ -13,6 +13,10 @@ using UnityEditor;
 #endif
 using UnityEngine.TestTools;
 using NUnit.Framework;
+#if ENABLE_ADDRESSABLES
+using UnityEditor.AddressableAssets;
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
@@ -20,6 +24,9 @@ namespace MyGameDevTools.SceneLoading.Tests
     {
 #if UNITY_EDITOR
         const string _scenePathBase = "Assets/_test";
+#if ENABLE_ADDRESSABLES
+        const string _addressableScenePathBase = "Assets/_addressables-test";
+#endif
 #endif
 
         public void Setup()
@@ -32,6 +39,15 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Debug.Log("Adding test scenes to build settings:\n" + string.Join("\n", buildScenes.Select(scene => scene.path)));
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Union(buildScenes).ToArray();
+
+#if ENABLE_ADDRESSABLES
+            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            SceneBuilder.TryBuildScenes(_addressableScenePathBase, (i, s, p) =>
+            {
+                var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(p), settings.DefaultGroup);
+                entry.SetAddress(SceneBuilder.SceneNames[i]);
+            });
+#endif
 #endif
         }
 
@@ -45,6 +61,16 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             AssetDatabase.DeleteAsset(_scenePathBase);
             AssetDatabase.Refresh();
+
+#if ENABLE_ADDRESSABLES
+            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            var scenePaths = EditorBuildSettings.scenes.Where(scene => scene.path.StartsWith(_addressableScenePathBase)).Select(scene => scene.path);
+            foreach (var path in scenePaths)
+                settings.RemoveAssetEntry(AssetDatabase.AssetPathToGUID(path), false);
+
+            AssetDatabase.DeleteAsset(_addressableScenePathBase);
+            AssetDatabase.Refresh();
+#endif
 #endif
         }
 
@@ -72,6 +98,21 @@ namespace MyGameDevTools.SceneLoading.Tests
                         return true;
                 return false;
             }
+
+#if ENABLE_ADDRESSABLES
+            var operation = Addressables.LoadResourceLocationsAsync(SceneBuilder.SceneNames);
+            operation.WaitForCompletion();
+
+            Assert.True(areLocationsValid());
+
+            bool areLocationsValid()
+            {
+                foreach (var location in operation.Result)
+                    if (location == null || string.IsNullOrEmpty(location.PrimaryKey))
+                        return false;
+                return true;
+            }
+#endif
 #endif
         }
     }

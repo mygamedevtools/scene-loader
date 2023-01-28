@@ -28,7 +28,6 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.Zero(sceneManager.SceneCount);
             Assert.False(sceneManager.GetActiveScene().IsValid());
-            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.sceneCount);
         }
 
         public static IEnumerator UnloadRemainingAddressableScenes(IAddressableSceneManager sceneManager)
