@@ -17,6 +17,6 @@ namespace MyGameDevTools.SceneLoading
 
         TAsync LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
 
-        TAsync UnloadSceneAsync(ILoadSceneInfo sceneInfo);
+        TAsync UnloadSceneAsync(ILoadSceneInfo sceneReference);
     }
 }
