@@ -18,7 +18,13 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneLoaderTests : SceneTestEnvironment
     {
-        static readonly ISceneManager _manager = new SceneManager();
+        static ISceneManager[] _managers = new ISceneManager[]
+        {
+            new SceneManager(),
+#if ENABLE_ADDRESSABLES
+            new SceneManagerAddressable()
+#endif
+        };
 
         static ILoadSceneInfo[] _targetSceneInfos = new ILoadSceneInfo[]
         {
@@ -33,17 +39,21 @@ namespace MyGameDevTools.SceneLoading.Tests
         };
         static ISceneLoader[] _sceneLoaders = new ISceneLoader[]
         {
-            new SceneLoaderCoroutine(_manager),
-            new SceneLoaderAsync(_manager),
+            new SceneLoaderCoroutine(_managers[0]),
+            new SceneLoaderCoroutine(_managers[1]),
+            new SceneLoaderAsync(_managers[0]),
+            new SceneLoaderAsync(_managers[1]),
 #if ENABLE_UNITASK
-            new SceneLoaderUniTask(_manager),
+            new SceneLoaderUniTask(_managers[0]),
+            new SceneLoaderUniTask(_managers[1]),
 #endif
         };
 
         [UnityTearDown]
         public IEnumerator TearDown()
         {
-            yield return SceneLoaderTestUtilities.UnloadManagerScenes(_manager);
+            foreach (var m in _managers)
+                yield return SceneLoaderTestUtilities.UnloadManagerScenes(m);
         }
 
         [UnityTest]
