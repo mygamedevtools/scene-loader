@@ -13,15 +13,19 @@ namespace MyGameDevTools.SceneLoading
     public class LoadingFeedbackSlider : MonoBehaviour
     {
         [SerializeField]
-        LoadingBehavior _loadingBehavior;
+        public LoadingBehavior loadingBehavior;
 
         Slider _slider;
 
         void Awake()
         {
             _slider = GetComponent<Slider>();
-            _loadingBehavior.OnProgress += UpdateSlider;
             _slider.value = 0;
+        }
+
+        void Start()
+        {
+            loadingBehavior.Progress.Progressed += UpdateSlider;
         }
 
         private void UpdateSlider(float progress) => _slider.value = progress;

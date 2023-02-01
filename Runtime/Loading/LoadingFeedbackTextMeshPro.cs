@@ -14,15 +14,19 @@ namespace MyGameDevTools.SceneLoading
     public class LoadingFeedbackTextMeshPro : MonoBehaviour
     {
         [SerializeField]
-        LoadingBehavior _loadingBehavior;
+        public LoadingBehavior loadingBehavior;
 
         TextMeshProUGUI _text;
 
         void Awake()
         {
             _text = GetComponent<TextMeshProUGUI>();
-            _loadingBehavior.OnProgress += UpdateText;
             _text.SetText("0");
+        }
+
+        void Start()
+        {
+            loadingBehavior.Progress.Progressed += UpdateText;
         }
 
         void UpdateText(float progress) => _text.SetText(Mathf.CeilToInt(progress * 100).ToString());

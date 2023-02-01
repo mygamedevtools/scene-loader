@@ -20,13 +20,21 @@ namespace MyGameDevTools.SceneLoading
         [SerializeField, Range(.05f, 5)]
         float _fadeTime;
 
+        LoadingProgress _loadingProgress;
         CanvasGroup _canvasGroup;
 
         void Awake()
         {
             _canvasGroup = GetComponent<CanvasGroup>();
-            _loadingBehavior.OnLoadingComplete += FadeOut;
+            _loadingProgress = _loadingBehavior.Progress;
+            _loadingProgress.StateChanged += OnLoadingStateChanged;
             FadeIn();
+        }
+
+        void OnLoadingStateChanged(LoadingState loadingState)
+        {
+            if (loadingState == LoadingState.TargetSceneLoaded)
+                FadeOut();
         }
 
         void FadeOut()
@@ -35,7 +43,7 @@ namespace MyGameDevTools.SceneLoading
             IEnumerator fadeOutRoutine()
             {
                 yield return FadeRoutine(_fadeOutCurve);
-                _loadingBehavior.SetLoadingActive(false);
+                _loadingProgress.SetState(LoadingState.TransitionComplete);
             }
         }
 
@@ -45,7 +53,7 @@ namespace MyGameDevTools.SceneLoading
             IEnumerator fadeInRoutine()
             {
                 yield return FadeRoutine(_fadeInCurve);
-                _loadingBehavior.SetLoadingActive(true);
+                _loadingProgress.SetState(LoadingState.Loading);
             }
         }
 

@@ -8,26 +8,34 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class LoadingBehavior : LoadingBase
+    public class LoadingBehavior : MonoBehaviour
     {
-        [SerializeField, Tooltip("Should it wait for an animation or script to allow starting the transition? If not, then enable this toggle.")]
-        bool _autoStart = true;
-        [SerializeField, Tooltip("Should it wait for an animation or script to allow finishing the transition? If not, then enable this toggle.")]
-        bool _autoFinish = true;
+        public LoadingProgress Progress { get; private set; }
+
+        [SerializeField, Tooltip("Should it wait for an animation or script to allow starting the transition?")]
+        public bool waitForScriptedStart;
+        [SerializeField, Tooltip("Should it wait for an animation or script to allow finishing the transition?")]
+        public bool waitForScriptedEnd;
+
+        [SerializeField, Tooltip("Common scene operations stop at 90%, but addressable scene operations go all the way up to 100%. Enabling this value reduces the ratio to 90% instead of 100%")]
+        bool _reduceLoadRatio;
+
+        void Awake()
+        {
+            Progress = new LoadingProgress(_reduceLoadRatio);
+            Progress.StateChanged += OnLoadingStateChange;
+        }
 
         void Start()
         {
-            if (_autoStart)
-                SetLoadingActive(true);
+            if (!waitForScriptedStart)
+                Progress.SetState(LoadingState.Loading);
         }
 
-        public void SetLoadingActive(bool value) => Active = value;
-
-        public override void CompleteLoading()
+        void OnLoadingStateChange(LoadingState loadingState)
         {
-            base.CompleteLoading();
-            if (_autoFinish)
-                SetLoadingActive(false);
+            if (loadingState == LoadingState.TargetSceneLoaded && !waitForScriptedEnd)
+                Progress.SetState(LoadingState.TransitionComplete);
         }
     }
 }

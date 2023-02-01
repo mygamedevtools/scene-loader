@@ -49,18 +49,19 @@ namespace MyGameDevTools.SceneLoading
             var currentScene = _manager.GetActiveScene();
             yield return new WaitTask(_manager.LoadSceneAsync(intermediateSceneInfo).AsTask());
 
-            var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
+            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
             if (loadingBehavior)
             {
-                yield return new WaitUntil(() => loadingBehavior.Active);
+                var progress = loadingBehavior.Progress;
+                yield return new WaitUntil(() => progress.State == LoadingState.Loading);
 
                 if (currentScene.IsValid())
                     yield return UnloadRoutine(new LoadSceneInfoScene(currentScene));
 
-                yield return new WaitTask(_manager.LoadSceneAsync(targetSceneInfo, true, loadingBehavior).AsTask());
-                loadingBehavior.CompleteLoading();
+                yield return new WaitTask(_manager.LoadSceneAsync(targetSceneInfo, true, progress).AsTask());
+                progress.SetState(LoadingState.TargetSceneLoaded);
 
-                yield return new WaitWhile(() => loadingBehavior.Active);
+                yield return new WaitUntil(() => progress.State == LoadingState.TransitionComplete);
 
                 UnloadSceneAsync(intermediateSceneInfo);
             }

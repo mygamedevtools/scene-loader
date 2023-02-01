@@ -40,20 +40,21 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             var currentScene = _manager.GetActiveScene();
             await _manager.LoadSceneAsync(intermediateSceneInfo);
 
-            var loadingBehavior = Object.FindObjectOfType<LoadingBase>();
+            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
             Scene loadedScene;
             if (loadingBehavior)
             {
-                while (!loadingBehavior.Active)
+                var progress = loadingBehavior.Progress;
+                while (progress.State != LoadingState.Loading)
                     await UniTask.Yield();
 
                 if (currentScene.IsValid())
                     await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
 
-                loadedScene = await _manager.LoadSceneAsync(targetSceneInfo, true, loadingBehavior);
-                loadingBehavior.CompleteLoading();
+                loadedScene = await _manager.LoadSceneAsync(targetSceneInfo, true, progress);
+                progress.SetState(LoadingState.TargetSceneLoaded);
 
-                while (loadingBehavior.Active)
+                while (progress.State != LoadingState.TransitionComplete)
                     await UniTask.Yield();
 
                 _ = UnloadSceneAsync(intermediateSceneInfo);

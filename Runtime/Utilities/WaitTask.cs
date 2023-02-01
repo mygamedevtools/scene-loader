@@ -19,10 +19,6 @@ namespace MyGameDevTools.SceneLoading
         {
             _task = task;
         }
-        public WaitTask(ValueTask task)
-        {
-            _task = task.AsTask();
-        }
 
         public bool MoveNext()
         {
