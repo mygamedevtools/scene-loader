@@ -12,9 +12,9 @@ namespace MyGameDevTools.SceneLoading
     {
         public LoadingProgress Progress { get; private set; }
 
-        [SerializeField, Tooltip("Should it wait for an animation or script to allow starting the transition?")]
+        [Tooltip("Should it wait for an animation or script to allow starting the transition?")]
         public bool waitForScriptedStart;
-        [SerializeField, Tooltip("Should it wait for an animation or script to allow finishing the transition?")]
+        [Tooltip("Should it wait for an animation or script to allow finishing the transition?")]
         public bool waitForScriptedEnd;
 
         [SerializeField, Tooltip("Common scene operations stop at 90%, but addressable scene operations go all the way up to 100%. Enabling this value reduces the ratio to 90% instead of 100%")]

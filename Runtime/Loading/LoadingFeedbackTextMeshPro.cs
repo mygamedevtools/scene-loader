@@ -13,7 +13,6 @@ namespace MyGameDevTools.SceneLoading
     [RequireComponent(typeof(TextMeshProUGUI))]
     public class LoadingFeedbackTextMeshPro : MonoBehaviour
     {
-        [SerializeField]
         public LoadingBehavior loadingBehavior;
 
         TextMeshProUGUI _text;

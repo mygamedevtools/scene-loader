@@ -12,7 +12,6 @@ namespace MyGameDevTools.SceneLoading
     [RequireComponent(typeof(Text))]
     public class LoadingFeedbackText : MonoBehaviour
     {
-        [SerializeField]
         public LoadingBehavior loadingBehavior;
 
         Text _text;

@@ -9,16 +9,19 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
+    [RequireComponent(typeof(CanvasGroup))]
     public class LoadingFader : MonoBehaviour
     {
+        public float FadeTime => _fadeTime;
+
+        public LoadingBehavior loadingBehavior;
+
         [SerializeField]
-        LoadingBehavior _loadingBehavior;
+        AnimationCurve _fadeOutCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
         [SerializeField]
-        AnimationCurve _fadeOutCurve;
-        [SerializeField]
-        AnimationCurve _fadeInCurve;
+        AnimationCurve _fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         [SerializeField, Range(.05f, 5)]
-        float _fadeTime;
+        float _fadeTime = 1;
 
         LoadingProgress _loadingProgress;
         CanvasGroup _canvasGroup;
@@ -26,7 +29,12 @@ namespace MyGameDevTools.SceneLoading
         void Awake()
         {
             _canvasGroup = GetComponent<CanvasGroup>();
-            _loadingProgress = _loadingBehavior.Progress;
+            _canvasGroup.alpha = 0;
+        }
+
+        void Start()
+        {
+            _loadingProgress = loadingBehavior.Progress;
             _loadingProgress.StateChanged += OnLoadingStateChanged;
             FadeIn();
         }

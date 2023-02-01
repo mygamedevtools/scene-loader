@@ -12,7 +12,6 @@ namespace MyGameDevTools.SceneLoading
     [RequireComponent(typeof(Slider))]
     public class LoadingFeedbackSlider : MonoBehaviour
     {
-        [SerializeField]
         public LoadingBehavior loadingBehavior;
 
         Slider _slider;
