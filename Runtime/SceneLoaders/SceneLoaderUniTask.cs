@@ -45,8 +45,7 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             if (loadingBehavior)
             {
                 var progress = loadingBehavior.Progress;
-                while (progress.State != LoadingState.Loading)
-                    await UniTask.Yield();
+                await UniTask.WaitUntil(() => progress.State == LoadingState.Loading);
 
                 if (currentScene.IsValid())
                     await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
@@ -54,8 +53,7 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
                 loadedScene = await _manager.LoadSceneAsync(targetSceneInfo, true, progress);
                 progress.SetState(LoadingState.TargetSceneLoaded);
 
-                while (progress.State != LoadingState.TransitionComplete)
-                    await UniTask.Yield();
+                await UniTask.WaitUntil(() => progress.State == LoadingState.TransitionComplete);
 
                 _ = UnloadSceneAsync(intermediateSceneInfo);
             }

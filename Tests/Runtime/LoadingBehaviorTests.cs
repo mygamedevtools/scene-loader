@@ -22,7 +22,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator AutomaticTriggers_Test()
+        public IEnumerator AutomaticTriggers()
         {
             var behavior = new GameObject().AddComponent<LoadingBehavior>();
             var progress = behavior.Progress;
@@ -40,7 +40,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator ManualTriggers_Test()
+        public IEnumerator ManualTriggers()
         {
             var behavior = new GameObject().AddComponent<LoadingBehavior>();
 

@@ -4,6 +4,7 @@
  * Created on: 8/24/2022 (en-US)
  */
 
+using System;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -24,6 +25,8 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneName">`The scene's asset name, as displayed in the Build Settings window.</param>
         public LoadSceneInfoName(string sceneName)
         {
+            if (string.IsNullOrWhiteSpace(sceneName))
+                throw new ArgumentException("Cannot create a LoadSceneInfoName from an empty string.", nameof(sceneName));
             _sceneName = sceneName;
         }
 

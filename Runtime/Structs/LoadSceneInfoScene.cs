@@ -18,7 +18,7 @@ namespace MyGameDevTools.SceneLoading
         public LoadSceneInfoScene(Scene scene)
         {
             if (!scene.IsValid())
-                throw new ArgumentException($"Cannot create a LoadSceneInfoScene from an invalid scene.");
+                throw new ArgumentException("Cannot create a LoadSceneInfoScene from an invalid scene.", nameof(scene));
             _scene = scene;
         }
 
