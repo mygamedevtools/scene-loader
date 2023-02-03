@@ -112,7 +112,7 @@ namespace MyGameDevTools.SceneLoading
                 return await WaitForSceneUnload(sceneInstance);
 
             _unloadingScenes.Add(sceneInstance);
-            var operation = GetUnloadSceneOperation(sceneInfo);
+            var operation = Addressables.UnloadSceneAsync(sceneInstance);
 #if USE_UNITASK
             await operation.ToUniTask();
 #else
@@ -158,24 +158,6 @@ namespace MyGameDevTools.SceneLoading
             }
             else
                 throw new Exception($"Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
-        }
-
-        AsyncOperationHandle<SceneInstance> GetUnloadSceneOperation(ILoadSceneInfo sceneInfo)
-        {
-            if (sceneInfo.Reference is string name)
-            {
-                if (TryGetInstanceFromScene(GetLoadedSceneByName(name), out var nameInstance))
-                    return Addressables.UnloadSceneAsync(nameInstance);
-            }
-            else if (sceneInfo.Reference is Scene scene)
-            {
-                if (TryGetInstanceFromScene(scene, out var sceneInstance))
-                    return Addressables.UnloadSceneAsync(sceneInstance);
-            }
-            else
-                throw new Exception($"Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
-
-            throw new Exception($"Could not find any loaded scene with the scene info reference '{sceneInfo.Reference}'.");
         }
 
         SceneInstance GetLastLoadedSceneByInfo(ILoadSceneInfo sceneInfo)
