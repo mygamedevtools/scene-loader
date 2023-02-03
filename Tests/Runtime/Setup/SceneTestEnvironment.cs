@@ -14,7 +14,9 @@ using UnityEditor;
 using UnityEngine.TestTools;
 using NUnit.Framework;
 #if ENABLE_ADDRESSABLES
+#if UNITY_EDITOR
 using UnityEditor.AddressableAssets;
+#endif
 using UnityEngine.AddressableAssets;
 #endif
 
@@ -26,6 +28,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         const string _scenePathBase = "Assets/_test";
 #if ENABLE_ADDRESSABLES
         const string _addressableScenePathBase = "Assets/_addressables-test";
+        const string _sceneReferencePath = _addressableScenePathBase + "/sceneReference.asset";
 #endif
 #endif
 
@@ -41,12 +44,22 @@ namespace MyGameDevTools.SceneLoading.Tests
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Union(buildScenes).ToArray();
 
 #if ENABLE_ADDRESSABLES
+            var sceneReferenceData = ScriptableObject.CreateInstance<SceneReferenceData>();
+
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             SceneBuilder.TryBuildScenes(_addressableScenePathBase, (i, s, p) =>
             {
-                var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(p), settings.DefaultGroup);
+                var guid = AssetDatabase.AssetPathToGUID(p);
+                var entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
                 entry.SetAddress(SceneBuilder.SceneNames[i]);
+
+                sceneReferenceData.sceneReferences.Add(new AssetReference(guid));
             });
+
+            AssetDatabase.CreateAsset(sceneReferenceData, _sceneReferencePath);
+            var guid = AssetDatabase.AssetPathToGUID(_sceneReferencePath);
+            var entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
+            entry.SetAddress(nameof(SceneReferenceData));
 #endif
 #endif
         }
@@ -67,6 +80,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             var scenePaths = EditorBuildSettings.scenes.Where(scene => scene.path.StartsWith(_addressableScenePathBase)).Select(scene => scene.path);
             foreach (var path in scenePaths)
                 settings.RemoveAssetEntry(AssetDatabase.AssetPathToGUID(path), false);
+
+            settings.RemoveAssetEntry(AssetDatabase.AssetPathToGUID(_sceneReferencePath), false);
 
             AssetDatabase.DeleteAsset(_addressableScenePathBase);
             AssetDatabase.Refresh();

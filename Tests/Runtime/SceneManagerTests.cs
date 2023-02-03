@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
@@ -263,21 +264,76 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
+        [UnityTest]
+        public IEnumerator LoadAndUnload_BuildIndex()
+        {
+#if UNITY_EDITOR
+            var firstScene = new LoadSceneInfoIndex(0);
+#else
+            var firstScene = new LoadSceneInfoIndex(1);
+#endif
+
+            var task = _sceneManagers[0].LoadSceneAsync(firstScene).AsTask();
+            yield return new WaitTask(task);
+
+            Assert.True(firstScene.IsReferenceToScene(task.Result));
+            var handle = task.Result.handle;
+
+            task = _sceneManagers[0].UnloadSceneAsync(firstScene).AsTask();
+            yield return new WaitTask(task);
+
+            Assert.AreEqual(handle, task.Result.handle);
+        }
+
+#if ENABLE_ADDRESSABLES
+        [UnityTest]
+        public IEnumerator LoadAndUnload_AssetReference()
+        {
+            var sceneReferenceDataOperation = Addressables.LoadAssetAsync<SceneReferenceData>(nameof(SceneReferenceData));
+            sceneReferenceDataOperation.WaitForCompletion();
+
+            var targetScene = new LoadSceneInfoAssetReference(sceneReferenceDataOperation.Result.sceneReferences[1]);
+
+            var task = _sceneManagers[1].LoadSceneAsync(targetScene).AsTask();
+            yield return new WaitTask(task);
+
+            Assert.True(targetScene.IsReferenceToScene(task.Result));
+
+            task = _sceneManagers[1].UnloadSceneAsync(targetScene).AsTask();
+            yield return new WaitTask(task);
+
+            Assert.Zero(_sceneManagers[1].SceneCount);
+        }
+#endif
+
+        [UnityTest]
+        public IEnumerator LoadByName_UnloadByScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        {
+            var task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask();
+
+            yield return new WaitTask(task);
+
+            var scene = task.Result;
+
+            task = manager.UnloadSceneAsync(new LoadSceneInfoScene(scene)).AsTask();
+
+            yield return new WaitTask(task);
+
+            Assert.Zero(_sceneManagers[1].SceneCount);
+        }
+
         void ReportSceneActivation(Scene previousScene, Scene newScene)
         {
-            Debug.Log($"Scene {newScene.name} got activated ({previousScene.name} was active before).");
             _scenesActivated++;
         }
 
         void ReportSceneUnloaded(Scene unloadedScene)
         {
-            Debug.Log($"Scene {unloadedScene.name} got unloaded.");
             _scenesUnloaded++;
         }
 
         void ReportSceneLoaded(Scene loadedScene)
         {
-            Debug.Log($"Scene {loadedScene.name} got loaded.");
             _scenesLoaded++;
         }
     }
