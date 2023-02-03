@@ -21,7 +21,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator FadeInOut_Test()
+        public IEnumerator FadeInOut()
         {
             var loadingBehavior = new GameObject().AddComponent<LoadingBehavior>();
             var progress = loadingBehavior.Progress;
@@ -32,6 +32,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var loadingFader = new GameObject("Fader", typeof(CanvasGroup)).AddComponent<LoadingFader>();
             var canvasGroup = loadingFader.GetComponent<CanvasGroup>();
 
+            loadingFader.fadeTime = .2f;
             loadingFader.loadingBehavior = loadingBehavior;
 
             Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
@@ -39,14 +40,14 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return new WaitForEndOfFrame();
 
             Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
-            yield return new WaitForSeconds(loadingFader.FadeTime);
+            yield return new WaitForSeconds(loadingFader.fadeTime + Time.deltaTime);
 
             Assert.AreEqual(LoadingState.Loading, progress.State);
             Assert.AreEqual(1, canvasGroup.alpha);
 
             progress.SetState(LoadingState.TargetSceneLoaded);
 
-            yield return new WaitForSeconds(loadingFader.FadeTime);
+            yield return new WaitForSeconds(loadingFader.fadeTime + Time.deltaTime);
 
             Assert.AreEqual(LoadingState.TransitionComplete, progress.State);
             Assert.AreEqual(0, canvasGroup.alpha);

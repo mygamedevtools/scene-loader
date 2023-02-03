@@ -35,7 +35,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Slider_Test()
+        public IEnumerator SliderFeedback()
         {
             var feedbackSlider = new GameObject("Slider", typeof(Slider)).AddComponent<LoadingFeedbackSlider>();
             feedbackSlider.loadingBehavior = _loadingBehavior;
@@ -51,7 +51,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Text_Test()
+        public IEnumerator TextFeedback()
         {
             var feedbackText = new GameObject("Text", typeof(Text)).AddComponent<LoadingFeedbackText>();
             feedbackText.loadingBehavior = _loadingBehavior;
@@ -68,7 +68,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
 #if ENABLE_TMP
         [UnityTest]
-        public IEnumerator TextMesh_Test()
+        public IEnumerator TextMeshFeedback()
         {
             var feedbackText = new GameObject("TextMesh", typeof(TextMeshProUGUI)).AddComponent<LoadingFeedbackTextMeshPro>();
             feedbackText.loadingBehavior = _loadingBehavior;

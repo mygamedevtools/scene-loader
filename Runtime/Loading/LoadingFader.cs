@@ -12,16 +12,14 @@ namespace MyGameDevTools.SceneLoading
     [RequireComponent(typeof(CanvasGroup))]
     public class LoadingFader : MonoBehaviour
     {
-        public float FadeTime => _fadeTime;
-
         public LoadingBehavior loadingBehavior;
+        [Range(.05f, 5)]
+        public float fadeTime = 1;
 
         [SerializeField]
         AnimationCurve _fadeOutCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
         [SerializeField]
         AnimationCurve _fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        [SerializeField, Range(.05f, 5)]
-        float _fadeTime = 1;
 
         LoadingProgress _loadingProgress;
         CanvasGroup _canvasGroup;
@@ -68,10 +66,10 @@ namespace MyGameDevTools.SceneLoading
         IEnumerator FadeRoutine(AnimationCurve fadeCurve)
         {
             var time = 0f;
-            while (time < _fadeTime)
+            while (time < fadeTime)
             {
                 time += Time.deltaTime;
-                _canvasGroup.alpha = fadeCurve.Evaluate(time / _fadeTime);
+                _canvasGroup.alpha = fadeCurve.Evaluate(time / fadeTime);
                 yield return null;
             }
         }
