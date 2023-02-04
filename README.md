@@ -3,10 +3,32 @@
 ![Release](https://img.shields.io/github/v/release/mygamedevtools/scene-loader?sort=semver)
 ![Last Commit](https://img.shields.io/github/last-commit/mygamedevtools/scene-loader)
 
-Scene Loader
+Scene Loading
 ===
 
-_A package that standardizes the scene loading process among many different possibilities, including support for Coroutines, C# Tasks, UniTask and Addressables._
+_A package that standardizes scene loading operations between the Unity Scene Manager and Addressables, allowing multiple alternatives of awaiting such as Coroutines, Async or UniTask._
+
+Summary
+---
+
+* [Installation](#installation)
+  * [OpenUPM](#openupm)
+  * [Installing from Git](#installing-from-git-requires-git-installed-and-added-to-the-path)
+* [Dependencies](#dependencies)
+* [Overview](#overview)
+* [Usage](#usage)
+  * [The Scene Managers](#the-scene-managers)
+  * [The LoadSceneInfo objects](#the-loadsceneinfo-objects)
+  * [The Scene Loaders](#the-scene-loaders)
+  * [Practical examples](#practical-examples)
+    * [Creating your scene loader](#creating-your-scene-loader)
+    * [Loading scenes with load scene info](#loading-scenes-with-load-scene-info)
+      * [Standard Scene Manager](#standard-scene-manager)
+      * [Addressable Scene Manager](#addressable-scene-manager)
+  * [Why so many interfaces?](#why-so-many-interfaces)
+* [Samples](#samples)
+  * [For standard scene management](#for-standard-scene-management)
+  * [For Addressable scene management](#for-addressable-scene-management)
 
 Installation
 ---
@@ -27,11 +49,24 @@ openupm add com.mygamedevtools.scene-loader
 4. Paste `https://github.com/mygamedevtools/scene-loader.git` into url.
 5. Click `Add`.
 
+Dependencies
+---
+
+The package works without any dependencies, but it supports integration with some packages.
+If you wish to use it with Addressables, UniTask or TextMeshPro, make sure you install the packages:
+
+* `com.unity.addressables` >= 1.19.0
+* `com.unity.textmeshpro` >= 2.2.0
+* `com.cysharp.unitask`* >= 2.0.0
+
+_*Installed via UPM or OpenUPM. Check the [package documentation](https://github.com/Cysharp/UniTask) for more details._
+
 Overview
 ---
 
-Loading scenes in Unity is very simple, but developing games sometimes require more flexible implementations. This package aims to simplify common use cases for scene loading.
-Additionally, it offers support for [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html) and for [UniTask](https://github.com/Cysharp/UniTask) with no additional setup required.
+Loading scenes in Unity is very simple, mostly, but when you start to deal with other systems such as [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html), it can get a little messy. Also, there are some common scene load scenarios that you'd usually reimplement every project, like scene transitions.
+
+In this package, you'll have the possibility to standardize the scene loading process between the standard **Unity Scene Manager** and **Addressables**, while still being able to choose how to await (if you want) the operations, be it Coroutines, standard Async (through ValueTasks) or [UniTask](https://github.com/Cysharp/UniTask).
 
 Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between.
 
@@ -40,32 +75,109 @@ Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools
 Usage
 ---
 
-Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. There are **six** scene loaders that you can use, depending on your project necessities:
-1. `SceneLoaderAsync`: simple scene loader with `awaitable` instructions.
-2. `SceneLoaderCoroutine`: simple scene loader with `Coroutine` instructions.
-3. `SceneLoaderUniTask`: the `SceneLoaderAsync` with `UniTask` instead of `Task`.
-4. `AddressableSceneLoaderAsync`: a scene loader that handles Addressable scenes with `awaitable` instructions.
-5. `AddressableSceneLoaderCoroutine`: a scene loader that handles Addressable scenes with `Coroutine` instructions.
-6. `AddressableSceneLoaderUniTask`: the `AddressableSceneLoaderAsync` with `UniTask` instead of `Task`.
+Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
 
-Before we go into each one, let's understand how we got there. There are some core differences between loading scenes with the `SceneManager` and via Addressables.
+In order to standardize how the scenes are loaded, you'll be using `ISceneLoader`, `ISceneManager` and `ILoadSceneInfo` objects.
 
-x | SceneManager | Addressables
- --- | --- | ---
-Scene Reference | Build Index, Scene Name or Path | Asset Reference, Address Runtime Key
-Active Scene | Managed through `SceneManager` | None
-Loaded Scenes | Managed through `SceneManager` | No high level API available
+### The Scene Managers
 
-Due to those differences, the Addressable scene loaders had to be split into their own logic. However, in order to simplify the usability, even though the Addressable does not work entirely with the `SceneManager`, the way you interact with its scene loaders is very similar to how you would interact with the others.
+The `ISceneManager` interface exposes a few methods and events to standardize the scene load operations:
 
-### The Scene Loader
+```cs
+public interface ISceneManager
+{
+  event Action<Scene, Scene> ActiveSceneChanged;
+  event Action<Scene> SceneUnloaded;
+  event Action<Scene> SceneLoaded;
 
-The most basic usability you'll get from a scene loader is to **Load** a scene, **Unload** it, or **Transition** to another scene. That's what the `ISceneLoader` interface will define:
+  int SceneCount { get; }
+
+  void SetActiveScene(Scene scene);
+
+  ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+
+  ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo);
+
+  Scene GetActiveScene();
+
+  Scene GetLoadedSceneAt(int index);
+
+  Scene GetLastLoadedScene();
+
+  Scene GetLoadedSceneByName(string name);
+}
+```
+
+You can find many similarities between Unity's [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html) class, and that's both for maintaining an easy learning curve as well as because some of these operations will end up calling the _Unity Scene Manager_ internally (like `SetActiveScene` for instance).
+There's also the `ILoadSceneInfo` interface showing up there, but we will get to that in a moment.
+
+The package includes **two** scene managers:
+* The `SceneManager`, for standard scene loading.
+* The `SceneManagerAddressable`, for addressable scene loading.
+
+You can also use their implementation as a reference to **build your own** Scene Manager.
+
+Note that, scenes loaded by a scene manager are in a **local scope**, which means that if you plan to work with multiple scene managers, they will not be aware of the others' scenes.
+In this context, the _Unity Scene Manager_ would be something like a **global scope scene manager**, since it's aware of every scene loaded in runtime.
+
+Speaking of multiple scene managers, you can use a `SceneManager` and a `SceneManagerAddressable` **at the same time**, just keep in mind they will have their own contexts **in isolation** to the other.
+
+```mermaid
+flowchart RL
+    subgraph usm [Unity Scene Manager]
+    a1((Scene Manager)) --> b1[Scene A]
+    a1 --> b2[Scene B]
+    a2((Scene Manager Addressable)) --> c1[Scene X]
+    a2 --> c2[Scene Y]
+    end
+```
+
+The `ISceneManager` interface defines that both `LoadSceneAsync` and `UnloadSceneAsync` methods return a `ValueTask<Scene>`.
+This means you can _await_ those methods if they are implemented with the _async_ keyword, or you can also subscribe to the `SceneLoaded` or `SceneUnloaded` events to receive the same `Scene` you would via the _async_ methods.
+
+Both these methods also receive an `ILoadSceneInfo` object.
+So, instead of having multiple methods for receiving the scene's build index or the scene's name, we simply have an object instead.
+
+### The LoadSceneInfo objects
+
+As its name states, these objects hold references to a scene to be loaded (or unloaded) and are able to validate whether they are a reference to a loaded scene.
+
+The `ILoadSceneInfo` interface simply defines:
+
+```cs
+public interface ILoadSceneInfo
+{
+  object Reference { get; }
+
+  bool IsReferenceToScene(Scene scene);
+}
+```
+
+Since the `Reference` field is able to hold any type of reference, the scene manager will be responsible to decide what to do with its value.
+The load scene info objects simply hold these references, and that's why the implementations included with the package are all **structs**.
+
+You can choose to work with **four** load scene infos:
+
+* The `LoadSceneInfoName`, that in standard scene manager is a reference to the scene name, and in the addressable scene manager, is a reference to its address.
+* The `LoadSceneInfoIndex`, that only works in the standard scene manager, since the build index is not an addressable information.
+* The `LoadSceneInfoScene`, that actually holds a reference to a scene, and can be used to unload specific scenes (useful if you have multiple scenes loaded with the same name, for example).
+* The `LoadSceneInfoAssetReference`, that only works in the addressable scene manager.
+
+You can also build your own `ILoadSceneInfo` implementation if have special needs, but that will probably require you to build a scene manager to interpret its `Reference` value as well.
+
+### The Scene Loaders
+
+The scene loaders are meant to be the interface that you will use to load scenes in your game, as they work like a wrapper layer to the scene managers, but adding the **Scene Transition** operation.
+There are two interfaces for them, the base one with a reference to the `ISceneManager` that will be used, and an async interface, to be able to _await_ the load operations.
+
+The `ISceneLoader` interface defines:
 
 ```cs
 public interface ISceneLoader
 {
-  void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
+  ISceneManager Manager { get; }
+
+  void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default);
 
   void UnloadScene(ILoadSceneInfo sceneInfo);
 
@@ -73,209 +185,242 @@ public interface ISceneLoader
 }
 ```
 
-Observe that instead of defining `int` or `string` parameters for the scene's build index or name, it defines the `ILoadSceneInfo` interface instead. That is just a way of standardizing the scene information that we'll be working with, instead of creating multiple methods, each with their own implementation.
-
-The `ILoadSceneInfo` defines:
+And the `ISceneLoaderAsync`:
 
 ```cs
-public interface ILoadSceneInfo
+public interface ISceneLoaderAsync<TAsync> : ISceneLoader
 {
-  AsyncOperation UnloadSceneAsync();
+  TAsync TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default);
 
-  AsyncOperation LoadSceneAsync();
+  TAsync LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
 
-  Scene GetScene();
+  TAsync UnloadSceneAsync(ILoadSceneInfo sceneReference);
 }
 ```
 
-Then you'll be able to use whatever fits your use case: the `LoadSceneInfoIndex` or the `LoadSceneInfoName` which you can create just as you would expect:
+Note that the `ISceneLoaderAsync` interface inherits from `ISceneLoader`.
+The `TAsync` type should return a `Scene` instance, and can be anything you mean to _await_ or a [Coroutine](https://docs.unity3d.com/Manual/Coroutines.html) (that can't return anything without additional code), for example `Task<Scene>`, `ValueTask<Scene>` or `UniTask<Scene>`.
+
+The `Manager` property can be used to listen to the `SceneLoaded`, `SceneUnloaded`, and `ActiveSceneChanged` events.
+Both `LoadSceneAsync` and `UnloadSceneAsync` methods will simply call the `ISceneManager` equivalents, while the `LoadScene` and `UnloadScene` will do the same but without _await_.
+It's important to understand that `LoadScene`, `UnloadScene` and `TransitionToScene` will still invoke asynchronous operations, instead of blocking the execution until they are done.
+You can use the `ISceneManager` events to react to the completion of those methods.
+
+The **Transition** is a combination of load and unload operations to effectively perform scene transitions, with or without an intermediate scene. For example, usually, if you'd want to go from scene A to scene B you would:
+
+1. Load the scene B.
+2. Unload the scene A.
+
+That's only two operations right?
+What if you wanted to have a loading screen as well?
+In this case you would:
+
+1. Load the loading scene.
+2. Load the scene B.
+4. Unload the scene A.
+3. Unload the loading scene.
+
+That's four operations now.
+The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provide where you want to go from the currently active scene and if you want an intermediary scene (loading scene for example).
+
+### Practical Examples
+
+When creating your scene loader, you must first create your scene manager.
+Ideally, you will not need to store the scene manager anywhere as it will be accessible through the `ISceneLoader` interface.
+Also, you will also need to build your scene info objects to hold references to scenes.
+
+#### Creating your scene loader
+
+For the first example, let's build a standard scene manager and a Coroutine scene loader:
 
 ```cs
-// Create an ILoadSceneInfo by the scene's build index:
-ILoadSceneInfo sceneInfo = new LoadSceneInfoIndex(1);
-
-// Create an ILoadSceneInfo by the scene's name:
-ILoadSceneInfo sceneInfo = new LoadSceneInfoName("MainMenu");
+// Make sure to add 'using MyGameDevTools.SceneLoading;' on the top of the script
+ISceneManager sceneManager = new SceneManager();
+ISceneLoader sceneLoader = new SceneLoaderCoroutine(sceneManager);
 ```
 
-As a final example, let's suppose you're currently at the **"Main Menu"** scene and you want to transition to the **"Level 1"** scene with the **"Loading Tips"** loading scene. You could for example:
+The scene loaders are able to receive any type of `ISceneManager`, for example:
 
 ```cs
-sceneLoader.TransitionToScene(new LoadSceneInfoName("Level 1"), new LoadSceneInfoName("Loading Tips"));
+ISceneManager standardSceneManager = new SceneManager();
+ISceneLoader coroutineSceneLoader = new SceneLoaderCoroutine(standardSceneManager);
+
+ISceneManager addressableSceneManager = new SceneManagerAddressable();
+ISceneLoader asyncSceneLoader = new SceneLoaderAsync(addressableSceneLoader);
 ```
 
-This would trigger the scene transition by loading the **"Loading Tips"** scene first, and then starting to load the **"Level 1"** scene while showing its load progress in the loading scene. Then, when the **"Level 1"** scene is done loading, the **"Loading Tips"** scene will get unloaded and the transition will be complete.
-
-Now, what if you wanted to _await_ this call?
-
-### Awaitable Scene Loaders
-
-You have three options of _awaitable_ scene loaders to choose: **Coroutine**, **C# Task (Async)** and **UniTask**. Coroutine is not C# awaitable, but it works similarly if you `yield return` it inside another Coroutine. If you want to use **UniTask**, make sure you [install its package](https://github.com/Cysharp/UniTask#upm-package) in your project.
-
-Since each implementation changes what you'll get as the return types, they all have their own interfaces:
+You can also define the scene loader types as their `ISceneLoaderAsync` implementations:
 
 ```cs
-public interface ISceneLoaderAsync : ISceneLoader
+ISceneManager sceneManager = new SceneManager();
+
+ISceneLoaderAsync<Coroutine> coroutineSceneLoader = new SceneLoaderCoroutine(sceneManager);
+// Or
+ISceneLoaderAsync<ValueTask<Scene>> asyncSceneLoader = new SceneLoaderAsync(sceneManager);
+// Or
+ISceneLoaderAsync<UniTask<Scene>> unitaskSceneLoader = new SceneLoaderUniTask(sceneManager);
+```
+
+#### Loading scenes with load scene info
+
+You'll use the load scene info objects to reference scenes.
+This can lead to differences when using the standard scene manager or the addressable scene manager.
+
+##### Standard Scene Manager
+
+Let's assume you have included the following scenes in your Build Settings:
+
+0. Main Menu
+1. Loading
+2. Stage 1
+
+You can load the scenes by their name or the build index:
+
+```cs
+ILoadSceneInfo mainMenuSceneInfo = new LoadSceneInfoName("Main Menu");
+ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoIndex(1);
+ILoadSceneInfo stageSceneInfo = new LoadSceneInfoName("Stage 1");
+
+sceneLoader.LoadScene(mainMenuSceneInfo);
+sceneLoader.LoadScene(loadingSceneInfo);
+sceneLoader.LoadScene(stageSceneInfo);
+
+// Or the async alternatives
+await sceneLoader.LoadSceneAsync(mainMenuSceneInfo);
+await sceneLoader.LoadSceneAsync(loadingSceneInfo);
+await sceneLoader.LoadSceneAsync(stageSceneInfo);
+```
+
+For unloading, you can do the same, or you can use the scene reference returned during the `LoadSceneAsync`:
+
+```cs
+ILoadSceneInfo mainMenuSceneInfo = new LoadSceneInfoName("Main Menu");
+ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoIndex(1);
+
+Scene stageScene = await sceneLoader.LoadSceneAsync(new LoadSceneInfoName("Stage 1"));
+ILoadSceneInfo stageSceneInfo = new LoadSceneInfoScene(stageScene);
+
+sceneLoader.UnloadScene(mainMenuSceneInfo);
+sceneLoader.UnloadScene(loadingSceneInfo);
+sceneLoader.UnloadScene(stageSceneInfo);
+
+// Or the async alternatives
+await sceneLoader.UnloadSceneAsync(mainMenuSceneInfo);
+await sceneLoader.UnloadSceneAsync(loadingSceneInfo);
+await sceneLoader.UnloadSceneAsync(stageSceneInfo);
+```
+
+Instead of using the async method, you can also register to the `ISceneManager.SceneLoaded` event:
+
+```cs
+sceneLoader.Manager.SceneLoaded += loadedScene => 
 {
-  Task TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
-
-  Task UnloadSceneAsync(ILoadSceneInfo sceneInfo);
-
-  Task LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false);
-}
-
-public interface ISceneLoaderCoroutine : ISceneLoader
-{
-  Coroutine TransitionToSceneRoutine(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
-
-  Coroutine UnloadSceneRoutine(ILoadSceneInfo sceneInfo);
-
-  Coroutine LoadSceneRoutine(ILoadSceneInfo sceneInfo, bool setActive = false);
-}
-
-public interface ISceneLoaderUniTask : ISceneLoader
-{
-  UniTask TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
-
-  UniTask UnloadSceneAsync(ILoadSceneInfo sceneInfo);
-
-  UniTask LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false);
-}
-```
-
-In the end however, they all also implement `ISceneLoader`, so even though you'll only use the basic `ISceneLoader` methods, you can still take advantage of the `UniTask` implementation, for example. Otherwise, if you're going to await the operation, then you can choose the system that fits you best.
-
-### Addressable Scene Loading
-
-The Addressable Scene Loading introduces a few more concepts in order to keep the simplicity of the regular scene loading process. Take for example the `IAddressableSceneLoader` interface:
-
-```cs
-public interface IAddressableSceneLoader
-{
-  IAddressableSceneManager SceneManager { get; }
-
-  void TransitionToScene(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
-
-  void UnloadScene(IAddressableLoadSceneInfo sceneInfo);
-
-  void LoadScene(IAddressableLoadSceneReference sceneReference, bool setActive = false);
-}
-```
-
-You can see that it has two main differences from the `ISceneLoader`: the presence of the `IAddressableSceneManager` and the different parameter types. Other than that, the usability is exactly the same.
-
-Instead of a single `ILoadSceneInfo` parameter type, the Addressable implementation has two different interfaces: the `IAddressableLoadSceneReference` and the `IAddressableLoadSceneInfo`. This is due to nature of the **Load** and **Unload** scene operations of the Addressables System, in which you need different parameters for each operation.
-
-Take a look for example in the definition of the `IAddressableLoadSceneReference`:
-
-```cs
-public interface IAddressableLoadSceneReference
-{
-    AsyncOperationHandle<SceneInstance> LoadSceneAsync(IAddressableSceneManager sceneManager);
-}
-```
-
-It only defines the **Load** operation that returns an `AsyncOperationHandle<SceneInstance>`. To create an object that defines this interface, you can either use the scene's `AssetReference` or its runtime key, which is how you normally reference assets with Addressables.
-
-```cs
-// Create an IAddressableLoadSceneReference by the scene's AssetReference:
-IAddressableLoadSceneReference sceneReference = new AddressableLoadSceneReferenceAsset(sceneAssetReference);
-
-// Create an IAddressableLoadSceneReference by the scene's runtime key:
-IAddressableLoadSceneReference sceneReference = new AddressableLoadSceneReferenceKey("MainMenu");
-```
-
-Now, when unloading scenes, you'll use the `IAddressableLoadSceneInfo` interface:
-
-```cs
-public interface IAddressableLoadSceneInfo
-{
-  AsyncOperationHandle<SceneInstance> UnloadSceneAsync(IAddressableSceneManager sceneManager, bool autoReleaseHandle = true);
-}
-```
-
-Although very similar to the **Load** operation, it's important to note here that you'll need different scene information in order to create an object that implements this method. You'll need either the `AsyncOperationHandle<SceneInstance>` that was used to load the scene, or the `SceneInstance` itself, or in last case the loaded scene name.
-
-```cs
-// Create an IAddressableLoadSceneInfo by the scene's AsyncOperationHandle<SceneInstance>:
-IAddressableLoadSceneInfo sceneInfo = new AddressableLoadSceneInfoOperationHandle(sceneOperationHandle);
-
-// Create an IAddressableLoadSceneInfo by the scene's SceneInstance:
-IAddressableLoadSceneInfo sceneInfo = new AddressableLoadSceneInfoInstance(sceneInstance);
-
-// Create an IAddressableLoadSceneInfo by the scene's name:
-IAddressableLoadSceneInfo sceneInfo = new AddressableLoadSceneInfoName("Main Menu");
-```
-
-As you could see, both `IAddressableLoadSceneReference` and `IAddressableLoadSceneInfo` require the `IAddressableSceneManager` as a parameter of their methods.
-
-### The Addressable Scene Manager
-
-Loading scenes through Addressables does not exactly pass through the `SceneManager`. It does fire callbacks for loading and unloading scenes, but there's no way to get the active scene or to get any of the loaded scenes, if they have been loaded through the Addressables System. For that reason, the `IAddressableSceneManager` defines a standard for an Addressable Scene Manager that keeps track of the loaded scenes and of an active scene as well, just like you'd expect with the regular `SceneManager`.
-
-It's only going to be used internally by the scene loaders, but take a look at its definition:
-
-```cs
-public interface IAddressableSceneManager
-{
-  void SetActiveSceneHandle(AsyncOperationHandle<SceneInstance> sceneHandle);
-
-  AsyncOperationHandle<SceneInstance> GetActiveSceneHandle();
-
-  AsyncOperationHandle<SceneInstance> LoadSceneAsync(AssetReference sceneReference);
-  AsyncOperationHandle<SceneInstance> LoadSceneAsync(string runtimeKey);
-
-  AsyncOperationHandle<SceneInstance> UnloadSceneAsync(AsyncOperationHandle<SceneInstance> sceneHandle, bool autoReleaseHandle = true);
-  AsyncOperationHandle<SceneInstance> UnloadSceneAsync(SceneInstance scene, bool autoReleaseHandle = true);
-  AsyncOperationHandle<SceneInstance> UnloadSceneAsync(string sceneName, bool autoReleaseHandle = true);
-
-  AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(SceneInstance sceneInstance);
-  AsyncOperationHandle<SceneInstance> GetLoadedSceneHandle(string sceneName);
+  ILoadSceneInfo loadedSceneInfo = new LoadSceneInfoScene(loadedScene);
+  sceneLoader.UnloadScene(loadedSceneInfo);
 }
 ```
 
-Not only it provides methods for loading and unloading scenes with the many ways to reference them, but it also keeps track of the loaded scenes and manages the current active scene. The `IAddressableLoadSceneReference` and `IAddressableLoadSceneInfo` implementations require the scene manager for calling these methods, just like in the non-addressable implementations, they also do it but statically via the `SceneManager`.
-
-Now we can load addressable scenes, but what about _awaiting_ them too?
-
-### Awaitable Addressables
-
-The Addressables System has much better support for awaiting operations than the other Unity Engine systems. While it can be easier to implement, we still need to adapt it to work with the defined standards in the previous topics. So, not so different from the non-addressable implementation, we have the three options for awaitable scene loaders:
+Finally, you can combine different load scene info objects on the transition method:
 
 ```cs
-public interface IAddressableSceneLoaderAsync : IAddressableSceneLoader
+ILoadSceneInfo stageSceneInfo = new LoadSceneInfoName("Stage 1");
+ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoIndex(1);
+
+sceneLoader.TransitionToScene(stageSceneInfo, loadingSceneInfo);
+
+// Or the async alternative
+await sceneLoader.TransitionToSceneAsync(stageSceneInfo, loadingSceneInfo);
+```
+
+##### Addressable Scene Manager
+
+Let's assume you have the following addressable scenes with their own names as their address:
+
+* Main Menu
+* Loading
+* Stage 1
+
+You can load the scenes by their addresses or by an [AssetReference](https://docs.unity3d.com/Packages/com.unity.addressables@1.21/manual/AssetReferences.html) (usually exposed via [MonoBehaviours](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html)):
+
+```cs
+ILoadSceneInfo mainMenuSceneInfo = new LoadSceneInfoName("Main Menu");
+ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoName("Loading");
+ILoadSceneInfo stageSceneInfo = new LoadSceneInfoName("Stage 1");
+
+sceneLoader.LoadScene(mainMenuSceneInfo);
+sceneLoader.LoadScene(loadingSceneInfo);
+sceneLoader.LoadScene(stageSceneInfo);
+
+// Or the async alternatives
+await sceneLoader.LoadSceneAsync(mainMenuSceneInfo);
+await sceneLoader.LoadSceneAsync(loadingSceneInfo);
+await sceneLoader.LoadSceneAsync(stageSceneInfo);
+```
+
+You cannot create `AssetReference` objects from code, unless you're in an editor context.
+So the best way to use an `AssetReference` is to use a [MonoBehaviour](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html) or a [ScriptableObject](https://docs.unity3d.com/ScriptReference/ScriptableObject.html), for example:
+
+```cs
+public class MyBehavior : MonoBehaviour
 {
-  Task<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
+  [SerializeField]
+  AssetReference _loadingScene;
 
-  Task<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
+  // [...]
 
-  Task UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo);
-}
-
-public interface IAddressableSceneLoaderCoroutine : IAddressableSceneLoader
-{
-  Coroutine TransitionToSceneRoutine(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
-
-  Coroutine LoadSceneRoutine(IAddressableLoadSceneReference sceneReference, bool setActive = false);
-
-  Coroutine UnloadSceneRoutine(IAddressableLoadSceneInfo sceneInfo);
-}
-
-public interface IAddressableSceneLoaderUniTask : IAddressableSceneLoader
-{
-  UniTask<SceneInstance> TransitionToSceneAsync(IAddressableLoadSceneReference targetSceneReference, IAddressableLoadSceneReference intermediateSceneReference = null);
-
-  UniTask<SceneInstance> LoadSceneAsync(IAddressableLoadSceneReference sceneReference, bool setActive = false);
-
-  UniTask UnloadSceneAsync(IAddressableLoadSceneInfo sceneInfo);
+  void LoadScene()
+  {
+    ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoAssetReference(_loadingScene);
+    sceneLoader.LoadScene(loadingSceneInfo);
+  }
 }
 ```
 
-Just like before, they also implement the `IAddressableSceneLoader` so you can use what you prefer.
+Same as the standard scene manager, you can unload scenes with the `Scene` reference as well:
+
+```cs
+ILoadSceneInfo mainMenuSceneInfo = new LoadSceneInfoName("Main Menu");
+ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoAssetReference(_loadingSceneReference);
+
+Scene stageScene = await sceneLoader.LoadSceneAsync(new LoadSceneInfoName("Stage 1"));
+ILoadSceneInfo stageSceneInfo = new LoadSceneInfoScene(stageScene);
+
+sceneLoader.UnloadScene(mainMenuSceneInfo);
+sceneLoader.UnloadScene(loadingSceneInfo);
+sceneLoader.UnloadScene(stageSceneInfo);
+
+// Or the async alternatives
+await sceneLoader.UnloadSceneAsync(mainMenuSceneInfo);
+await sceneLoader.UnloadSceneAsync(loadingSceneInfo);
+await sceneLoader.UnloadSceneAsync(stageSceneInfo);
+```
+
+The `ISceneManager.SceneLoaded` event subscription also works exactly the same as the standard scene manager:
+
+```cs
+sceneLoader.Manager.SceneLoaded += loadedScene => 
+{
+  ILoadSceneInfo loadedSceneInfo = new LoadSceneInfoScene(loadedScene);
+  sceneLoader.UnloadScene(loadedSceneInfo);
+}
+```
+
+And you can also combine different load scene info objects on the transition method:
+
+```cs
+ILoadSceneInfo stageSceneInfo = new LoadSceneInfoName("Stage 1");
+ILoadSceneInfo loadingSceneInfo = new LoadSceneInfoAssetReference(_loadingSceneReference);
+
+sceneLoader.TransitionToScene(stageSceneInfo, loadingSceneInfo);
+
+// Or the async alternative
+await sceneLoader.TransitionToSceneAsync(stageSceneInfo, loadingSceneInfo);
+```
 
 ### Why so many interfaces?
 
-The idea behind the interfaces is first to decouple things and second to allow you to build your own systems if you require something very different from the provided content. Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best in each use case.
+The idea behind the interfaces is first to decouple things and second to allow you to build your own systems if you require something very different from the provided content.
+Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best in each use case.
 
 I am always open to suggestions, so please if you have any, don't hesistate to share!
 
@@ -284,7 +429,7 @@ Samples
 
 This package offers samples with each of the scene loaders for you to use as a starting point. To use them, simply import the desired sample through the Package Manager.
 
-### For non-Addressable scene loaders:
+### For standard scene management:
 
 Make sure you add all scenes to the build settings with the following indexes:
 
@@ -296,7 +441,7 @@ Make sure you add all scenes to the build settings with the following indexes:
 
 You can try out the sample by loading either the SceneA or SceneB and hitting play in the Unity Editor.
 
-### For Addressable scene loaders:
+### For Addressable scene management:
 
 Make sure you mark all scenes as addressables and simplify their names in the Addressable Groups window. To test, open up the **Bootstrap** scene and hit play.
 
@@ -305,3 +450,5 @@ Check if your Addressables Play Mode Script is `Use Asset Database`, otherwise y
 ---
 
 Don't hesitate to create [issues](https://github.com/mygamedevtools/scene-loader/issues) for suggestions and bugs. Have fun!
+
+[Back to top](#scene-loader)
