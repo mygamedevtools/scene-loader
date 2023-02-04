@@ -26,6 +26,7 @@ Summary
       * [Standard Scene Manager](#standard-scene-manager)
       * [Addressable Scene Manager](#addressable-scene-manager)
   * [Why so many interfaces?](#why-so-many-interfaces)
+* [Tests](#tests)
 * [Samples](#samples)
   * [For standard scene management](#for-standard-scene-management)
   * [For Addressable scene management](#for-addressable-scene-management)
@@ -423,6 +424,12 @@ The idea behind the interfaces is first to decouple things and second to allow y
 Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best in each use case.
 
 I am always open to suggestions, so please if you have any, don't hesistate to share!
+
+Tests
+---
+
+This package includes tests to assert most use cases of the Scene Managers and Scene Loaders.
+The tests do not have any effect on a runtime build of the game, they only mean to work in a development environment.
 
 Samples
 ---
