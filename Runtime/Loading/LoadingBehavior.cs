@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
+    [AddComponentMenu("Scene Loading/Loading Behavior")]
     public class LoadingBehavior : MonoBehaviour
     {
         public LoadingProgress Progress { get; private set; }

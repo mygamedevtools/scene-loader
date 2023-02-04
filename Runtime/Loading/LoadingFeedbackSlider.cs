@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 namespace MyGameDevTools.SceneLoading
 {
+    [AddComponentMenu("Scene Loading/Loading Slider")]
     [RequireComponent(typeof(Slider))]
     public class LoadingFeedbackSlider : MonoBehaviour
     {

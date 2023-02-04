@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
+    [AddComponentMenu("Scene Loading/Loading Fader")]
     [RequireComponent(typeof(CanvasGroup))]
     public class LoadingFader : MonoBehaviour
     {

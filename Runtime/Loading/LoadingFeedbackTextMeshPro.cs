@@ -10,6 +10,7 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
+    [AddComponentMenu("Scene Loading/Loading Text")]
     [RequireComponent(typeof(TextMeshProUGUI))]
     public class LoadingFeedbackTextMeshPro : MonoBehaviour
     {

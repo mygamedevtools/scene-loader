@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 namespace MyGameDevTools.SceneLoading
 {
+    [AddComponentMenu("Scene Loading/Loading Text (Legacy)")]
     [RequireComponent(typeof(Text))]
     public class LoadingFeedbackText : MonoBehaviour
     {
