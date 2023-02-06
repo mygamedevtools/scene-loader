@@ -8,7 +8,9 @@ using NUnit.Framework;
 using System;
 using System.Collections;
 using UnityEngine;
+#if ENABLE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
+#endif
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
