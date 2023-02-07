@@ -1,4 +1,5 @@
 ![License](https://img.shields.io/github/license/mygamedevtools/scene-loader)
+[![Test](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml/badge.svg)](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml)
 [![openupm](https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.mygamedevtools.scene-loader/)
 ![Release](https://img.shields.io/github/v/release/mygamedevtools/scene-loader?sort=semver)
 ![Last Commit](https://img.shields.io/github/last-commit/mygamedevtools/scene-loader)
