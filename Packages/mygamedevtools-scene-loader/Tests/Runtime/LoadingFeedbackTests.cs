@@ -43,7 +43,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var slider = feedbackSlider.GetComponent<Slider>();
             Assert.AreEqual(0, slider.value);
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             _progress.Report(.5f);
 
@@ -59,7 +59,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var text = feedbackText.GetComponent<Text>();
             Assert.AreEqual("0", text.text);
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             _progress.Report(.5f);
 
@@ -76,7 +76,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var text = feedbackText.GetComponent<TextMeshProUGUI>();
             Assert.AreEqual("0", text.text);
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             _progress.Report(.5f);
 

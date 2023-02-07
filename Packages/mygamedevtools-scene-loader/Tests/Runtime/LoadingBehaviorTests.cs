@@ -29,7 +29,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             Assert.AreEqual(LoadingState.Loading, progress.State);
 
@@ -51,7 +51,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
 
             Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
 
@@ -59,7 +59,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             progress.Report(1);
             progress.SetState(LoadingState.TargetSceneLoaded);
 
-            yield return new WaitForEndOfFrame();
+            yield return null;
             Assert.AreEqual(LoadingState.TargetSceneLoaded, progress.State);
 
             progress.SetState(LoadingState.TransitionComplete);
