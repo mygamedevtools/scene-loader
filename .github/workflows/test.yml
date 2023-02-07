@@ -39,7 +39,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;assemblyFilters:+MyGameDevTools.SceneLoading'
+          coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading'
       - uses: actions/upload-artifact@v3
         if: always()
         with:
@@ -49,4 +49,5 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           name: PlayMode
-          files: coverage-results/**/*.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.tests.outputs.coveragePath }}/**/*.xml
