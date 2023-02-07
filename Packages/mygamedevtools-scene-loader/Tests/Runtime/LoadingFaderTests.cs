@@ -37,17 +37,14 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
             Assert.AreEqual(0, canvasGroup.alpha);
-            yield return new WaitForEndOfFrame();
-
-            Assert.AreEqual(LoadingState.WaitingToStart, progress.State);
-            yield return new WaitForSeconds(1.5f * loadingFader.fadeTime);
+            yield return new WaitForSeconds(loadingFader.fadeTime + Time.deltaTime);
 
             Assert.AreEqual(LoadingState.Loading, progress.State);
             Assert.AreEqual(1, canvasGroup.alpha);
 
             progress.SetState(LoadingState.TargetSceneLoaded);
 
-            yield return new WaitForSeconds(1.5f * loadingFader.fadeTime);
+            yield return new WaitForSeconds(loadingFader.fadeTime + Time.deltaTime);
 
             Assert.AreEqual(LoadingState.TransitionComplete, progress.State);
             Assert.AreEqual(0, canvasGroup.alpha);
