@@ -39,14 +39,13 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+MyGameDevTools.SceneLoading'
+          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;assemblyFilters:+MyGameDevTools.SceneLoading'
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: Test results for ${{ matrix.testMode }}
           path: ${{ steps.tests.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v3
-        if: always()
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
-          name: Coverage results for ${{ matrix.testMode }}
-          path: ${{ steps.tests.outputs.coveragePath }}
+          files: ${{ steps.tests.outputs.coveragePath }}
