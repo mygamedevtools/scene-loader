@@ -40,11 +40,6 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading'
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: Test results for ${{ matrix.testMode }}
-          path: ${{ steps.tests.outputs.artifactsPath }}
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
