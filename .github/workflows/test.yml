@@ -1,6 +1,12 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test:
@@ -9,6 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        project-path:
+          - ./
         testMode:
           - playmode
     steps:
