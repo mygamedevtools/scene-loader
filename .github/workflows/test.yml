@@ -48,4 +48,5 @@ jobs:
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ${{ steps.tests.outputs.coveragePath }}
+          name: PlayMode
+          files: coverage-results/**/*.xml
