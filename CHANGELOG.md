@@ -1,3 +1,24 @@
+# [2.0.0](https://github.com/mygamedevtools/scene-loader/compare/1.4.1...2.0.0) (2023-02-08)
+
+
+### Code Refactoring
+
+* Merge addressable and standard interfaces ([ed9a523](https://github.com/mygamedevtools/scene-loader/commit/ed9a523c92b381c39fd946ab514d838990627da9))
+
+
+### Features
+
+* Add new SceneManager for addressable ops ([06ca0bd](https://github.com/mygamedevtools/scene-loader/commit/06ca0bd51fd4af4e2e8324d5e5feecc0e38618bc))
+* Add Scene Info linked by Asset Reference ([db996d7](https://github.com/mygamedevtools/scene-loader/commit/db996d78b853a7125512e6b34c36451b2b01748d))
+* Update internal addressable scene manager ([6217814](https://github.com/mygamedevtools/scene-loader/commit/62178144cc92cf55577db03095f5b92a0376757f))
+
+
+### BREAKING CHANGES
+
+* Removed IAddressable interfaces.
+
+The interfaces have been standardized, so the usage of specific ones for Addressable workflow is no longer required.
+
 ## [1.4.1](https://github.com/mygamedevtools/scene-loader/compare/1.4.0...1.4.1) (2022-12-08)
 
 
