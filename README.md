@@ -1,6 +1,7 @@
 ![License](https://img.shields.io/github/license/mygamedevtools/scene-loader)
-[![Test](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml/badge.svg)](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml)
 [![codecov](https://codecov.io/github/mygamedevtools/scene-loader/branch/main/graph/badge.svg?token=J4ISVSF390)](https://codecov.io/github/mygamedevtools/scene-loader)
+[![Test](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml/badge.svg)](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml)
+[![Release](https://github.com/mygamedevtools/scene-loader/actions/workflows/release.yml/badge.svg)](https://github.com/mygamedevtools/scene-loader/actions/workflows/release.yml)
 [![openupm](https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.mygamedevtools.scene-loader/)
 ![Release](https://img.shields.io/github/v/release/mygamedevtools/scene-loader?sort=semver)
 ![Last Commit](https://img.shields.io/github/last-commit/mygamedevtools/scene-loader)
@@ -51,7 +52,7 @@ openupm add com.mygamedevtools.scene-loader
 1. Open `Edit/Project Settings/Package Manager`.
 2. Click <kbd>+</kbd>.
 3. Select `Add package from git URL...`.
-4. Paste `https://github.com/mygamedevtools/scene-loader.git` into url.
+4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
 5. Click `Add`.
 
 Dependencies
