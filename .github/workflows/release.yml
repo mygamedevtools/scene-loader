@@ -11,6 +11,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        persist-credentials: false
     - name: Semantic Release
       id: semantic
       uses: cycjimmy/semantic-release-action@v3.1.2
@@ -20,7 +21,8 @@ jobs:
           @semantic-release/git
         branch: main
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}        
+    - uses: actions/checkout@v3
     - name: Split UPM Branch
       run: |
         git branch -d upm &> /dev/null || echo upm branch not found
