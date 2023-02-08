@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/mygamedevtools/scene-loader/compare/2.0.0...2.0.1) (2023-02-08)
+
+
+### Bug Fixes
+
+* Update upm branch generation ([6dbab20](https://github.com/mygamedevtools/scene-loader/commit/6dbab20225b1f9df9fd7e1b9255c528d6877c204))
+
 # [2.0.0](https://github.com/mygamedevtools/scene-loader/compare/1.4.1...2.0.0) (2023-02-08)
 
 
