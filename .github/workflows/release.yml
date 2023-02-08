@@ -23,6 +23,8 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}        
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ steps.semantic.outputs.new_release_version }}
     - name: Split UPM Branch
       run: |
         git branch -d upm &> /dev/null || echo upm branch not found
