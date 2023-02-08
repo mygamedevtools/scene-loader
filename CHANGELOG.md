@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/mygamedevtools/scene-loader/compare/2.0.1...2.0.2) (2023-02-08)
+
+
+### Bug Fixes
+
+* Point intermediate ci checkout to new release ([39ad3ee](https://github.com/mygamedevtools/scene-loader/commit/39ad3eef4e1093f2970b2ff4cbb822ee2280909e))
+
 ## [2.0.1](https://github.com/mygamedevtools/scene-loader/compare/2.0.0...2.0.1) (2023-02-08)
 
 
