@@ -30,7 +30,7 @@ jobs:
         ref: ${{ steps.semantic.outputs.new_release_version }}
     - name: Split UPM Branch
       id: split_upm
-      if: steps.post_release.outcome == "success"
+      if: steps.post_release.outcome == 'success'
       run: |
         git branch -d upm &> /dev/null || echo upm branch not found
         git subtree split -P "$PKG_ROOT" -b upm
@@ -46,7 +46,7 @@ jobs:
       env:
         PKG_ROOT: Packages/mygamedevtools-scene-loader
     - name: Create UPM Tag
-      if: steps.split_upm.outcome == "success"
+      if: steps.split_upm.outcome == 'success'
       run: |
         git tag $TAG upm
         git push origin --tags
