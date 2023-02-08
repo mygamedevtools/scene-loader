@@ -7,7 +7,7 @@
     ["@semantic-release/npm", { "npmPublish": false, "pkgRoot": "Packages/mygamedevtools-scene-loader" }],                      
     ["@semantic-release/git", {                                                              
       "assets": ["Packages/mygamedevtools-scene-loader/package.json", "CHANGELOG.md"],                                            
-      "message": "build(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"  
+      "message": "ci(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"  
     }],                                                                                      
     "@semantic-release/github"                                                               
   ]                                                                                          
