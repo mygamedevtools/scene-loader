@@ -18,9 +18,6 @@ Scene Loading
   <a href="">
     <img src="https://img.shields.io/github/last-commit/mygamedevtools/scene-loader" />
   </a>
-  <a href="">
-    <img src="" />
-  </a>
 </p>
 
 <p align=center>
