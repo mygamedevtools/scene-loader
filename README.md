@@ -1,15 +1,40 @@
-![License](https://img.shields.io/github/license/mygamedevtools/scene-loader)
-[![codecov](https://codecov.io/github/mygamedevtools/scene-loader/branch/main/graph/badge.svg?token=J4ISVSF390)](https://codecov.io/github/mygamedevtools/scene-loader)
-[![Test](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml/badge.svg)](https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml)
-[![Release](https://github.com/mygamedevtools/scene-loader/actions/workflows/release.yml/badge.svg)](https://github.com/mygamedevtools/scene-loader/actions/workflows/release.yml)
-[![openupm](https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.mygamedevtools.scene-loader/)
-![Release](https://img.shields.io/github/v/release/mygamedevtools/scene-loader?sort=semver)
-![Last Commit](https://img.shields.io/github/last-commit/mygamedevtools/scene-loader)
-
+<h1 align=center>
 Scene Loading
-===
+</h1>
 
-_A package that standardizes scene loading operations between the Unity Scene Manager and Addressables, allowing multiple alternatives of awaiting such as Coroutines, Async or UniTask._
+<p align=center>  
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/mygamedevtools/scene-loader" />
+  </a>
+  <a href="https://codecov.io/github/mygamedevtools/scene-loader">
+    <img src="https://codecov.io/github/mygamedevtools/scene-loader/branch/main/graph/badge.svg?token=J4ISVSF390" />
+  </a>
+  <a href="https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml">
+    <img src="https://github.com/mygamedevtools/scene-loader/actions/workflows/test.yml/badge.svg" />
+  </a>
+  <a href="https://github.com/mygamedevtools/scene-loader/actions/workflows/release.yml">
+    <img src="https://github.com/mygamedevtools/scene-loader/actions/workflows/release.yml/badge.svg" />
+  </a>
+  <a href="https://github.com/mygamedevtools/scene-loader/commits/">
+    <img src="https://img.shields.io/github/last-commit/mygamedevtools/scene-loader" />
+  </a>
+</p>
+
+<p align=center>
+  <a href="https://openupm.com/packages/com.mygamedevtools.scene-loader/">
+    <img src="https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?label=openupm&registry_uri=https://package.openupm.com" />
+  </a>
+  <a href="https://github.com/mygamedevtools/scene-loader/releases/latest">
+    <img src="https://img.shields.io/github/v/release/mygamedevtools/scene-loader?sort=semver" />
+  </a>
+  <a href="https://github.com/semantic-release/semantic-release">
+    <img src="https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release" />
+  </a>
+</p>
+
+<p align=center><i>
+A package that standardizes scene loading operations between the Unity Scene Manager and Addressables, allowing multiple alternatives of awaiting such as Coroutines, Async or UniTask.
+</i></p>
 
 Summary
 ---

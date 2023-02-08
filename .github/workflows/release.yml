@@ -21,8 +21,10 @@ jobs:
           @semantic-release/git
         branch: main
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}        
-    - uses: actions/checkout@v3
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}       
+    - name: Post Release Checkout
+      uses: actions/checkout@v3
+      if: steps.semantic.outputs.new_release_published == 'true'
       with:
         ref: ${{ steps.semantic.outputs.new_release_version }}
     - name: Split UPM Branch
@@ -41,7 +43,6 @@ jobs:
       env:
         PKG_ROOT: Packages/mygamedevtools-scene-loader
     - name: Create UPM Tag
-      if: steps.semantic.outputs.new_release_published == 'true'
       run: |
         git tag $TAG upm
         git push origin --tags
