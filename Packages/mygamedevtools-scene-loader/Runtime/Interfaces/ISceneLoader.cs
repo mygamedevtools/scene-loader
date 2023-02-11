@@ -4,6 +4,8 @@
  * Created on: 7/16/2022 (en-US)
  */
 
+using UnityEngine.SceneManagement;
+
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
@@ -36,7 +38,7 @@ namespace MyGameDevTools.SceneLoading
         /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
+        void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default);
 
         /// <summary>
         /// Unloads the given scene from the current scene stack.

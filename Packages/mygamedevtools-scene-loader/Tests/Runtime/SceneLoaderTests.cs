@@ -57,13 +57,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator LoadScene_Test([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader)
+        public IEnumerator LoadScene([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader)
         {
             yield return LoadFirstScene(sceneLoader);
         }
 
         [UnityTest]
-        public IEnumerator UnloadScene_Test([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader)
+        public IEnumerator UnloadScene([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader)
         {
             yield return LoadFirstScene(sceneLoader);
 
@@ -91,7 +91,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Transition_Test([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        public IEnumerator Transition([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             yield return LoadFirstScene(sceneLoader);
 
@@ -99,6 +99,34 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Scene loadedScene = default;
             sceneLoader.TransitionToScene(targetScene, loadingScene);
+
+            var watch = new Stopwatch();
+            watch.Start();
+            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > 1000);
+            watch.Stop();
+
+            sceneLoader.Manager.SceneLoaded -= sceneLoaded;
+
+            Assert.AreEqual(loadedScene, sceneLoader.Manager.GetActiveScene());
+            Assert.AreEqual(loadedScene.name, targetScene.Reference);
+
+            void sceneLoaded(Scene scene)
+            {
+                if (targetScene.IsReferenceToScene(scene))
+                    loadedScene = scene;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Transition_FromExternalOrigin([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        {
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+            var currentScene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(SceneBuilder.SceneNames[1]);
+
+            sceneLoader.Manager.SceneLoaded += sceneLoaded;
+
+            Scene loadedScene = default;
+            sceneLoader.TransitionToScene(targetScene, loadingScene, currentScene);
 
             var watch = new Stopwatch();
             watch.Start();
