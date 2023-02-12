@@ -23,57 +23,71 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
 
         public void UnloadScene(ILoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo).Forget();
 
         public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive) => LoadSceneAsync(sceneInfo, setActive).Forget();
 
-        public UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo);
+        public UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
 
         public async UniTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => await _manager.LoadSceneAsync(sceneInfo, setActive, progress);
 
         public async UniTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo) => await _manager.UnloadSceneAsync(sceneInfo);
 
-        async UniTask<Scene> TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo)
+        async UniTask<Scene> TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo, Scene externalOriginScene)
         {
-            var currentScene = _manager.GetActiveScene();
+            var externalOrigin = externalOriginScene.IsValid();
+            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
+            await UnloadCurrentScene(currentScene, externalOrigin);
+            return await LoadSceneAsync(loadSceneInfo, true);
+        }
+
+        async UniTask<Scene> TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene)
+        {
+            var externalOrigin = externalOriginScene.IsValid();
+            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
             await _manager.LoadSceneAsync(intermediateSceneInfo);
 
             var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
-            Scene loadedScene;
-            if (loadingBehavior)
-            {
-                var progress = loadingBehavior.Progress;
-                await UniTask.WaitUntil(() => progress.State == LoadingState.Loading);
+            return loadingBehavior
+                ? await TransitionWithIntermediateLoadingAsync(targetSceneInfo, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
+                : await TransitionWithIntermediateNoLoadingAsync(targetSceneInfo, intermediateSceneInfo, currentScene, externalOrigin);
+        }
 
-                if (currentScene.IsValid())
-                    await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+        async UniTask<Scene> TransitionWithIntermediateLoadingAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, Scene currentScene, bool externalOrigin)
+        {
+            var progress = loadingBehavior.Progress;
+            await UniTask.WaitUntil(() => progress.State == LoadingState.Loading);
 
-                loadedScene = await _manager.LoadSceneAsync(targetSceneInfo, true, progress);
-                progress.SetState(LoadingState.TargetSceneLoaded);
+            await UnloadCurrentScene(currentScene, externalOrigin);
 
-                await UniTask.WaitUntil(() => progress.State == LoadingState.TransitionComplete);
+            var loadedScene = await _manager.LoadSceneAsync(targetSceneInfo, true, progress);
+            progress.SetState(LoadingState.TargetSceneLoaded);
 
-                _ = UnloadSceneAsync(intermediateSceneInfo);
-            }
-            else
-            {
-                if (currentScene.IsValid())
-                    await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
-                loadedScene = await LoadSceneAsync(targetSceneInfo, true);
-                _ = UnloadSceneAsync(intermediateSceneInfo);
-            }
+            await UniTask.WaitUntil(() => progress.State == LoadingState.TransitionComplete);
 
+            UnloadSceneAsync(intermediateSceneInfo).Forget();
             return loadedScene;
         }
 
-        async UniTask<Scene> TransitionDirectlyAsync(ILoadSceneInfo loadSceneInfo)
+        async UniTask<Scene> TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene currentScene, bool externalOrigin)
         {
-            var currentScene = _manager.GetActiveScene();
-            if (currentScene.IsValid())
-                await UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
-            return await LoadSceneAsync(loadSceneInfo, true);
+            await UnloadCurrentScene(currentScene, externalOrigin);
+            var loadedScene = await LoadSceneAsync(targetSceneInfo, true);
+            _ = UnloadSceneAsync(intermediateSceneInfo);
+            return loadedScene;
+        }
+
+        async UniTask UnloadCurrentScene(Scene currentScene, bool externalOrigin)
+        {
+            if (!currentScene.IsValid())
+                return;
+
+            if (externalOrigin)
+                await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
+            else
+                await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
         }
     }
 }
