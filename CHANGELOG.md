@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/mygamedevtools/scene-loader/compare/2.0.2...2.1.0) (2023-02-12)
+
+
+### Features
+
+* add transitions from external scenes ([64205fb](https://github.com/mygamedevtools/scene-loader/commit/64205fb336f443834c16898fb590dceeaa672a29))
+
 ## [2.0.2](https://github.com/mygamedevtools/scene-loader/compare/2.0.1...2.0.2) (2023-02-08)
 
 
