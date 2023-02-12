@@ -17,7 +17,7 @@ namespace MyGameDevTools.SceneLoading
     public interface ISceneLoaderAsync<TAsync> : ISceneLoader
     {
         /// <summary>
-        /// Async version of the <see cref="ISceneLoader.TransitionToScene(ILoadSceneInfo, ILoadSceneInfo)"/>.
+        /// Async version of the <see cref="ISceneLoader.TransitionToScene(ILoadSceneInfo, ILoadSceneInfo, Scene)"/>.
         /// </summary>
         /// <param name="targetSceneReference">
         /// A reference to the scene that's going to be transitioned to.
@@ -25,6 +25,9 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="intermediateSceneReference">
         /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
         /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="externalOriginScene">
+        /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
         /// </param>
         /// <returns>
         /// The loading operation.
