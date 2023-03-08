@@ -5,7 +5,9 @@
  */
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -45,10 +47,13 @@ namespace MyGameDevTools.SceneLoading
         async ValueTask<Scene> TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene)
         {
             var externalOrigin = externalOriginScene.IsValid();
-            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
-            await _manager.LoadSceneAsync(intermediateSceneInfo);
+            
+            var loadingScene = await _manager.LoadSceneAsync(intermediateSceneInfo);
+            intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
-            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
+            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
+
+            var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
             return loadingBehavior
                 ? await TransitionWithIntermediateLoadingAsync(targetSceneInfo, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
                 : await TransitionWithIntermediateNoLoadingAsync(targetSceneInfo, intermediateSceneInfo, currentScene, externalOrigin);
@@ -59,6 +64,9 @@ namespace MyGameDevTools.SceneLoading
             var progress = loadingBehavior.Progress;
             while (progress.State != LoadingState.Loading)
                 await Task.Yield();
+
+            if (!externalOrigin)
+                currentScene = _manager.GetActiveScene();
 
             await UnloadCurrentScene(currentScene, externalOrigin);
 
@@ -93,6 +101,11 @@ namespace MyGameDevTools.SceneLoading
             }
             else
                 await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+        }
+
+        public override string ToString()
+        {
+            return $"Scene Loader [Async] with {_manager.GetType().Name}";
         }
     }
 }

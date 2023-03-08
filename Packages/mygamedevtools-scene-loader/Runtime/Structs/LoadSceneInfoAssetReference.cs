@@ -33,6 +33,11 @@ namespace MyGameDevTools.SceneLoading
             var sceneInstance = _assetReference.OperationHandle.Convert<SceneInstance>().Result;
             return sceneInstance.Scene == scene;
         }
+
+        public override string ToString()
+        {
+            return $"Scene with asset reference {_assetReference}";
+        }
     }
 }
 #endif

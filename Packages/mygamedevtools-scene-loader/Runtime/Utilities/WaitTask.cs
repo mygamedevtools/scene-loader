@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class WaitTask : IEnumerator
+    public readonly struct WaitTask : IEnumerator
     {
         readonly Task _task;
 

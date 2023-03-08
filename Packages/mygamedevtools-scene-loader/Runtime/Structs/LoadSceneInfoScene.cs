@@ -23,5 +23,10 @@ namespace MyGameDevTools.SceneLoading
         }
 
         public bool IsReferenceToScene(Scene scene) => scene == _scene;
+
+        public override string ToString()
+        {
+            return $"Scene \"{_scene.name}\" [{_scene.handle}]";
+        }
     }
 }

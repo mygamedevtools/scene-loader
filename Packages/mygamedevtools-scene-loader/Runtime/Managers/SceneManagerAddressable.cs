@@ -22,12 +22,13 @@ using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneManagerAddressable : ISceneManager
+    public class SceneManagerAddressable : ISceneManager, ISceneManagerReporter
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
 
+        public bool IsUnloadingScenes => _unloadingScenes.Count > 0;
         public int SceneCount => _loadedScenes.Count;
 
         readonly List<SceneInstance> _unloadingScenes = new List<SceneInstance>();
@@ -105,7 +106,7 @@ namespace MyGameDevTools.SceneLoading
 
         public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
         {
-            var sceneInstance = GetLastLoadedSceneByInfo(sceneInfo);
+            var sceneInstance = GetLastSceneByInfo(sceneInfo);
             if (!_loadedScenes.Contains(sceneInstance))
                 throw new InvalidOperationException($"Cannot unload the scene \"{sceneInstance.Scene.name}\" that has not been loaded through this {GetType().Name}.");
             if (_unloadingScenes.Contains(sceneInstance))
@@ -116,23 +117,27 @@ namespace MyGameDevTools.SceneLoading
 #if USE_UNITASK
             await operation.ToUniTask();
 #else
-            while (!operation.IsDone)
+            while (operation.IsValid() && !operation.IsDone)
                 await Task.Yield();
 #endif
 
-            if (operation.Status == AsyncOperationStatus.Failed)
-                throw operation.OperationException;
+            Scene unloadedScene;
 
-            var loadedScene = operation.Result.Scene;
+            if (!operation.IsValid())
+                unloadedScene = sceneInstance.Scene;
+            else if (operation.Status == AsyncOperationStatus.Failed)
+                throw operation.OperationException;
+            else
+                unloadedScene = operation.Result.Scene;
 
             _unloadingScenes.Remove(sceneInstance);
             _loadedScenes.Remove(sceneInstance);
             if (_activeSceneInstance.Scene == sceneInstance.Scene)
                 SetActiveScene(GetLastLoadedScene());
 
-            SceneUnloaded?.Invoke(loadedScene);
+            SceneUnloaded?.Invoke(unloadedScene);
 
-            return loadedScene;
+            return unloadedScene;
         }
 
         async ValueTask<Scene> WaitForSceneUnload(SceneInstance sceneInstance)
@@ -160,16 +165,25 @@ namespace MyGameDevTools.SceneLoading
                 throw new Exception($"Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
         }
 
-        SceneInstance GetLastLoadedSceneByInfo(ILoadSceneInfo sceneInfo)
+        SceneInstance GetLastSceneByInfo(ILoadSceneInfo sceneInfo)
         {
             var sceneCount = SceneCount;
-            for (int i = sceneCount - 1; i >= 0; i--)
+            int i;
+            for (i = sceneCount - 1; i >= 0; i--)
             {
                 var sceneInstance = _loadedScenes[i];
                 if (sceneInfo.IsReferenceToScene(sceneInstance.Scene))
                     return sceneInstance;
             }
-            throw new ArgumentException($"Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo.Reference}");
+
+            sceneCount = _unloadingScenes.Count;
+            for (i = 0; i < sceneCount; i++)
+            {
+                var sceneInstance = _unloadingScenes[i];
+                if (sceneInfo.IsReferenceToScene(sceneInstance.Scene))
+                    return sceneInstance;
+            }
+            throw new ArgumentException($"Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo}");
         }
 
         bool ValidateAssetReference(object reference)
