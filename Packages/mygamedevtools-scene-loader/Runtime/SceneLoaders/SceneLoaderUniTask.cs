@@ -7,6 +7,7 @@
 
 using Cysharp.Threading.Tasks;
 using System;
+using System.Linq;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -46,10 +47,13 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
         async UniTask<Scene> TransitionWithIntermediateAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene)
         {
             var externalOrigin = externalOriginScene.IsValid();
-            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
-            await _manager.LoadSceneAsync(intermediateSceneInfo);
 
-            var loadingBehavior = Object.FindObjectOfType<LoadingBehavior>();
+            var loadingScene = await _manager.LoadSceneAsync(intermediateSceneInfo);
+            intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
+
+            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
+
+            var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
             return loadingBehavior
                 ? await TransitionWithIntermediateLoadingAsync(targetSceneInfo, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
                 : await TransitionWithIntermediateNoLoadingAsync(targetSceneInfo, intermediateSceneInfo, currentScene, externalOrigin);
@@ -59,6 +63,9 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
         {
             var progress = loadingBehavior.Progress;
             await UniTask.WaitUntil(() => progress.State == LoadingState.Loading);
+
+            if (!externalOrigin)
+                currentScene = _manager.GetActiveScene();
 
             await UnloadCurrentScene(currentScene, externalOrigin);
 
