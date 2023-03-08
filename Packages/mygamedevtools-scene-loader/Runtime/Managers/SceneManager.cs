@@ -12,19 +12,23 @@ using Cysharp.Threading.Tasks;
 #endif
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
+[assembly: InternalsVisibleTo("MyGameDevTools.SceneLoading.Tests")]
+
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneManager : ISceneManager
+    public class SceneManager : ISceneManager, ISceneManagerReporter
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
 
+        public bool IsUnloadingScenes => _unloadingScenes.Count > 0;
         public int SceneCount => _loadedScenes.Count;
 
         readonly List<Scene> _unloadingScenes = new List<Scene>();

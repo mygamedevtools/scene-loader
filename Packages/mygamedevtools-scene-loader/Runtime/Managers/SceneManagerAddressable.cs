@@ -22,12 +22,13 @@ using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneManagerAddressable : ISceneManager
+    public class SceneManagerAddressable : ISceneManager, ISceneManagerReporter
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
 
+        public bool IsUnloadingScenes => _unloadingScenes.Count > 0;
         public int SceneCount => _loadedScenes.Count;
 
         readonly List<SceneInstance> _unloadingScenes = new List<SceneInstance>();

@@ -98,4 +98,9 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>A loaded scene with the given <paramref name="name"/>.</returns>
         Scene GetLoadedSceneByName(string name);
     }
+
+    internal interface ISceneManagerReporter
+    {
+        bool IsUnloadingScenes { get; }
+    }
 }
