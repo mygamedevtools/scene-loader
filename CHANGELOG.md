@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/mygamedevtools/scene-loader/compare/2.1.0...2.1.1) (2023-03-08)
+
+
+### Bug Fixes
+
+* correct scene assignment on load/unload ops ([5953402](https://github.com/mygamedevtools/scene-loader/commit/5953402dadcec15fd493298611fe86d13cfb8cf0))
+
 # [2.1.0](https://github.com/mygamedevtools/scene-loader/compare/2.0.2...2.1.0) (2023-02-12)
 
 
