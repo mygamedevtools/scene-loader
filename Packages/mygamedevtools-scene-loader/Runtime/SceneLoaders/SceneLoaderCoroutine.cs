@@ -98,5 +98,10 @@ namespace MyGameDevTools.SceneLoading
             else
                 yield return UnloadRoutine(new LoadSceneInfoScene(currentScene));
         }
+
+        public override string ToString()
+        {
+            return $"Scene Loader [Coroutine] with {_manager.GetType().Name}";
+        }
     }
 }

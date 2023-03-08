@@ -89,6 +89,11 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             else
                 await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
         }
+
+        public override string ToString()
+        {
+            return $"Scene Loader [UniTask] with {_manager.GetType().Name}";
+        }
     }
 }
 #endif

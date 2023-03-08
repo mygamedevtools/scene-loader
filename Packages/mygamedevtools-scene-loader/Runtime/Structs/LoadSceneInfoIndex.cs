@@ -31,5 +31,10 @@ namespace MyGameDevTools.SceneLoading
         }
 
         public bool IsReferenceToScene(Scene scene) => scene.buildIndex == _buildIndex;
+
+        public override string ToString()
+        {
+            return $"Scene with index [{_buildIndex}]";
+        }
     }
 }

@@ -94,5 +94,10 @@ namespace MyGameDevTools.SceneLoading
             else
                 await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
         }
+
+        public override string ToString()
+        {
+            return $"Scene Loader [Async] with {_manager.GetType().Name}";
+        }
     }
 }
