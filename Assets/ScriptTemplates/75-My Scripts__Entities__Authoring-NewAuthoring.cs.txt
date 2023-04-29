@@ -1,0 +1,13 @@
+#SIGNATURE#using Unity.Entities;
+using UnityEngine;
+
+#NAMESPACE#public class #SCRIPTNAME# : MonoBehaviour
+{
+    public class #SCRIPTNAME#Baker : Baker<#SCRIPTNAME#>
+    {
+        public override void Bake(#SCRIPTNAME# authoring)
+        {
+            
+        }
+    }
+}

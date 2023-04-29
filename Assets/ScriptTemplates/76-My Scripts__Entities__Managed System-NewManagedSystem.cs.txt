@@ -1,0 +1,9 @@
+#SIGNATURE#using Unity.Entities;
+
+#NAMESPACE#public partial class #SCRIPTNAME# : SystemBase
+{
+    protected override void OnUpdate()
+    {
+        
+    }
+}
