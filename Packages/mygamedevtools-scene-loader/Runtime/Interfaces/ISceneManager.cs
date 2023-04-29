@@ -50,6 +50,8 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="scene">Scene to be enabled as the active scene.</param>
         void SetActiveScene(Scene scene);
 
+        ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null);
+
         /// <summary>
         /// Loads a scene referenced by the <paramref name="sceneInfo"/>, optionally enabling it as the active scene.
         /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the progress of the loading operation, from 0 to 1.
@@ -59,6 +61,8 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="progress">Object to report the loading operation progress to, from 0 to 1.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the loaded scene as the result.</returns>
         ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+
+        ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos);
 
         /// <summary>
         /// Unloads a scene referenced by the <paramref name="sceneInfo"/>.

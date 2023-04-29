@@ -75,6 +75,11 @@ namespace MyGameDevTools.SceneLoading
             throw new ArgumentException($"Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
+        public ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
         {
             var operation = GetLoadSceneOperation(sceneInfo);
@@ -102,6 +107,11 @@ namespace MyGameDevTools.SceneLoading
                 SetActiveScene(loadedScene);
 
             return loadedScene;
+        }
+
+        public ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos)
+        {
+            throw new NotImplementedException();
         }
 
         public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
