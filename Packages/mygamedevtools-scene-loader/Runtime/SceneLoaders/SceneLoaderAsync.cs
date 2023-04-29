@@ -24,13 +24,13 @@ namespace MyGameDevTools.SceneLoading
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
 
         public void UnloadScene(ILoadSceneInfo sceneInfo) => _ = UnloadSceneAsync(sceneInfo);
 
-        public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive) => _ = LoadSceneAsync(sceneInfo, setActive);
+        public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false) => _ = LoadSceneAsync(sceneInfo, setActive);
 
-        public ValueTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
+        public ValueTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
 
         public ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => _manager.LoadSceneAsync(sceneInfo, setActive, progress);
 

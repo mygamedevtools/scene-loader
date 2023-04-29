@@ -25,13 +25,13 @@ namespace MyGameDevTools.SceneLoading
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
 
         public void UnloadScene(ILoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo);
 
-        public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive) => LoadSceneAsync(sceneInfo, setActive);
+        public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false) => LoadSceneAsync(sceneInfo, setActive);
 
-        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene) => RoutineBehaviour.Instance.StartCoroutine(intermediateSceneInfo == null ? TransitionDirectlyRoutine(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateRoutine(targetSceneInfo, intermediateSceneInfo, externalOriginScene));
+        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => RoutineBehaviour.Instance.StartCoroutine(intermediateSceneInfo == null ? TransitionDirectlyRoutine(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateRoutine(targetSceneInfo, intermediateSceneInfo, externalOriginScene));
 
         public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo) => RoutineBehaviour.Instance.StartCoroutine(UnloadRoutine(sceneInfo));
 
