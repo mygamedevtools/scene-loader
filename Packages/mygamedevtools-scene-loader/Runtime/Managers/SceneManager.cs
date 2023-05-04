@@ -41,7 +41,7 @@ namespace MyGameDevTools.SceneLoading
         {
             var validScene = scene.IsValid();
             if (validScene && !_loadedScenes.Contains(scene))
-                throw new InvalidOperationException($"[SceneManager] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+                throw new InvalidOperationException($"[{nameof(SceneManager)}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
             var previousScene = _activeScene;
             _activeScene = scene;
@@ -72,7 +72,7 @@ namespace MyGameDevTools.SceneLoading
             foreach (var scene in _loadedScenes)
                 if (scene.name == name)
                     return scene;
-            throw new ArgumentException($"[SceneManager] Could not find any loaded scene with the name '{name}'.", nameof(name));
+            throw new ArgumentException($"[{nameof(SceneManager)}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
         public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null)
@@ -250,7 +250,7 @@ namespace MyGameDevTools.SceneLoading
 
             if (sceneInfosList.Count > 0)
             {
-                var builder = new StringBuilder("[SceneManager] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
+                var builder = new StringBuilder($"[{nameof(SceneManager)}] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
                 for (i = 0; i < sceneInfosList.Count; i++)
                     builder.AppendLine($" ({i}): {sceneInfosList[i]}");
 
@@ -292,7 +292,7 @@ namespace MyGameDevTools.SceneLoading
 
             if (sceneInfosList.Count > 0)
             {
-                var builder = new StringBuilder("[SceneManager] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
+                var builder = new StringBuilder($"[{nameof(SceneManager)}] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
                 for (int i = 0; i < sceneInfosList.Count; i++)
                     builder.AppendLine($" ({i}): {sceneInfosList[i]}");
 
@@ -343,7 +343,7 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            Debug.LogWarning($"[SceneManager] Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo}");
+            Debug.LogWarning($"[{nameof(SceneManager)}] Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo}");
             scene = default;
             return false;
         }
@@ -358,7 +358,7 @@ namespace MyGameDevTools.SceneLoading
                     return true;
             }
 
-            Debug.LogWarning($"[SceneManager] Could not find any loaded scene in the Unity Scene Manager with the provided ILoadSceneInfo: {sceneInfo}");
+            Debug.LogWarning($"[{nameof(SceneManager)}] Could not find any loaded scene in the Unity Scene Manager with the provided ILoadSceneInfo: {sceneInfo}");
             scene = default;
             return false;
         }
@@ -373,7 +373,7 @@ namespace MyGameDevTools.SceneLoading
             else if (sceneInfo.Reference is Scene scene)
                 operation = UnitySceneManager.LoadSceneAsync(scene.buildIndex, LoadSceneMode.Additive);
             else
-                Debug.LogWarning($"[SceneManager] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
+                Debug.LogWarning($"[{nameof(SceneManager)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
 
             return operation != null;
         }

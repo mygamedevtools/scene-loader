@@ -3,7 +3,7 @@
 #define USE_UNITASK
 #endif
 /**
- * SceneManagerAddressable.cs
+ * {nameof(SceneManagerAddressable)}.cs
  * Created by: João Borks [joao.borks@gmail.com]
  * Created on: 2023-01-21
  */
@@ -43,7 +43,7 @@ namespace MyGameDevTools.SceneLoading
             var validScene = scene.IsValid();
             var isSceneLoaded = TryGetInstanceFromScene(scene, out var sceneInstance);
             if (validScene && !isSceneLoaded)
-                throw new InvalidOperationException($"[SceneManagerAddressable] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+                throw new InvalidOperationException($"[{nameof(SceneManagerAddressable)}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
             var previousSceneInstance = _activeSceneInstance;
             _activeSceneInstance = sceneInstance;
@@ -74,7 +74,7 @@ namespace MyGameDevTools.SceneLoading
             foreach (var sceneInstance in _loadedScenes)
                 if (sceneInstance.Scene.name == name)
                     return sceneInstance.Scene;
-            throw new ArgumentException($"[SceneManagerAddressable] Could not find any loaded scene with the name '{name}'.", nameof(name));
+            throw new ArgumentException($"[{nameof(SceneManagerAddressable)}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
         public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null)
@@ -269,7 +269,7 @@ namespace MyGameDevTools.SceneLoading
 
             if (sceneInfosList.Count > 0)
             {
-                var builder = new StringBuilder("[SceneManagerAddressable] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
+                var builder = new StringBuilder($"[{nameof(SceneManagerAddressable)}] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
                 for (i = 0; i < sceneInfosList.Count; i++)
                     builder.AppendLine($" ({i}): {sceneInfosList[i]}");
 
@@ -329,7 +329,7 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            Debug.LogWarning($"[SceneManagerAddressable] Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo}");
+            Debug.LogWarning($"[{nameof(SceneManagerAddressable)}] Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo}");
             sceneInstance = default;
             return false;
         }
@@ -344,12 +344,12 @@ namespace MyGameDevTools.SceneLoading
                 if (ValidateAssetReference(name))
                     operationHandle = Addressables.LoadSceneAsync(name, LoadSceneMode.Additive);
                 else
-                    Debug.LogWarning($"[SceneManagerAddressable] Scene '{name}' couldn't be loaded because its address found no Addressable Assets.");
+                    Debug.LogWarning($"[{nameof(SceneManagerAddressable)}] Scene '{name}' couldn't be loaded because its address found no Addressable Assets.");
             }
 
             bool isValid = operationHandle.IsValid();
             if (!isValid)
-                Debug.LogWarning($"[SceneManagerAddressable] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
+                Debug.LogWarning($"[{nameof(SceneManagerAddressable)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
             return isValid;
         }
 
