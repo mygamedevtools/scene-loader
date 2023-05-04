@@ -7,6 +7,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Text.RegularExpressions;
 using UnityEngine;
 #if ENABLE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
@@ -224,9 +225,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var sceneName = "not-a-real-scene";
             if (manager is SceneManager)
-                LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("couldn't be loaded"));
+                LogAssert.Expect(LogType.Error, new Regex("'not-a-real-scene' couldn't be loaded"));
             var wait = new WaitTask(manager.LoadSceneAsync(new LoadSceneInfoName(sceneName), false).AsTask());
-            Assert.Throws<AggregateException>(() => wait.MoveNext());
+            wait.MoveNext();
         }
 
         [UnityTest]
@@ -261,9 +262,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void UnloadScene_NotLoaded([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             var sceneName = "not-a-real-scene";
-
+            LogAssert.Expect(LogType.Warning, new Regex(@"^(?=.*Could not find any loaded scene)(?=.*ILoadSceneInfo)(?=.*not-a-real-scene).*$"));
             var wait = new WaitTask(manager.UnloadSceneAsync(new LoadSceneInfoName(sceneName)).AsTask());
-            Assert.Throws<AggregateException>(() => wait.MoveNext());
+            wait.MoveNext();
         }
 
         [UnityTest]

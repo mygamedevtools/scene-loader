@@ -27,6 +27,9 @@ namespace MyGameDevTools.SceneLoading
         {
             get
             {
+                if (Operations.Count == 0)
+                    return true;
+
                 foreach (var o in Operations)
                     if (!o.isDone)
                         return false;
