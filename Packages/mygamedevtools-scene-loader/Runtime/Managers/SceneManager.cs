@@ -41,7 +41,7 @@ namespace MyGameDevTools.SceneLoading
         {
             var validScene = scene.IsValid();
             if (validScene && !_loadedScenes.Contains(scene))
-                throw new InvalidOperationException($"Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+                throw new InvalidOperationException($"[SceneManager] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
             var previousScene = _activeScene;
             _activeScene = scene;
@@ -72,7 +72,7 @@ namespace MyGameDevTools.SceneLoading
             foreach (var scene in _loadedScenes)
                 if (scene.name == name)
                     return scene;
-            throw new ArgumentException($"Could not find any loaded scene with the name '{name}'.", nameof(name));
+            throw new ArgumentException($"[SceneManager] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
         public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null)
@@ -83,15 +83,19 @@ namespace MyGameDevTools.SceneLoading
 
             while (!operationGroup.IsDone)
             {
+#if USE_UNITASK
+                await UniTask.Yield();
+#else
                 await Task.Yield();
+#endif
                 progress?.Report(operationGroup.Progress);
             }
 
             var loadedScenes = GetLastUnityLoadedScenesByInfos(sceneInfos, ref setIndexActive);
 
             _loadedScenes.AddRange(loadedScenes);
-            foreach (var s in loadedScenes)
-                SceneLoaded?.Invoke(s);
+            foreach (var scene in loadedScenes)
+                SceneLoaded?.Invoke(scene);
 
             if (setIndexActive >= 0)
                 SetActiveScene(loadedScenes[setIndexActive]);
@@ -150,7 +154,11 @@ namespace MyGameDevTools.SceneLoading
             }
 
             while (!operationGroup.IsDone)
+#if USE_UNITASK
+                await UniTask.Yield();
+#else
                 await Task.Yield();
+#endif
 
             foreach (var scene in loadedScenes)
             {
@@ -182,6 +190,7 @@ namespace MyGameDevTools.SceneLoading
 
             _loadedScenes.Remove(scene);
             _unloadingScenes.Add(scene);
+
 #if USE_UNITASK
             await operation.ToUniTask();
 #else
