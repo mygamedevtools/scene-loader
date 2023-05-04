@@ -155,6 +155,7 @@ namespace MyGameDevTools.SceneLoading
             foreach (var scene in loadedScenes)
             {
                 _unloadingScenes.Remove(scene);
+                SceneUnloaded?.Invoke(scene);
                 if (_activeScene == scene)
                     SetActiveScene(GetLastLoadedScene());
             }
