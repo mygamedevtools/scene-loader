@@ -4,10 +4,9 @@
  * Created on: 2022-12-12
  */
 
-using NUnit.Framework;
+using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using NUnit.Framework;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
@@ -15,18 +14,15 @@ namespace MyGameDevTools.SceneLoading.Tests
     {
         public static IEnumerator UnloadManagerScenes(ISceneManager sceneManager)
         {
-            int sceneCount = sceneManager.SceneCount;
-            var scenes = new HashSet<ILoadSceneInfo>(sceneCount);
-
-            for (int i = 0; i < sceneCount; i++)
+            var lastScene = sceneManager.GetLastLoadedScene();
+            while (sceneManager.SceneCount > 0 && lastScene.IsValid())
             {
-                var scene = sceneManager.GetLoadedSceneAt(i);
-                if (scene.IsValid())
-                    scenes.Add(new LoadSceneInfoScene(scene));
+                yield return new WaitTask(sceneManager.UnloadSceneAsync(new LoadSceneInfoScene(lastScene)).AsTask());
+                lastScene = sceneManager.GetLastLoadedScene();
             }
 
-            if (scenes.Count > 0)
-                yield return new WaitTask(sceneManager.UnloadScenesAsync(scenes.ToArray()).AsTask());
+            while (sceneManager.SceneCount > 0)
+                yield return new WaitUntil(() => sceneManager.SceneCount == 0);
 
             Assert.Zero(sceneManager.SceneCount);
             Assert.False(sceneManager.GetActiveScene().IsValid());
