@@ -272,12 +272,15 @@ namespace MyGameDevTools.SceneLoading
                 if (ValidateAssetReference(name))
                     operationHandle = Addressables.LoadSceneAsync(name, LoadSceneMode.Additive);
                 else
+                {
                     Debug.LogWarning($"[{GetType().Name}] Scene '{name}' couldn't be loaded because its address found no Addressable Assets.");
+                    return false;
+                }
             }
 
             bool isValid = operationHandle.IsValid();
             if (!isValid)
-                Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
+                Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {sceneInfo.Reference}");
             return isValid;
         }
 

@@ -203,6 +203,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(sceneCount, loadedScenes.Count);
             Assert.AreEqual(getTargetActiveScene(), UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
+            yield return new WaitUntil(() => !((ISceneManagerReporter)sceneLoader.Manager).IsUnloadingScenes);
+
             void sceneLoaded(Scene scene)
             {
                 loadedScenes.Add(scene);
