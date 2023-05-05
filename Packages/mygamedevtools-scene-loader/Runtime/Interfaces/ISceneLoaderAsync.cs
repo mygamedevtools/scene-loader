@@ -16,10 +16,11 @@ namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Interface to standardize async scene loading operations.
-    /// <typeparamref name="TAsync"/> can be a <see cref="Coroutine"/> or an awaitable type that returns <see cref="Scene"/>, such as
+    /// <typeparamref name="TAsyncScene"/> can be a <see cref="Coroutine"/> or an awaitable type that returns <see cref="Scene"/>, such as
     /// <see cref="System.Threading.Tasks.ValueTask{T}"/>.
+    /// The <typeparamref name="TAsyncSceneArray"/> can also be a coroutine or an awaitable type that returns a <see cref="Scene"/> array.
     /// </summary>
-    public interface ISceneLoaderAsync<TAsync> : ISceneLoader
+    public interface ISceneLoaderAsync<TAsyncScene, TAsyncSceneArray> : ISceneLoader
     {
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.TransitionToScenes(ILoadSceneInfo[], int, ILoadSceneInfo, Scene)"/>
@@ -40,7 +41,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// The transition operation.
         /// </returns>
-        TAsync TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+        TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.TransitionToScene(ILoadSceneInfo, ILoadSceneInfo, Scene)"/>.
@@ -58,7 +59,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// The transition operation.
         /// </returns>
-        TAsync TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+        TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.LoadScenes(ILoadSceneInfo[], int)"/>.
@@ -75,7 +76,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// The loading operation.
         /// </returns>
-        TAsync LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null);
+        TAsyncSceneArray LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.LoadScene(ILoadSceneInfo, bool)"/>.
@@ -92,7 +93,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// The loading operation.
         /// </returns>
-        TAsync LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
+        TAsyncScene LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.UnloadScenes(ILoadSceneInfo[])"/>
@@ -103,7 +104,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// The unloading operation.
         /// </returns>
-        TAsync UnloadScenesAsync(ILoadSceneInfo[] sceneReferences);
+        TAsyncSceneArray UnloadScenesAsync(ILoadSceneInfo[] sceneReferences);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.UnloadScene(ILoadSceneInfo)"/>.
@@ -114,23 +115,23 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// The unloading operation.
         /// </returns>
-        TAsync UnloadSceneAsync(ILoadSceneInfo sceneReference);
+        TAsyncScene UnloadSceneAsync(ILoadSceneInfo sceneReference);
     }
 
     /// <summary>
     /// Convenience interface to standardize <see cref="Coroutine"/> async scene loading operations.
     /// </summary>
-    public interface ISceneLoaderCoroutine : ISceneLoaderAsync<Coroutine> { }
+    public interface ISceneLoaderCoroutine : ISceneLoaderAsync<Coroutine, Coroutine> { }
 
     /// <summary>
     /// Convenience interface to standardize <see cref="System.Threading.Tasks.ValueTask{TResult}"/> async scene loading operations.
     /// </summary>
-    public interface ISceneLoaderAsync : ISceneLoaderAsync<ValueTask<Scene>> { }
+    public interface ISceneLoaderAsync : ISceneLoaderAsync<ValueTask<Scene>, ValueTask<Scene[]>> { }
 
 #if ENABLE_UNITASK
     /// <summary>
     /// Convenience interface to standardize <see cref="UniTask{T}"/> async scene loading operations.
     /// </summary>
-    public interface ISceneLoaderUniTask : ISceneLoaderAsync<UniTask<Scene>> { }
+    public interface ISceneLoaderUniTask : ISceneLoaderAsync<UniTask<Scene>, UniTask<Scene[]>> { }
 #endif
 }

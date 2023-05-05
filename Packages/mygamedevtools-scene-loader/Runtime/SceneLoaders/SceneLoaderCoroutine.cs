@@ -36,29 +36,21 @@ namespace MyGameDevTools.SceneLoading
 
         public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false) => LoadSceneAsync(sceneInfo, setActive);
 
-        public Coroutine TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
-        {
-            throw new NotImplementedException();
-        }
+        public Coroutine TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default) => RoutineBehaviour.Instance.StartCoroutine(intermediateSceneReference == null ? TransitionDirectlyRoutine(targetScenes, setIndexActive, externalOriginScene) : TransitionWithIntermediateRoutine(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene));
 
-        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => RoutineBehaviour.Instance.StartCoroutine(intermediateSceneInfo == null ? TransitionDirectlyRoutine(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateRoutine(targetSceneInfo, intermediateSceneInfo, externalOriginScene));
+        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => TransitionToScenesAsync(new ILoadSceneInfo[] { targetSceneInfo }, 0, intermediateSceneInfo, externalOriginScene);
 
         public Coroutine UnloadScenesAsync(ILoadSceneInfo[] sceneReferences) => RoutineBehaviour.Instance.StartCoroutine(UnloadScenesRoutine(sceneReferences));
 
-        public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo) => RoutineBehaviour.Instance.StartCoroutine(UnloadSceneRoutine(sceneInfo));
+        public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo) => UnloadScenesAsync(new ILoadSceneInfo[] { sceneInfo });
 
         public Coroutine LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null) => RoutineBehaviour.Instance.StartCoroutine(LoadScenesRoutine(sceneReferences, setIndexActive, progress));
 
-        public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => RoutineBehaviour.Instance.StartCoroutine(LoadSceneRoutine(sceneInfo, setActive, progress));
+        public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => LoadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress);
 
         IEnumerator LoadScenesRoutine(ILoadSceneInfo[] sceneReferences, int setIndexActive, IProgress<float> progress)
         {
             yield return new WaitTask(_manager.LoadScenesAsync(sceneReferences, setIndexActive, progress).AsTask());
-        }
-
-        IEnumerator LoadSceneRoutine(ILoadSceneInfo sceneInfo, bool setActive, IProgress<float> progress)
-        {
-            yield return new WaitTask(_manager.LoadSceneAsync(sceneInfo, setActive, progress).AsTask());
         }
 
         IEnumerator UnloadScenesRoutine(ILoadSceneInfo[] sceneReferences)
@@ -66,20 +58,15 @@ namespace MyGameDevTools.SceneLoading
             yield return new WaitTask(_manager.UnloadScenesAsync(sceneReferences).AsTask());
         }
 
-        IEnumerator UnloadSceneRoutine(ILoadSceneInfo sceneInfo)
-        {
-            yield return new WaitTask(_manager.UnloadSceneAsync(sceneInfo).AsTask());
-        }
-
-        IEnumerator TransitionDirectlyRoutine(ILoadSceneInfo targetSceneInfo, Scene externalOriginScene)
+        IEnumerator TransitionDirectlyRoutine(ILoadSceneInfo[] targetScenes, int setIndexActive, Scene externalOriginScene)
         {
             var externalOrigin = externalOriginScene.IsValid();
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
             yield return UnloadCurrentScene(currentScene, externalOrigin);
-            yield return LoadSceneRoutine(targetSceneInfo, true, null);
+            yield return LoadScenesRoutine(targetScenes, setIndexActive, null);
         }
 
-        IEnumerator TransitionWithIntermediateRoutine(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene)
+        IEnumerator TransitionWithIntermediateRoutine(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene)
         {
             var externalOrigin = externalOriginScene.IsValid();
             
@@ -92,11 +79,11 @@ namespace MyGameDevTools.SceneLoading
 
             var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
             yield return loadingBehavior
-                ? TransitionWithIntermediateLoadingAsync(targetSceneInfo, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
-                : TransitionWithIntermediateNoLoadingAsync(targetSceneInfo, intermediateSceneInfo, currentScene, externalOrigin);
+                ? TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
+                : TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, currentScene, externalOrigin);
         }
 
-        IEnumerator TransitionWithIntermediateLoadingAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, Scene currentScene, bool externalOrigin)
+        IEnumerator TransitionWithIntermediateLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, Scene currentScene, bool externalOrigin)
         {
             var progress = loadingBehavior.Progress;
             yield return new WaitUntil(() => progress.State == LoadingState.Loading);
@@ -106,7 +93,7 @@ namespace MyGameDevTools.SceneLoading
 
             yield return UnloadCurrentScene(currentScene, externalOrigin);
 
-            yield return new WaitTask(_manager.LoadSceneAsync(targetSceneInfo, true, progress).AsTask());
+            yield return new WaitTask(_manager.LoadScenesAsync(targetScenes, setIndexActive, progress).AsTask());
             progress.SetState(LoadingState.TargetSceneLoaded);
 
             yield return new WaitUntil(() => progress.State == LoadingState.TransitionComplete);
@@ -114,10 +101,10 @@ namespace MyGameDevTools.SceneLoading
             UnloadSceneAsync(intermediateSceneInfo);
         }
 
-        IEnumerator TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo, Scene currentScene, bool externalOrigin)
+        IEnumerator TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene currentScene, bool externalOrigin)
         {
             yield return UnloadCurrentScene(currentScene, externalOrigin);
-            yield return LoadSceneRoutine(targetSceneInfo, true, null);
+            yield return LoadScenesRoutine(targetScenes, setIndexActive, null);
             UnloadSceneAsync(intermediateSceneInfo);
         }
 
@@ -129,7 +116,7 @@ namespace MyGameDevTools.SceneLoading
             if (externalOrigin)
                 yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
             else
-                yield return UnloadSceneRoutine(new LoadSceneInfoScene(currentScene));
+                yield return UnloadScenesRoutine(new ILoadSceneInfo[] { new LoadSceneInfoScene(currentScene) });
         }
 
         public override string ToString()
