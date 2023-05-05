@@ -43,7 +43,7 @@ namespace MyGameDevTools.SceneLoading
             var validScene = scene.IsValid();
             var isSceneLoaded = TryGetInstanceFromScene(scene, out var sceneInstance);
             if (validScene && !isSceneLoaded)
-                throw new InvalidOperationException($"[{nameof(SceneManagerAddressable)}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+                throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
             var previousSceneInstance = _activeSceneInstance;
             _activeSceneInstance = sceneInstance;
@@ -74,11 +74,16 @@ namespace MyGameDevTools.SceneLoading
             foreach (var sceneInstance in _loadedScenes)
                 if (sceneInstance.Scene.name == name)
                     return sceneInstance.Scene;
-            throw new ArgumentException($"[{nameof(SceneManagerAddressable)}] Could not find any loaded scene with the name '{name}'.", nameof(name));
+            throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
         public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null)
         {
+            if (sceneInfos == null || sceneInfos.Length == 0)
+                throw new ArgumentException(nameof(sceneInfos), $"[{GetType().Name}] Provided scene group is null or empty.");
+            if (setIndexActive >= sceneInfos.Length)
+                throw new ArgumentException(nameof(setIndexActive), $"[{GetType().Name}] Provided index to set active is bigger than the provided scene group size.");
+
             var operationGroup = GetLoadSceneOperations(sceneInfos, ref setIndexActive);
             if (operationGroup.Operations.Count == 0)
                 return Array.Empty<Scene>();
@@ -107,39 +112,18 @@ namespace MyGameDevTools.SceneLoading
 
         public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
         {
-            if (!TryGetLoadSceneOperation(sceneInfo, out var operation))
+            sceneInfo = sceneInfo ?? throw new NullReferenceException($"[{GetType().Name}] Provided scene info is null.");
+            var loadedScenes = await LoadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress);
+            if (loadedScenes.Length == 0)
                 return default;
-
-#if USE_UNITASK
-            await operation.ToUniTask(progress);
-#else
-            while (!operation.IsDone)
-            {
-                await Task.Yield();
-                progress?.Report(operation.PercentComplete);
-            }
-#endif
-
-            if (operation.Status == AsyncOperationStatus.Failed)
-            {
-                Debug.LogException(operation.OperationException);
-                return default;
-            }
-
-            var loadedSceneInstance = operation.Result;
-            var loadedScene = loadedSceneInstance.Scene;
-
-            _loadedScenes.Add(loadedSceneInstance);
-            SceneLoaded?.Invoke(loadedScene);
-
-            if (setActive)
-                SetActiveScene(loadedScene);
-
-            return loadedScene;
+            return loadedScenes[0];
         }
 
         public async ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos)
         {
+            if (sceneInfos == null || sceneInfos.Length == 0)
+                throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneInfos));
+
             var loadedScenes = GetLastLoadedScenesByInfos(sceneInfos, out var unloadingIndexes);
             if (loadedScenes.Count == 0)
                 return Array.Empty<Scene>();
@@ -190,39 +174,11 @@ namespace MyGameDevTools.SceneLoading
 
         public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
         {
-            if (!TryGetLastLoadedSceneByInfo(sceneInfo, out var sceneInstance, out bool isUnloading))
+            sceneInfo = sceneInfo ?? throw new ArgumentNullException(nameof(sceneInfo), $"[{GetType().Name}] Provided scene info is null.");
+            var unloadedScenes = await UnloadScenesAsync(new ILoadSceneInfo[] { sceneInfo });
+            if (unloadedScenes.Length == 0)
                 return default;
-            if (isUnloading)
-                return await WaitForSceneUnload(sceneInstance);
-
-            var operation = Addressables.UnloadSceneAsync(sceneInstance);
-
-            _loadedScenes.Remove(sceneInstance);
-            _unloadingScenes.Add(sceneInstance);
-
-#if USE_UNITASK
-            await operation.ToUniTask();
-#else
-            while (operation.IsValid() && !operation.IsDone)
-                await Task.Yield();
-#endif
-
-            Scene unloadedScene;
-
-            if (!operation.IsValid())
-                unloadedScene = sceneInstance.Scene;
-            else if (operation.Status == AsyncOperationStatus.Failed)
-                throw operation.OperationException;
-            else
-                unloadedScene = operation.Result.Scene;
-
-            _unloadingScenes.Remove(sceneInstance);
-            if (_activeSceneInstance.Scene == sceneInstance.Scene)
-                SetActiveScene(GetLastLoadedScene());
-
-            SceneUnloaded?.Invoke(unloadedScene);
-
-            return unloadedScene;
+            return unloadedScenes[0];
         }
 
         async ValueTask<Scene> WaitForSceneUnload(SceneInstance sceneInstance)
@@ -269,7 +225,7 @@ namespace MyGameDevTools.SceneLoading
 
             if (sceneInfosList.Count > 0)
             {
-                var builder = new StringBuilder($"[{nameof(SceneManagerAddressable)}] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
+                var builder = new StringBuilder($"[{GetType().Name}] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
                 for (i = 0; i < sceneInfosList.Count; i++)
                     builder.AppendLine($" ({i}): {sceneInfosList[i]}");
 
@@ -306,34 +262,6 @@ namespace MyGameDevTools.SceneLoading
             return sceneArray;
         }
 
-        bool TryGetLastLoadedSceneByInfo(ILoadSceneInfo sceneInfo, out SceneInstance sceneInstance, out bool isUnloading)
-        {
-            isUnloading = false;
-            int sceneCount = SceneCount;
-            int i;
-            for (i = sceneCount - 1; i >= 0; i--)
-            {
-                sceneInstance = _loadedScenes[i];
-                if (sceneInfo.IsReferenceToScene(sceneInstance.Scene))
-                    return true;
-            }
-
-            sceneCount = _unloadingScenes.Count;
-            for (i = 0; i < sceneCount; i++)
-            {
-                sceneInstance = _unloadingScenes[i];
-                if (sceneInfo.IsReferenceToScene(sceneInstance.Scene))
-                {
-                    isUnloading = true;
-                    return true;
-                }
-            }
-
-            Debug.LogWarning($"[{nameof(SceneManagerAddressable)}] Could not find any loaded scene with the provided ILoadSceneInfo: {sceneInfo}");
-            sceneInstance = default;
-            return false;
-        }
-
         bool TryGetLoadSceneOperation(ILoadSceneInfo sceneInfo, out AsyncOperationHandle<SceneInstance> operationHandle)
         {
             operationHandle = default;
@@ -344,12 +272,12 @@ namespace MyGameDevTools.SceneLoading
                 if (ValidateAssetReference(name))
                     operationHandle = Addressables.LoadSceneAsync(name, LoadSceneMode.Additive);
                 else
-                    Debug.LogWarning($"[{nameof(SceneManagerAddressable)}] Scene '{name}' couldn't be loaded because its address found no Addressable Assets.");
+                    Debug.LogWarning($"[{GetType().Name}] Scene '{name}' couldn't be loaded because its address found no Addressable Assets.");
             }
 
             bool isValid = operationHandle.IsValid();
             if (!isValid)
-                Debug.LogWarning($"[{nameof(SceneManagerAddressable)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
+                Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type.");
             return isValid;
         }
 

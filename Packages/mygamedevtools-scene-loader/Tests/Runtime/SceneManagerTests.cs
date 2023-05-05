@@ -350,7 +350,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void UnloadScene_NotLoaded([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             var sceneName = "not-a-real-scene";
-            LogAssert.Expect(LogType.Warning, new Regex(@"^(?=.*Could not find any loaded scene)(?=.*ILoadSceneInfo)(?=.*not-a-real-scene).*$"));
+            LogAssert.Expect(LogType.Warning, new Regex("Some of the scenes could not be found loaded"));
             var wait = new WaitTask(manager.UnloadSceneAsync(new LoadSceneInfoName(sceneName)).AsTask());
             wait.MoveNext();
         }
