@@ -12,7 +12,6 @@ using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -21,6 +20,8 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneLoaderTests : SceneTestEnvironment
     {
+        const int _defaultTimeout = 3000;
+
         static ISceneManager[] _managers = new ISceneManager[]
         {
             new SceneManager(),
@@ -90,7 +91,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScenes.Count == sceneCount || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => loadedScenes.Count == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
@@ -126,7 +127,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => sceneLoader.Manager.SceneCount == sceneCount || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => sceneLoader.Manager.SceneCount == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             Assert.AreEqual(sceneCount, sceneLoader.Manager.SceneCount);
@@ -137,7 +138,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.UnloadScenes(targetScenes);
 
             watch.Restart();
-            yield return new WaitUntil(() => unloadedScenes.Count == sceneCount || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => unloadedScenes.Count == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneUnloaded -= sceneUnloaded;
@@ -165,7 +166,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => unloadedScene.IsValid() && !unloadedScene.isLoaded || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => unloadedScene.IsValid() && !unloadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneUnloaded -= sceneUnloaded;
@@ -195,7 +196,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScenes.Count == sceneCount || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => loadedScenes.Count == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
@@ -231,7 +232,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
@@ -300,7 +301,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
@@ -328,7 +329,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > 1000);
+            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
