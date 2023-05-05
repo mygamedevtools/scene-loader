@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace MyGameDevTools.SceneLoading.UniTaskSupport
 {
-    public class SceneLoaderUniTask : ISceneLoaderAsync<UniTask<Scene>>
+    public class SceneLoaderUniTask : ISceneLoaderUniTask
     {
         public ISceneManager Manager => _manager;
 
@@ -24,15 +24,36 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
 
+        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default) => TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene);
+
         public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
+
+        public void UnloadScenes(ILoadSceneInfo[] sceneInfos) => UnloadScenesAsync(sceneInfos).Forget();
 
         public void UnloadScene(ILoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo).Forget();
 
+        public void LoadScenes(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1) => LoadScenesAsync(sceneInfos, setIndexActive).Forget();
+
         public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false) => LoadSceneAsync(sceneInfo, setActive).Forget();
+
+        public UniTask<Scene> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
+        {
+            throw new NotImplementedException();
+        }
 
         public UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => intermediateSceneInfo == null ? TransitionDirectlyAsync(targetSceneInfo, externalOriginScene) : TransitionWithIntermediateAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
 
+        public UniTask<Scene> LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public async UniTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => await _manager.LoadSceneAsync(sceneInfo, setActive, progress);
+
+        public UniTask<Scene> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)
+        {
+            throw new NotImplementedException();
+        }
 
         public async UniTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo) => await _manager.UnloadSceneAsync(sceneInfo);
 
