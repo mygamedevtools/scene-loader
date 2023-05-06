@@ -25,8 +25,8 @@ jobs:
           lfs: true
       - uses: actions/cache@v3
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
+          path: ${{ matrix.project-path }}/Library
+          key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
       - uses: game-ci/unity-test-runner@v2
@@ -34,7 +34,7 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
+          projectPath: ${{ matrix.project-path }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
