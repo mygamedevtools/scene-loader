@@ -2,7 +2,7 @@
   "dependencies": {
     "com.cysharp.unitask": "2.3.3",
     "com.mygamedevtools.script-template": "3.4.0",
-    "com.unity.addressables": "1.21.10",
+    "com.unity.addressables": "1.21.12",
     "com.unity.feature.development": "1.0.1",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.7.4",
