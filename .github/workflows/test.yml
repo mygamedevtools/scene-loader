@@ -34,6 +34,8 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
+          # TODO: Remove once Unity fixes the issues with the tests on linux: https://github.com/mygamedevtools/scene-loader/issues/18
+          customImage: 'unityci/editor:windows-2022.3.2f1-base-1'
           projectPath: ${{ matrix.project-path }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
