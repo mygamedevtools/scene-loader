@@ -33,7 +33,7 @@ Scene Loading
 </p>
 
 <p align=center><i>
-A package that standardizes scene loading operations between the Unity Scene Manager and Addressables, allowing multiple alternatives of awaiting such as Coroutines, Async or UniTask.
+A package that standardizes scene loading operations between the Unity Scene Manager and Addressables, allowing multiple alternatives of awaiting such as Coroutines, Async or UniTask; and adds support for batch scene operations.
 </i></p>
 
 Summary
@@ -44,6 +44,8 @@ Summary
   * [Installing from Git](#installing-from-git-requires-git-installed-and-added-to-the-path)
 * [Dependencies](#dependencies)
 * [Overview](#overview)
+  * [TL;DR](#tldr)
+  * [Description](#description)
 * [Usage](#usage)
   * [The Scene Managers](#the-scene-managers)
   * [The LoadSceneInfo objects](#the-loadsceneinfo-objects)
@@ -95,11 +97,19 @@ _*Installed via UPM or OpenUPM. Check the [package documentation](https://github
 Overview
 ---
 
+### TL;DR
+
+* Simplify scene loading with [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html) or standard Unity Scenes.
+* Ability to **transition** between scenes.
+* Batch scene operations: load, unload, or transition to **multiple scenes**.
+
+### Description
+
 Loading scenes in Unity is very simple, mostly, but when you start to deal with other systems such as [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html), it can get a little messy. Also, there are some common scene load scenarios that you'd usually reimplement every project, like scene transitions.
 
 In this package, you'll have the possibility to standardize the scene loading process between the standard **Unity Scene Manager** and **Addressables**, while still being able to choose how to await (if you want) the operations, be it Coroutines, standard Async (through ValueTasks) or [UniTask](https://github.com/Cysharp/UniTask).
 
-Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between.
+Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between. Also, starting from version `2.2` you can also **Load**, **Unload** and **Transition** to **multiple scenes** in parallel!
 
 :information_source: You don't need to understand what **Addressables** or **UniTask** do in order to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
 
@@ -109,6 +119,21 @@ Usage
 Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
 
 In order to standardize how the scenes are loaded, you'll be using `ISceneLoader`, `ISceneManager` and `ILoadSceneInfo` objects.
+
+```mermaid
+flowchart BT
+  sm([Scene Manager])
+  sl([Scene Loader])
+  lsi([Load Scene Info])
+
+  lsi -->|Load| sl
+  lsi -->|Unload| sl
+  lsi -->|Transition| sl
+  sl -->|Load| sm
+  sl -->|Unload| sm
+```
+
+These structures are meant to be used together. If you do not plan to use scene transitions or to have custom _awaitable_ types, you don't need to use the `ISceneLoader`.
 
 ### The Scene Managers
 
@@ -125,7 +150,11 @@ public interface ISceneManager
 
   void SetActiveScene(Scene scene);
 
+  ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null);
+
   ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+
+  ValueTask<Scene[]> UnloadSceneAsync(ILoadSceneInfo[] sceneInfos);
 
   ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo);
 
@@ -154,13 +183,17 @@ In this context, the _Unity Scene Manager_ would be something like a **global sc
 Speaking of multiple scene managers, you can use a `SceneManager` and a `SceneManagerAddressable` **at the same time**, just keep in mind they will have their own contexts **in isolation** to the other.
 
 ```mermaid
-flowchart RL
-    subgraph usm [Unity Scene Manager]
-    a1((Scene Manager)) --> b1[Scene A]
-    a1 --> b2[Scene B]
-    a2((Scene Manager Addressable)) --> c1[Scene X]
-    a2 --> c2[Scene Y]
-    end
+flowchart TB
+    sm([Scene Manager]) --> s_a[Scene A]
+    sm --> s_b[Scene B]
+    sma([Scene Manager Addressable]) --> s_x[Scene X]
+    sma --> s_y[Scene Y]
+
+    usm([Unity Scene Manager])
+    s_a --> usm
+    s_b --> usm
+    s_x --> usm
+    s_y --> usm
 ```
 
 The `ISceneManager` interface defines that both `LoadSceneAsync` and `UnloadSceneAsync` methods return a `ValueTask<Scene>`.
@@ -168,6 +201,8 @@ This means you can _await_ those methods if they are implemented with the _async
 
 Both these methods also receive an `ILoadSceneInfo` object.
 So, instead of having multiple methods for receiving the scene's build index or the scene's name, we simply have an object instead.
+
+Alternatively, you can also use the `LoadScenesAsync` and `UnloadScenesAsync` methods, to perform the operations on multiple scenes in parallel. These will return a `ValueTask<Scene[]>`.
 
 ### The LoadSceneInfo objects
 
@@ -208,9 +243,15 @@ public interface ISceneLoader
 {
   ISceneManager Manager { get; }
 
-  void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default);
+  void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default);
+
+  void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default);
+
+  void UnloadScenes(ILoadSceneInfo[] sceneInfos);
 
   void UnloadScene(ILoadSceneInfo sceneInfo);
+
+  void LoadScenes(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1);
 
   void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false);
 }
@@ -219,18 +260,40 @@ public interface ISceneLoader
 And the `ISceneLoaderAsync`:
 
 ```cs
-public interface ISceneLoaderAsync<TAsync> : ISceneLoader
+public interface ISceneLoaderAsync<TAsyncScene, TAsyncSceneArray> : ISceneLoader
 {
-  TAsync TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default);
+  TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+  
+  TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
 
-  TAsync LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
+  TAsyncSceneArray LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null);
 
-  TAsync UnloadSceneAsync(ILoadSceneInfo sceneReference);
+  TAsyncScene LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
+
+  TAsyncSceneArray UnloadScenesAsync(ILoadSceneInfo[] sceneReferences);
+
+  TAsyncScene UnloadSceneAsync(ILoadSceneInfo sceneReference);
 }
 ```
 
 Note that the `ISceneLoaderAsync` interface inherits from `ISceneLoader`.
-The `TAsync` type should return a `Scene` instance, and can be anything you mean to _await_ or a [Coroutine](https://docs.unity3d.com/Manual/Coroutines.html) (that can't return anything without additional code), for example `Task<Scene>`, `ValueTask<Scene>` or `UniTask<Scene>`.
+The `TAsyncScene` type should return a `Scene` instance, and can be anything you mean to _await_ or a [Coroutine](https://docs.unity3d.com/Manual/Coroutines.html) (that can't return anything without additional code), for example `Task<Scene>`, `ValueTask<Scene>` or `UniTask<Scene>`, while the `TAsyncSceneArray` should return a `Scene[]` instance, such as `Task<Scene[]>`, `ValueTask<Scene[]>` or `UniTask<Scene[]>`.
+
+The package comes with **three** Scene Loader implementations:
+* The `SceneLoaderCoroutine`, that simply returns `Coroutines` for every method.
+* The `SceneLoaderAsync`, that just like the `ISceneManager` implementations, will return `ValueTask` values.
+* The `SceneLoaderUniTask`, that will return `UniTask` values.
+
+All of them have interfaces to simplify your code:
+
+```cs
+public interface ISceneLoaderCoroutine : ISceneLoaderAsync<Coroutine, Coroutine> { }
+
+public interface ISceneLoaderAsync : ISceneLoaderAsync<ValueTask<Scene>, ValueTask<Scene[]>> { }
+
+public interface ISceneLoaderUniTask : ISceneLoaderAsync<UniTask<Scene>, UniTask<Scene[]>> { }
+```
+
 
 The `Manager` property can be used to listen to the `SceneLoaded`, `SceneUnloaded`, and `ActiveSceneChanged` events.
 Both `LoadSceneAsync` and `UnloadSceneAsync` methods will simply call the `ISceneManager` equivalents, while the `LoadScene` and `UnloadScene` will do the same but without _await_.
@@ -253,6 +316,8 @@ In this case you would:
 
 That's four operations now.
 The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provide where you want to go from the currently active scene and if you want an intermediary scene (loading scene for example).
+
+You can also transition from a scene **outside** of the scene manager context, by providing a scene in the `externalOriginScene` parameter in the Transition methods. Just make sure this scene **is not** in another scene manager context.
 
 ### Practical Examples
 
@@ -285,11 +350,11 @@ You can also define the scene loader types as their `ISceneLoaderAsync` implemen
 ```cs
 ISceneManager sceneManager = new SceneManager();
 
-ISceneLoaderAsync<Coroutine> coroutineSceneLoader = new SceneLoaderCoroutine(sceneManager);
+ISceneLoaderCoroutine coroutineSceneLoader = new SceneLoaderCoroutine(sceneManager);
 // Or
-ISceneLoaderAsync<ValueTask<Scene>> asyncSceneLoader = new SceneLoaderAsync(sceneManager);
+ISceneLoaderAsync asyncSceneLoader = new SceneLoaderAsync(sceneManager);
 // Or
-ISceneLoaderAsync<UniTask<Scene>> unitaskSceneLoader = new SceneLoaderUniTask(sceneManager);
+ISceneLoaderUniTask unitaskSceneLoader = new SceneLoaderUniTask(sceneManager);
 ```
 
 #### Loading scenes with load scene info

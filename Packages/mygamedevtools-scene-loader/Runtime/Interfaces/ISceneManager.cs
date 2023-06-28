@@ -51,6 +51,17 @@ namespace MyGameDevTools.SceneLoading
         void SetActiveScene(Scene scene);
 
         /// <summary>
+        /// Loads all scenes provided by the <paramref name="sceneInfos"/> array in parallel.
+        /// You may also provide the desired index to set as the active scene through the <paramref name="setIndexActive"/> parameter.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="sceneInfos">References to all scenes to load.</param>
+        /// <param name="setIndexActive">Index of the desired scene to set active, based on the <paramref name="sceneInfos"/> array.</param>
+        /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all scenes loaded.</returns>
+        ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null);
+
+        /// <summary>
         /// Loads a scene referenced by the <paramref name="sceneInfo"/>, optionally enabling it as the active scene.
         /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the progress of the loading operation, from 0 to 1.
         /// </summary>
@@ -59,6 +70,17 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="progress">Object to report the loading operation progress to, from 0 to 1.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the loaded scene as the result.</returns>
         ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+
+        /// <summary>
+        /// Unloads all scenes provided by the <paramref name="sceneInfos"/> array in parallel.
+        /// </summary>
+        /// <param name="sceneInfos">Reference to all scenes to unload.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos);
 
         /// <summary>
         /// Unloads a scene referenced by the <paramref name="sceneInfo"/>.

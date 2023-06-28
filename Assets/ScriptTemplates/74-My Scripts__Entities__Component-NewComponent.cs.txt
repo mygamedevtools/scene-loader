@@ -1,0 +1,6 @@
+#SIGNATURE#using Unity.Entities;
+
+#NAMESPACE#public struct #SCRIPTNAME# : IComponentData
+{
+
+}

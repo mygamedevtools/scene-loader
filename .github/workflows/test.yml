@@ -18,23 +18,26 @@ jobs:
         project-path:
           - ./
         testMode:
-          - playmode
+          # TODO: Restore playmode tests once Unity fixes the linux editor tests issue: https://github.com/mygamedevtools/scene-loader/issues/18
+          # - playmode
+          - standalone
     steps:
       - uses: actions/checkout@v3
         with:
           lfs: true
       - uses: actions/cache@v3
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
+          path: ${{ matrix.project-path }}/Library
+          key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
-      - uses: game-ci/unity-test-runner@v2
+      # TODO: Replace with actual release version once Unity fixes the linux editor tests issue: https://github.com/mygamedevtools/scene-loader/issues/18
+      - uses: game-ci/unity-test-runner@31086d985910613d75c32ba965f657df9c298820
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
+          projectPath: ${{ matrix.project-path }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
