@@ -11,16 +11,14 @@ on:
 jobs:
   test:
     name: Test in ${{ matrix.testMode }}
-    # TODO: Replace once Unity fixes the issues with the tests on linux: https://github.com/mygamedevtools/scene-loader/issues/18
-    # runs-on: ubuntu-latest
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         project-path:
           - ./
         testMode:
-          - playmode
+          - standalone
     steps:
       - uses: actions/checkout@v3
         with:
@@ -31,15 +29,11 @@ jobs:
           key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
-      # TODO: Replace specific version once Unity fixes the issues with the tests on linux: https://github.com/mygamedevtools/scene-loader/issues/18
-      # - uses: game-ci/unity-test-runner@v2
-      - uses: game-ci/unity-test-runner@v2.0.3
+      - uses: game-ci/unity-test-runner@v2
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          # TODO: Remove once Unity fixes the issues with the tests on linux: https://github.com/mygamedevtools/scene-loader/issues/18
-          customImage: 'unityci/editor:windows-2022.3.2f1-base-1'
           projectPath: ${{ matrix.project-path }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
