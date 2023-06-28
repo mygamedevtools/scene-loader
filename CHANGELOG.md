@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/mygamedevtools/scene-loader/compare/2.1.1...2.2.0) (2023-06-28)
+
+
+### Features
+
+* add support for multiple scene operations ([#17](https://github.com/mygamedevtools/scene-loader/issues/17)) ([87117e0](https://github.com/mygamedevtools/scene-loader/commit/87117e087dff8dec8dbf688da38a3aa172c8019d))
+
 ## [2.1.1](https://github.com/mygamedevtools/scene-loader/compare/2.1.0...2.1.1) (2023-03-08)
 
 
