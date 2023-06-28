@@ -18,7 +18,7 @@ jobs:
         project-path:
           - ./
         testMode:
-          - standalone
+          - Standalone
     steps:
       - uses: actions/checkout@v3
         with:
@@ -29,7 +29,7 @@ jobs:
           key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
-      - uses: game-ci/unity-test-runner@v2.1.1
+      - uses: game-ci/unity-test-runner@v2
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
