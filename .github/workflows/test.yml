@@ -18,7 +18,9 @@ jobs:
         project-path:
           - ./
         testMode:
-          - Standalone
+          # TODO: Restore playmode tests once Unity fixes the linux editor tests issue: https://github.com/mygamedevtools/scene-loader/issues/18
+          # - playmode
+          - standalone
     steps:
       - uses: actions/checkout@v3
         with:
@@ -29,6 +31,7 @@ jobs:
           key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
+      # TODO: Replace with actual release version once Unity fixes the linux editor tests issue: https://github.com/mygamedevtools/scene-loader/issues/18
       - uses: game-ci/unity-test-runner@31086d985910613d75c32ba965f657df9c298820
         id: tests
         env:
