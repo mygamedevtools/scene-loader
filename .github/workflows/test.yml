@@ -31,8 +31,7 @@ jobs:
           key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
-      # TODO: Replace with actual release version once Unity fixes the linux editor tests issue: https://github.com/mygamedevtools/scene-loader/issues/18
-      - uses: game-ci/unity-test-runner@31086d985910613d75c32ba965f657df9c298820
+      - uses: game-ci/unity-test-runner@v2
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
