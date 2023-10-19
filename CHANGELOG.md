@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/mygamedevtools/scene-loader/compare/2.2.0...2.2.1) (2023-10-19)
+
+
+### Bug Fixes
+
+* add preprocessor directives to filter out addressables code ([#21](https://github.com/mygamedevtools/scene-loader/issues/21)) ([82b0616](https://github.com/mygamedevtools/scene-loader/commit/82b06169bc2eedadbadcc24d3899e85fa095b683))
+
 # [2.2.0](https://github.com/mygamedevtools/scene-loader/compare/2.1.1...2.2.0) (2023-06-28)
 
 
