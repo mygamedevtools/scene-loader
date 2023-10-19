@@ -1,3 +1,4 @@
+#if ENABLE_ADDRESSABLES
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -64,3 +65,4 @@ namespace MyGameDevTools.SceneLoading
         }
     }
 }
+#endif
