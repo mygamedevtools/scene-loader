@@ -31,7 +31,7 @@ jobs:
           key: Library-${{ matrix.project-path }}
           restore-keys: |
             Library-
-      - uses: game-ci/unity-test-runner@v2
+      - uses: game-ci/unity-test-runner@v3
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
