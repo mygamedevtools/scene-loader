@@ -21,7 +21,7 @@ jobs:
           @semantic-release/git
         branch: main
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}       
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
     - name: Post Release Checkout
       id: post_release
       uses: actions/checkout@v3

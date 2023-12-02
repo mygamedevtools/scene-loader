@@ -1,9 +1,3 @@
-/**
- * LoadingFaderTests.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2023-02-01
- */
-
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine;
@@ -16,8 +10,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         [OneTimeTearDown]
         public void Teardown()
         {
+#if UNITY_2023_2_OR_NEWER
+            Object.DestroyImmediate(Object.FindAnyObjectByType<LoadingBehavior>().gameObject);
+            Object.DestroyImmediate(Object.FindAnyObjectByType<LoadingFader>().gameObject);
+#else
             Object.DestroyImmediate(Object.FindObjectOfType<LoadingBehavior>().gameObject);
             Object.DestroyImmediate(Object.FindObjectOfType<LoadingFader>().gameObject);
+#endif
         }
 
         [UnityTest]

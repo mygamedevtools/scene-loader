@@ -1,9 +1,3 @@
-/**
- * LoadingProgress.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2023-01-31
- */
-
 using System;
 
 namespace MyGameDevTools.SceneLoading

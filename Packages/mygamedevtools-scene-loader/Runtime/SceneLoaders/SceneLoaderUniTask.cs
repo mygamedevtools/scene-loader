@@ -1,10 +1,4 @@
 #if ENABLE_UNITASK
-/**
- * SceneLoaderUniTask.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 8/1/2022 (en-US)
- */
-
 using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
@@ -69,7 +63,11 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
 
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
 
+#if UNITY_2023_2_OR_NEWER
+            var loadingBehavior = Object.FindObjectsByType<LoadingBehavior>(UnityEngine.FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
+#else
             var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
+#endif
             return loadingBehavior
                 ? await TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
                 : await TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, currentScene, externalOrigin);
@@ -108,7 +106,11 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
                 return;
 
             if (externalOrigin)
+#if UNITY_2023_2_OR_NEWER
+                await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene).ToUniTask();
+#else
                 await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
+#endif
             else
                 await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
         }

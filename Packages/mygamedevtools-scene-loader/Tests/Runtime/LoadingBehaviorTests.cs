@@ -1,9 +1,3 @@
-/**
- * LoadingBehaviorTests.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2023-01-31
- */
-
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine;
@@ -16,7 +10,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         [OneTimeTearDown]
         public void Teardown()
         {
+#if UNITY_2023_2_OR_NEWER
+            var behaviors = Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None);
+#else
             var behaviors = Object.FindObjectsOfType<LoadingBehavior>();
+#endif
             foreach (var b in behaviors)
                 Object.DestroyImmediate(b.gameObject);
         }

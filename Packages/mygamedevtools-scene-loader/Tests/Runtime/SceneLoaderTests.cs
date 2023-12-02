@@ -1,9 +1,3 @@
-/**
- * SceneLoaderTests.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2022-12-07
- */
-
 #if ENABLE_UNITASK
 using Cysharp.Threading.Tasks;
 using MyGameDevTools.SceneLoading.UniTaskSupport;

@@ -1,9 +1,3 @@
-/**
- * SceneLoaderTestUtilities.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2022-12-12
- */
-
 using UnityEngine;
 using System.Collections;
 using NUnit.Framework;

@@ -1,10 +1,4 @@
 #if ENABLE_ADDRESSABLES
-/**
- * SceneReferenceData.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2023-02-03
- */
-
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
