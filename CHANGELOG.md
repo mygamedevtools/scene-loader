@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/mygamedevtools/scene-loader/compare/2.2.1...2.2.2) (2023-12-02)
+
+
+### Bug Fixes
+
+* upgrade to unity 2023.2 ([#22](https://github.com/mygamedevtools/scene-loader/issues/22)) ([3aac886](https://github.com/mygamedevtools/scene-loader/commit/3aac8868f770696bcbb86595da77718afc147c9b))
+
 ## [2.2.1](https://github.com/mygamedevtools/scene-loader/compare/2.2.0...2.2.1) (2023-10-19)
 
 
