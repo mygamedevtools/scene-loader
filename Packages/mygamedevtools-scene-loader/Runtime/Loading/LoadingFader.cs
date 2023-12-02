@@ -1,9 +1,3 @@
-/**
- * LoadingFader.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 7/23/2022 (en-US)
- */
-
 using System.Collections;
 using UnityEngine;
 

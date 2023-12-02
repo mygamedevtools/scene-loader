@@ -1,12 +1,6 @@
 #if ENABLE_UNITASK && !OVERRIDE_DISABLE_UNITASK
 #define USE_UNITASK
 #endif
-/**
- * SceneManager.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2022-12-21
- */
-
 #if USE_UNITASK
 using Cysharp.Threading.Tasks;
 #endif

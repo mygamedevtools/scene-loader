@@ -1,10 +1,4 @@
 #if ENABLE_UNITASK
-/**
- * SceneLoaderUniTask.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 8/1/2022 (en-US)
- */
-
 using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;

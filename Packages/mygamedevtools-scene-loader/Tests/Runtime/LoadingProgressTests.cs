@@ -1,9 +1,3 @@
-/**
- * LoadingProgressTests.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2023-01-31
- */
-
 using NUnit.Framework;
 
 namespace MyGameDevTools.SceneLoading.Tests

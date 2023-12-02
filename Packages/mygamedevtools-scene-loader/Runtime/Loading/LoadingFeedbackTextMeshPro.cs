@@ -1,10 +1,4 @@
 #if ENABLE_TMP
-/**
- * LoadingFeedbackTextMeshPro.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 7/25/2022 (en-US)
- */
-
 using TMPro;
 using UnityEngine;
 

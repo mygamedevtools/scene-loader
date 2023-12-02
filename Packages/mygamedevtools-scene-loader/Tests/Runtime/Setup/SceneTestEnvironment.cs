@@ -1,9 +1,3 @@
-/**
- * SceneTestEnvironment.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2022-12-12
- */
-
 #if UNITY_EDITOR
 using System.Linq;
 using System.Collections.Generic;

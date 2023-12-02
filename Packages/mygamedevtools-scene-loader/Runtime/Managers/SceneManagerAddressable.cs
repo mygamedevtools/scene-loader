@@ -2,12 +2,6 @@
 #if ENABLE_UNITASK && !OVERRIDE_DISABLE_UNITASK
 #define USE_UNITASK
 #endif
-/**
- * {nameof(SceneManagerAddressable)}.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 2023-01-21
- */
-
 #if USE_UNITASK
 using Cysharp.Threading.Tasks;
 #endif

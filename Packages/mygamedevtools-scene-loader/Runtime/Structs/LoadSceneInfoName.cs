@@ -1,9 +1,3 @@
-/**
- * LoadSceneInfoName.cs
- * Created by: João Borks [joao.borks@gmail.com]
- * Created on: 8/24/2022 (en-US)
- */
-
 using System;
 using UnityEngine.SceneManagement;
 
