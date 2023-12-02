@@ -68,7 +68,11 @@ namespace MyGameDevTools.SceneLoading
 
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
 
+#if UNITY_2023_2_OR_NEWER
+            var loadingBehavior = Object.FindObjectsByType<LoadingBehavior>(UnityEngine.FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
+#else
             var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
+#endif
             return loadingBehavior
                 ? await TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin)
                 : await TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, currentScene, externalOrigin);
