@@ -19,7 +19,7 @@ jobs:
           - ./
         testMode:
           # TODO: Restore playmode tests once Unity fixes the linux editor tests issue: https://github.com/mygamedevtools/scene-loader/issues/18
-          # - playmode
+          - playmode
           - standalone
     steps:
       - uses: actions/checkout@v3
