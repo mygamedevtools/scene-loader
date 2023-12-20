@@ -41,9 +41,12 @@ namespace MyGameDevTools.SceneLoading
             }
         }
 
-        public AsyncOperationHandleGroup(int initialCapacity)
+        public readonly int SetIndexActive;
+
+        public AsyncOperationHandleGroup(List<AsyncOperationHandle<SceneInstance>> operationList, int setIndexActive = -1)
         {
-            Operations = new List<AsyncOperationHandle<SceneInstance>>(initialCapacity);
+            Operations = operationList;
+            SetIndexActive = setIndexActive;
         }
 
         public IList<SceneInstance> GetResult()

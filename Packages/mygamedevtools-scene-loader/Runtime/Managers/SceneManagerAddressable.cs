@@ -78,7 +78,7 @@ namespace MyGameDevTools.SceneLoading
             if (setIndexActive >= sceneInfos.Length)
                 throw new ArgumentException(nameof(setIndexActive), $"[{GetType().Name}] Provided index to set active is bigger than the provided scene group size.");
 
-            var operationGroup = GetLoadSceneOperations(sceneInfos, ref setIndexActive);
+            var operationGroup = await GetLoadSceneOperations(sceneInfos, setIndexActive);
             if (operationGroup.Operations.Count == 0)
                 return Array.Empty<Scene>();
 
@@ -98,8 +98,8 @@ namespace MyGameDevTools.SceneLoading
             foreach (var sceneInstance in loadedScenes)
                 SceneLoaded?.Invoke(sceneInstance.Scene);
 
-            if (setIndexActive >= 0)
-                SetActiveScene(loadedScenes[setIndexActive].Scene);
+            if (operationGroup.SetIndexActive >= 0)
+                SetActiveScene(loadedScenes[operationGroup.SetIndexActive].Scene);
 
             return ToSceneArray(loadedScenes);
         }
@@ -131,13 +131,15 @@ namespace MyGameDevTools.SceneLoading
             for (i = 0; i < unloadingLength; i++)
                 loadedScenes.Remove(unloadingScenes[i]);
 
-            var operationGroup = new AsyncOperationHandleGroup(loadedScenes.Count);
+            var operationList = new List<AsyncOperationHandle<SceneInstance>>(loadedScenes.Count);
             foreach (var sceneInstance in loadedScenes)
             {
-                operationGroup.Operations.Add(Addressables.UnloadSceneAsync(sceneInstance));
+                operationList.Add(Addressables.UnloadSceneAsync(sceneInstance));
                 _loadedScenes.Remove(sceneInstance);
                 _unloadingScenes.Add(sceneInstance);
             }
+
+            var operationGroup = new AsyncOperationHandleGroup(operationList);
 
             while (!operationGroup.IsDone)
 #if USE_UNITASK
@@ -187,18 +189,19 @@ namespace MyGameDevTools.SceneLoading
             return sceneInstance.Scene;
         }
 
-        AsyncOperationHandleGroup GetLoadSceneOperations(ILoadSceneInfo[] sceneInfos, ref int setIndexActive)
+        async ValueTask<AsyncOperationHandleGroup> GetLoadSceneOperations(ILoadSceneInfo[] sceneInfos, int setIndexActive)
         {
             var sceneLength = sceneInfos.Length;
-            var operationGroup = new AsyncOperationHandleGroup(sceneLength);
+            var operationList = new List<AsyncOperationHandle<SceneInstance>>(sceneLength);
             for (int i = 0; i < sceneLength; i++)
             {
-                if (TryGetLoadSceneOperation(sceneInfos[i], out var operation))
-                    operationGroup.Operations.Add(operation);
+                var operation = await GetLoadSceneOperation(sceneInfos[i]);
+                if (operation.IsValid())
+                    operationList.Add(operation);
                 else if (i == setIndexActive)
                     setIndexActive = -1;
             }
-            return operationGroup;
+            return new AsyncOperationHandleGroup(operationList, setIndexActive);
         }
 
         IList<SceneInstance> GetLastLoadedScenesByInfos(ILoadSceneInfo[] sceneInfos, out int[] unloadingIndexes)
@@ -256,26 +259,23 @@ namespace MyGameDevTools.SceneLoading
             return sceneArray;
         }
 
-        bool TryGetLoadSceneOperation(ILoadSceneInfo sceneInfo, out AsyncOperationHandle<SceneInstance> operationHandle)
+        async ValueTask<AsyncOperationHandle<SceneInstance>> GetLoadSceneOperation(ILoadSceneInfo sceneInfo)
         {
-            operationHandle = default;
             if (sceneInfo.Reference is AssetReference assetReference)
-                operationHandle = assetReference.LoadSceneAsync(LoadSceneMode.Additive);
+                return assetReference.LoadSceneAsync(LoadSceneMode.Additive);
             else if (sceneInfo.Reference is string name)
             {
-                if (ValidateAssetReference(name))
-                    operationHandle = Addressables.LoadSceneAsync(name, LoadSceneMode.Additive);
+                if (await ValidateAssetReference(name))
+                    return Addressables.LoadSceneAsync(name, LoadSceneMode.Additive);
                 else
                 {
                     Debug.LogWarning($"[{GetType().Name}] Scene '{name}' couldn't be loaded because its address found no Addressable Assets.");
-                    return false;
+                    return default;
                 }
             }
 
-            bool isValid = operationHandle.IsValid();
-            if (!isValid)
-                Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {sceneInfo.Reference}");
-            return isValid;
+            Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {sceneInfo.Reference}");
+            return default;
         }
 
         bool TryGetInstanceFromScene(Scene scene, out SceneInstance sceneInstance)
@@ -291,10 +291,15 @@ namespace MyGameDevTools.SceneLoading
             return false;
         }
 
-        bool ValidateAssetReference(object reference)
+        async ValueTask<bool> ValidateAssetReference(object reference)
         {
             var operation = Addressables.LoadResourceLocationsAsync(reference);
-            operation.WaitForCompletion();
+#if USE_UNITASK
+            await operation;
+#else
+            while (!operation.IsDone)
+                await Task.Yield();
+#endif
 
             return operation.Result.Count > 0;
         }
