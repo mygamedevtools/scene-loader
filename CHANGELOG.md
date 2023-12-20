@@ -1,3 +1,12 @@
+# Changelog
+
+## [2.2.3](https://github.com/mygamedevtools/scene-loader/compare/2.2.2...2.2.3) (2023-12-20)
+
+
+### Bug Fixes
+
+* replace WaitForCompletion with async logic ([#24](https://github.com/mygamedevtools/scene-loader/issues/24)) ([3f87bc4](https://github.com/mygamedevtools/scene-loader/commit/3f87bc4345808cee7e80435286a23ee2268deb73))
+
 ## [2.2.2](https://github.com/mygamedevtools/scene-loader/compare/2.2.1...2.2.2) (2023-12-02)
 
 
