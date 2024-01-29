@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
@@ -10,7 +11,7 @@ namespace MyGameDevTools.SceneLoading
     /// <br/>
     /// A scene manager should only keep track of scenes loaded within its own scope.
     /// </summary>
-    public interface ISceneManager
+    public interface ISceneManager : IDisposable
     {
         /// <summary>
         /// Reports that the active scene has changed, passing the <b>previous</b> and <b>current</b> active scene as parameters.
@@ -53,7 +54,7 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="setIndexActive">Index of the desired scene to set active, based on the <paramref name="sceneInfos"/> array.</param>
         /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all scenes loaded.</returns>
-        ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null);
+        ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default);
 
         /// <summary>
         /// Loads a scene referenced by the <paramref name="sceneInfo"/>, optionally enabling it as the active scene.
@@ -63,7 +64,7 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="setActive">Should the loaded scene be enabled as the active scene?</param>
         /// <param name="progress">Object to report the loading operation progress to, from 0 to 1.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the loaded scene as the result.</returns>
-        ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+        ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default);
 
         /// <summary>
         /// Unloads all scenes provided by the <paramref name="sceneInfos"/> array in parallel.
@@ -74,7 +75,7 @@ namespace MyGameDevTools.SceneLoading
         /// <br/>
         /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
-        ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos);
+        ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos, CancellationToken token = default);
 
         /// <summary>
         /// Unloads a scene referenced by the <paramref name="sceneInfo"/>.
@@ -85,7 +86,7 @@ namespace MyGameDevTools.SceneLoading
         /// <br/>
         /// Note that in some cases, the returned scene might no longer have a reference to its native representation, which means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
-        ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo);
+        ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default);
 
         /// <summary>
         /// Gets the current active scene in this <see cref="ISceneManager"/> instance.

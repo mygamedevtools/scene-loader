@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace MyGameDevTools.SceneLoading
             if (_task.IsFaulted)
                 throw _task.Exception;
 
-            return !_task.IsCompleted;
+            return !_task.IsCompleted && !_task.IsCanceled;
         }
 
         public void Reset() { }
