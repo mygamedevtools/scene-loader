@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -18,17 +19,22 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
 
-        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default) => TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene);
+        public void Dispose()
+        {
+            _manager.Dispose();
+        }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene).Forget();
+        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default) => TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene).Forget(HandleFireAndForgetException);
 
-        public void UnloadScenes(ILoadSceneInfo[] sceneInfos) => UnloadScenesAsync(sceneInfos).Forget();
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene).Forget(HandleFireAndForgetException);
 
-        public void UnloadScene(ILoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo).Forget();
+        public void UnloadScenes(ILoadSceneInfo[] sceneInfos) => UnloadScenesAsync(sceneInfos).Forget(HandleFireAndForgetException);
 
-        public void LoadScenes(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1) => LoadScenesAsync(sceneInfos, setIndexActive).Forget();
+        public void UnloadScene(ILoadSceneInfo sceneInfo) => UnloadSceneAsync(sceneInfo).Forget(HandleFireAndForgetException);
 
-        public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false) => LoadSceneAsync(sceneInfo, setActive).Forget();
+        public void LoadScenes(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1) => LoadScenesAsync(sceneInfos, setIndexActive).Forget(HandleFireAndForgetException);
+
+        public void LoadScene(ILoadSceneInfo sceneInfo, bool setActive = false) => LoadSceneAsync(sceneInfo, setActive).Forget(HandleFireAndForgetException);
 
         public UniTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default) => intermediateSceneReference == null ? TransitionDirectlyAsync(targetScenes, setIndexActive, externalOriginScene) : TransitionWithIntermediateAsync(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene);
 
@@ -58,13 +64,22 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
         {
             var externalOrigin = externalOriginScene.IsValid();
 
-            var loadingScene = await _manager.LoadSceneAsync(intermediateSceneInfo);
+            Scene loadingScene = default;
+            try
+            {
+                loadingScene = await _manager.LoadSceneAsync(intermediateSceneInfo);
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
 
 #if UNITY_2023_2_OR_NEWER
-            var loadingBehavior = Object.FindObjectsByType<LoadingBehavior>(UnityEngine.FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
+            var loadingBehavior = Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #else
             var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #endif
@@ -106,13 +121,18 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
                 return;
 
             if (externalOrigin)
-#if UNITY_2023_2_OR_NEWER
-                await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene).ToUniTask();
-#else
-                await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
-#endif
+            {
+                AsyncOperation operation = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
+                if (operation != null)
+                    await operation;
+            }
             else
                 await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
+        }
+
+        void HandleFireAndForgetException(Exception exception)
+        {
+            Debug.LogWarningFormat("[{0}] An exception was caught during a fire and forget task:\n{1}", nameof(SceneLoaderUniTask), exception);
         }
 
         public override string ToString()

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,8 +29,18 @@ namespace MyGameDevTools.SceneLoading
 
         readonly List<Scene> _unloadingScenes = new List<Scene>();
         readonly List<Scene> _loadedScenes = new List<Scene>();
+        readonly CancellationTokenSource _lifetimeToken = new CancellationTokenSource();
 
         Scene _activeScene;
+
+        public void Dispose()
+        {
+            _lifetimeToken.Cancel();
+            _lifetimeToken.Dispose();
+
+            _unloadingScenes.Clear();
+            _loadedScenes.Clear();
+        }
 
         public void SetActiveScene(Scene scene)
         {
@@ -69,7 +80,89 @@ namespace MyGameDevTools.SceneLoading
             throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
-        public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null)
+        public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default)
+        {
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
+            try
+            {
+                return await LoadScenesAsync_Internal(sceneInfos, setIndexActive, progress, linkedSource.Token);
+            }
+            catch (OperationCanceledException cancelException)
+            {
+                Debug.LogWarningFormat("[{0}] LoadScenesAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
+                throw;
+            }
+            finally
+            {
+                linkedSource.Dispose();
+            }
+        }
+
+        public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default)
+        {
+            sceneInfo = sceneInfo ?? throw new NullReferenceException($"[{GetType().Name}] Provided scene info is null.");
+
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
+            Scene[] loadedScenes = null;
+            try
+            {
+                loadedScenes = await LoadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress, linkedSource.Token);
+            }
+            catch (OperationCanceledException cancelException)
+            {
+                Debug.LogWarningFormat("[{0}] LoadSceneAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
+                throw;
+            }
+            finally
+            {
+                linkedSource.Dispose();
+            }
+
+            return loadedScenes != null && loadedScenes.Length > 0 ? loadedScenes[0] : default;
+        }
+
+        public async ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos, CancellationToken token = default)
+        {
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
+            try
+            {
+                return await UnloadScenesAsync_Internal(sceneInfos, linkedSource.Token);
+            }
+            catch (OperationCanceledException cancelException)
+            {
+                Debug.LogWarningFormat("[{0}] UnloadScenesAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
+                throw;
+            }
+            finally
+            {
+                linkedSource.Dispose();
+            }
+        }
+
+        public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default)
+        {
+            sceneInfo = sceneInfo ?? throw new ArgumentNullException(nameof(sceneInfo), $"[{GetType().Name}] Provided scene info is null.");
+
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
+            Scene[] unloadedScenes = null;
+            try
+            {
+                unloadedScenes = await UnloadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, linkedSource.Token);
+            }
+            catch (OperationCanceledException cancelException)
+            {
+                Debug.LogWarningFormat("[{0}] UnloadSceneAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
+                throw;
+            }
+            finally
+            {
+                linkedSource.Dispose();
+            }
+
+            return unloadedScenes != null && unloadedScenes.Length > 0 ? unloadedScenes[0] : default;
+        }
+
+        async ValueTask<Scene[]> LoadScenesAsync_Internal(ILoadSceneInfo[] sceneInfos, int setIndexActive, IProgress<float> progress, CancellationToken token)
         {
             if (sceneInfos == null || sceneInfos.Length == 0)
                 throw new ArgumentException(nameof(sceneInfos), $"[{GetType().Name}] Provided scene group is null or empty.");
@@ -78,17 +171,19 @@ namespace MyGameDevTools.SceneLoading
 
             var operationGroup = GetLoadSceneOperations(sceneInfos, ref setIndexActive);
             if (operationGroup.Operations.Count == 0)
-                return Array.Empty<Scene>();
+                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid load scene operations.");
 
-            while (!operationGroup.IsDone)
+            while (!operationGroup.IsDone && !token.IsCancellationRequested)
             {
 #if USE_UNITASK
-                await UniTask.Yield();
+                await UniTask.Yield(token);
 #else
                 await Task.Yield();
 #endif
                 progress?.Report(operationGroup.Progress);
             }
+
+            token.ThrowIfCancellationRequested();
 
             var loadedScenes = GetLastUnityLoadedScenesByInfos(sceneInfos, ref setIndexActive);
 
@@ -102,23 +197,14 @@ namespace MyGameDevTools.SceneLoading
             return loadedScenes;
         }
 
-        public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
-        {
-            sceneInfo = sceneInfo ?? throw new NullReferenceException($"[{GetType().Name}] Provided scene info is null.");
-            var loadedScenes = await LoadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress);
-            if (loadedScenes.Length == 0)
-                return default;
-            return loadedScenes[0];
-        }
-
-        public async ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos)
+        async ValueTask<Scene[]> UnloadScenesAsync_Internal(ILoadSceneInfo[] sceneInfos, CancellationToken token)
         {
             if (sceneInfos == null || sceneInfos.Length == 0)
                 throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneInfos));
 
             var loadedScenes = GetLastLoadedScenesByInfos(sceneInfos, out var unloadingIndexes);
             if (loadedScenes.Count == 0)
-                return Array.Empty<Scene>();
+                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid unload scene operations.");
 
             int unloadingLength = unloadingIndexes.Length;
             var unloadingScenes = new Scene[unloadingLength];
@@ -137,12 +223,16 @@ namespace MyGameDevTools.SceneLoading
                 _unloadingScenes.Add(scene);
             }
 
-            while (!operationGroup.IsDone)
+            while (!operationGroup.IsDone && !token.IsCancellationRequested)
+            {
 #if USE_UNITASK
-                await UniTask.Yield();
+                await UniTask.Yield(token);
 #else
                 await Task.Yield();
 #endif
+            }
+
+            token.ThrowIfCancellationRequested();
 
             foreach (var scene in loadedScenes)
             {
@@ -154,7 +244,7 @@ namespace MyGameDevTools.SceneLoading
 
             var tasks = new Task[unloadingLength];
             for (i = 0; i < unloadingLength; i++)
-                tasks[i] = WaitForSceneUnload(unloadingScenes[i]).AsTask();
+                tasks[i] = WaitForSceneUnload(unloadingScenes[i], token).AsTask();
 
             await Task.WhenAll(tasks);
 
@@ -163,23 +253,16 @@ namespace MyGameDevTools.SceneLoading
             return loadedScenes.ToArray();
         }
 
-        public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
-        {
-            sceneInfo = sceneInfo ?? throw new ArgumentNullException(nameof(sceneInfo), $"[{GetType().Name}] Provided scene info is null.");
-            var unloadedScenes = await UnloadScenesAsync(new ILoadSceneInfo[] { sceneInfo });
-            if (unloadedScenes.Length == 0)
-                return default;
-            return unloadedScenes[0];
-        }
-
-        async ValueTask<Scene> WaitForSceneUnload(Scene scene)
+        async ValueTask<Scene> WaitForSceneUnload(Scene scene, CancellationToken token)
         {
 #if USE_UNITASK
-            await UniTask.WaitUntil(() => !_unloadingScenes.Contains(scene));
+            await UniTask.WaitUntil(() => !_unloadingScenes.Contains(scene), cancellationToken: token);
 #else
-            while (_unloadingScenes.Contains(scene))
+            while (_unloadingScenes.Contains(scene) && !token.IsCancellationRequested)
                 await Task.Yield();
 #endif
+            token.ThrowIfCancellationRequested();
+
             return scene;
         }
 

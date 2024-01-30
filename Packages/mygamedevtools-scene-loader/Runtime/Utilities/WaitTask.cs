@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Threading.Tasks;
 
@@ -5,21 +6,24 @@ namespace MyGameDevTools.SceneLoading
 {
     public readonly struct WaitTask : IEnumerator
     {
-        readonly Task _task;
-
         public object Current => null;
 
-        public WaitTask(Task task)
+        public readonly Task Task;
+
+        readonly bool _throwOnException;
+
+        public WaitTask(Task task, bool throwOnException = true)
         {
-            _task = task;
+            Task = task;
+            _throwOnException = throwOnException;
         }
 
         public bool MoveNext()
         {
-            if (_task.IsFaulted)
-                throw _task.Exception;
+            if (_throwOnException && Task.IsFaulted)
+                throw Task.Exception;
 
-            return !_task.IsCompleted;
+            return !Task.IsCompleted && !Task.IsCanceled && !Task.IsFaulted;
         }
 
         public void Reset() { }

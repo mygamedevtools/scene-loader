@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 #if ENABLE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
@@ -42,6 +44,14 @@ namespace MyGameDevTools.SceneLoading.Tests
             new SceneManager(),
 #if ENABLE_ADDRESSABLES
             new SceneManagerAddressable()
+#endif
+        };
+
+        static readonly Func<ISceneManager>[] _sceneManagerCreateFuncs = new Func<ISceneManager>[]
+        {
+            () => new SceneManager(),
+#if ENABLE_ADDRESSABLES
+            () => new SceneManagerAddressable()
 #endif
         };
 
@@ -86,6 +96,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             for (int i = 0; i < _sceneManagers.Length; i++)
                 yield return SceneLoaderTestUtilities.UnloadManagerScenes(_sceneManagers[i]);
+
+            yield return SceneLoaderTestUtilities.UnloadRemainingScenes();
             Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.sceneCount);
         }
 
@@ -268,7 +280,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             if (manager is SceneManager)
                 LogAssert.Expect(LogType.Error, new Regex("'not-a-real-scene' couldn't be loaded"));
             var wait = new WaitTask(manager.LoadSceneAsync(new LoadSceneInfoName(sceneName), false).AsTask());
-            wait.MoveNext();
+            Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]
@@ -346,7 +358,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var sceneName = "not-a-real-scene";
             LogAssert.Expect(LogType.Warning, new Regex("Some of the scenes could not be found loaded"));
             var wait = new WaitTask(manager.UnloadSceneAsync(new LoadSceneInfoName(sceneName)).AsTask());
-            wait.MoveNext();
+            Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]
@@ -405,6 +417,111 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return new WaitTask(task);
 
             Assert.Zero(_sceneManagers[1].SceneCount);
+        }
+
+        [Test]
+        public void Dispose_Simple([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        {
+            ISceneManager manager = managerCreateFunc();
+            Assert.DoesNotThrow(manager.Dispose);
+        }
+
+        [UnityTest]
+        public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        {
+            ISceneManager manager = managerCreateFunc();
+            Task task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask();
+            manager.Dispose();
+            yield return new WaitTask(task);
+            Assert.That(task.IsCompleted);
+        }
+
+        [UnityTest]
+        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        {
+            ISceneManager manager = managerCreateFunc();
+            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            manager.Dispose();
+            yield return new WaitTask(task);
+            Assert.True(task.IsCanceled);
+        }
+
+        [UnityTest]
+        public IEnumerator Dipose_DuringUnloadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        {
+            ISceneManager manager = managerCreateFunc();
+            ILoadSceneInfo sceneInfo = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
+            Task task = manager.LoadSceneAsync(sceneInfo).AsTask();
+            yield return new WaitTask(task);
+
+            task = manager.UnloadSceneAsync(sceneInfo).AsTask();
+            manager.Dispose();
+            yield return new WaitTask(task);
+            Assert.True(task.IsCanceled);
+        }
+
+        [UnityTest]
+        public IEnumerator Dipose_DuringUnloadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        {
+            ISceneManager manager = managerCreateFunc();
+            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            yield return new WaitTask(task);
+
+            task = manager.UnloadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            manager.Dispose();
+            yield return new WaitTask(task);
+            Assert.True(task.IsCanceled);
+        }
+
+        [UnityTest]
+        public IEnumerator Cancellation_DuringLoadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        {
+            CancellationTokenSource tokenSource = new();
+            Task task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), token: tokenSource.Token).AsTask();
+            tokenSource.Cancel();
+            yield return new WaitTask(task);
+            Assert.That(task.IsCompleted);
+            tokenSource.Dispose();
+        }
+
+        [UnityTest]
+        public IEnumerator Cancellation_DuringLoadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        {
+            CancellationTokenSource tokenSource = new();
+            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0], token: tokenSource.Token).AsTask();
+            tokenSource.Cancel();
+            yield return new WaitTask(task);
+            Assert.True(task.IsCanceled);
+            tokenSource.Dispose();
+        }
+
+        [UnityTest]
+        public IEnumerator Cancellation_DuringUnloadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        {
+            CancellationTokenSource tokenSource = new();
+            ILoadSceneInfo sceneInfo = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
+            Task task = manager.LoadSceneAsync(sceneInfo).AsTask();
+            yield return new WaitTask(task);
+
+            task = manager.UnloadSceneAsync(sceneInfo, token: tokenSource.Token).AsTask();
+            tokenSource.Cancel();
+            yield return new WaitTask(task);
+            Assert.True(task.IsCanceled);
+            tokenSource.Dispose();
+        }
+
+        [UnityTest]
+        public IEnumerator Cancellation_DuringUnloadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        {
+            CancellationTokenSource tokenSource = new();
+            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            yield return new WaitTask(task);
+
+            task = manager.UnloadScenesAsync(_loadSceneInfos_multiple[0], token: tokenSource.Token).AsTask();
+            tokenSource.Cancel();
+            yield return new WaitTask(task);
+            Assert.True(task.IsCanceled);
+            tokenSource.Dispose();
         }
 
         void ReportSceneActivation(Scene previousScene, Scene newScene)
