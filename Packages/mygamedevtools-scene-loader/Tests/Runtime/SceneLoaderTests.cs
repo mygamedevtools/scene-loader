@@ -7,7 +7,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -188,11 +187,12 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => unloadedScene.IsValid() && !unloadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
+            yield return new WaitUntil(() => unloadedScene.handle != 0 && !unloadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneUnloaded -= sceneUnloaded;
 
+            Assert.Less(watch.ElapsedMilliseconds, _defaultTimeout);
             Assert.AreEqual(loadedScene, unloadedScene);
             Assert.IsFalse(unloadedScene.isLoaded);
 
@@ -340,27 +340,30 @@ namespace MyGameDevTools.SceneLoading.Tests
             }
         }
 
-        [Test]
-        public void Dispose_Simple([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        [UnityTest]
+        public IEnumerator Dispose_Simple([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
-        [Test]
-        public void Dispose_DuringLoadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        [UnityTest]
+        public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
             loader.LoadScene(new LoadSceneInfoName(SceneBuilder.SceneNames[1]));
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
-        [Test]
-        public void Dispose_DuringLoadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        [UnityTest]
+        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
             loader.LoadScenes(_targetSceneGroups[0]);
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
         [UnityTest]
@@ -371,6 +374,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             loader.UnloadScene(new LoadSceneInfoScene(loader.Manager.GetLastLoadedScene()));
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
         [UnityTest]
@@ -388,6 +392,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             loader.UnloadScenes(targetScenes);
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
         [UnityTest]
@@ -399,6 +404,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             loader.TransitionToScene(targetScene, loadingScene);
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
         [UnityTest]
@@ -410,6 +416,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             loader.TransitionToScenes(targetScenes, 0, loadingScene);
             Assert.DoesNotThrow(loader.Dispose);
+            yield return null;
         }
 
         /// <summary>

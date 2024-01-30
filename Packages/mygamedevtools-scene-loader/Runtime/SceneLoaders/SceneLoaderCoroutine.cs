@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -191,7 +189,7 @@ namespace MyGameDevTools.SceneLoading
 
                 if (_externalOrigin)
                 {
-                    return !_unloadOperation.isDone;
+                    return _unloadOperation != null && !_unloadOperation.isDone;
                 }
                 else
                 {

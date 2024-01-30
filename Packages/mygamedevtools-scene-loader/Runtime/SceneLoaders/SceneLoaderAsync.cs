@@ -63,6 +63,9 @@ namespace MyGameDevTools.SceneLoading
             var externalOrigin = externalOriginScene.IsValid();
             
             var loadingScene = await _manager.LoadSceneAsync(intermediateSceneInfo);
+            if (!loadingScene.IsValid())
+                return Array.Empty<Scene>();
+
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
@@ -114,7 +117,7 @@ namespace MyGameDevTools.SceneLoading
             if (externalOrigin)
             {
                 var operation = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
-                while (!operation.isDone)
+                while (operation != null && !operation.isDone)
                     await Task.Yield();
             }
             else

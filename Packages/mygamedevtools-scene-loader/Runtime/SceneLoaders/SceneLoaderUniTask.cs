@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -64,6 +65,9 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             var externalOrigin = externalOriginScene.IsValid();
 
             var loadingScene = await _manager.LoadSceneAsync(intermediateSceneInfo);
+            if (!loadingScene.IsValid())
+                return Array.Empty<Scene>();
+
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
@@ -111,11 +115,11 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
                 return;
 
             if (externalOrigin)
-#if UNITY_2023_2_OR_NEWER
-                await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene).ToUniTask();
-#else
-                await UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
-#endif
+            {
+                AsyncOperation operation = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
+                if (operation != null)
+                    await operation;
+            }
             else
                 await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene));
         }
