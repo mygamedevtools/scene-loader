@@ -32,9 +32,9 @@ Summary
   * [Description](#description)
 * [Usage](#usage)
   * [The Scene Managers](#the-scene-managers)
-    * [IDisposable and CancellationToken](#idisposable-and-cancellationtoken)
   * [The LoadSceneInfo objects](#the-loadsceneinfo-objects)
   * [The Scene Loaders](#the-scene-loaders)
+  * [Disposable and CancellationTokens](#disposable-and-cancellationtokens)
   * [Practical examples](#practical-examples)
     * [Creating your scene loader](#creating-your-scene-loader)
     * [Loading scenes with load scene info](#loading-scenes-with-load-scene-info)
@@ -97,14 +97,14 @@ In this package, you'll have the possibility to standardize the scene loading pr
 Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between. Also, starting from version `2.2` you can **Load**, **Unload**, and **Transition** to **multiple scenes** in parallel!
 
 > [!NOTE]
-> You don't need to understand what **Addressables** or **UniTask** do in order to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
+> You don't need to understand what **Addressables** or **UniTask** do to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
 
 Usage
 ---
 
 Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
 
-In order to standardize how the scenes are loaded, you'll be using `ISceneLoader`, `ISceneManager`, and `ILoadSceneInfo` objects.
+To standardize how the scenes are loaded, you'll be using `ISceneLoader`, `ISceneManager`, and `ILoadSceneInfo` objects.
 
 ```mermaid
 flowchart BT
@@ -190,11 +190,6 @@ So, instead of having multiple methods for receiving the scene's build index or 
 
 Alternatively, you can also use the `LoadScenesAsync` and `UnloadScenesAsync` methods, to perform the operations on multiple scenes in parallel. These will return a `ValueTask<Scene[]>`.
 
-#### IDisposable and CancellationToken
-
-The `ISceneManager` interface also implements `IDisposable`, meaning that the Scene Managers should implement the `Dispose()` method. This is used with the `CancellationToken` parameters in the Scene Manager methods to ensure that it will clear its internal context during disposal.
-Even if its methods get canceled by the `CancellationToken`, the Unity Scene Manager methods are not cancellable and therefore will continue to operate when called.
-
 ### The LoadSceneInfo objects
 
 As its name states, these objects hold references to a scene to be loaded (or unloaded) and can validate whether they are a reference to a loaded scene.
@@ -253,17 +248,17 @@ And the `ISceneLoaderAsync`:
 ```cs
 public interface ISceneLoaderAsync<TAsyncScene, TAsyncSceneArray> : ISceneLoader
 {
-  TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+  TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default, CancellationToken token = default);
   
-  TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+  TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default, CancellationToken token = default);
 
-  TAsyncSceneArray LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null);
+  TAsyncSceneArray LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default);
 
-  TAsyncScene LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
+  TAsyncScene LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default);
 
-  TAsyncSceneArray UnloadScenesAsync(ILoadSceneInfo[] sceneReferences);
+  TAsyncSceneArray UnloadScenesAsync(ILoadSceneInfo[] sceneReferences, CancellationToken token = default);
 
-  TAsyncScene UnloadSceneAsync(ILoadSceneInfo sceneReference);
+  TAsyncScene UnloadSceneAsync(ILoadSceneInfo sceneReference, CancellationToken token = default);
 }
 ```
 
@@ -308,6 +303,25 @@ That's four operations now.
 The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provide where you want to go from the currently active scene and if you want an intermediary scene (loading scene for example).
 
 You can also transition from a scene **outside** of the scene manager context, by providing a scene in the `externalOriginScene` parameter in the Transition methods. Just make sure this scene **is not** in another scene manager context.
+
+### Disposable and CancellationTokens
+
+Both the `ISceneManager` and the `ISceneLoader` interfaces implement `IDisposable`, meaning that the Scene Managers and Loaders should implement the `Dispose()` method.
+This is used with the `CancellationToken` parameters in `ISceneManager` methods to ensure that it will clear its internal data and stop async code execution during disposal.
+Note that even when its methods get canceled by the `CancellationToken`, the Unity Scene Manager methods are not cancellable and therefore will continue to operate when called.
+
+The disposal of the implemented Scene Managers will clear its data and stop any running logic.
+This is useful for shutting down the application, for example.
+In this context, the Unity Scene Manager has its internal logic to stop itself.
+In other contexts, the Unity Scene Manager operations may continue to run after the `ISceneManager` is disposed.
+
+If you are going to manually dispose of your scene loaders or managers, prefer the following scenarios:
+* You can ensure that there are no load/unload/transition operations in progress.
+* You are quitting/shutting down the application or an application module.
+
+> [!WARNING]
+> It's **not recommended** to manually cancel the `ISceneManager` operations via its `CancellationToken` parameters.
+> It may result in unexpected issues such as unwanted scenes being loaded/unloaded after cancellation.
 
 ### Practical Examples
 
@@ -576,7 +590,7 @@ The `LoadingFader` component does just that.
 Add it to an [UI CanvasGroup] [GameObject] to control the group's alpha value during the visual transitions.
 You can also set the fade time and customize the fade in/out animation curves to suit your preference.
 
-In order to use the `LoadingFader` effectively, you must **enable** both `WaitForScriptedStart` and `WaitForScriptedEnd` toggles in your `LoadingBehavior` component.
+To use the `LoadingFader` effectively, you must **enable** both `WaitForScriptedStart` and `WaitForScriptedEnd` toggles in your `LoadingBehavior` component.
 
 #### Loading Screen Example
 
@@ -597,7 +611,7 @@ You can test this scene by passing its `ILoadSceneInfo` reference as the `interm
 
 ### Why so many interfaces?
 
-The idea behind the interfaces is first to decouple things and second to allow you to build your own systems if you require something very different from the provided content.
+The idea behind the interfaces is first to decouple things and second to allow you to build your systems if you require something very different from the provided content.
 Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best in each use case.
 
 I am always open to suggestions, so please if you have any, don't hesitate to share!

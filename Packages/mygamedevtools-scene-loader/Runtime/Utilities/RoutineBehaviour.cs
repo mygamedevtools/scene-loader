@@ -1,20 +1,23 @@
 using UnityEngine;
 
-public class RoutineBehaviour : MonoBehaviour 
+namespace MyGameDevTools.SceneLoading
 {
-    public static RoutineBehaviour Instance
+    public class RoutineBehaviour : MonoBehaviour 
     {
-        get
+        public static RoutineBehaviour Instance
         {
-            if (!_instance)
+            get
             {
-                _instance = new GameObject(nameof(RoutineBehaviour)).AddComponent<RoutineBehaviour>();
-                DontDestroyOnLoad(_instance.gameObject);
-                _instance.hideFlags = HideFlags.HideAndDontSave;
+                if (!_instance)
+                {
+                    _instance = new GameObject(nameof(RoutineBehaviour)).AddComponent<RoutineBehaviour>();
+                    DontDestroyOnLoad(_instance.gameObject);
+                    _instance.hideFlags = HideFlags.HideAndDontSave;
+                }
+                return _instance;
             }
-            return _instance;
         }
-    }
 
-    static RoutineBehaviour _instance;
+        static RoutineBehaviour _instance;
+    }
 }

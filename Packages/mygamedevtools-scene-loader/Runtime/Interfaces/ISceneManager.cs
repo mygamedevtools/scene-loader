@@ -53,6 +53,7 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneInfos">References to all scenes to load.</param>
         /// <param name="setIndexActive">Index of the desired scene to set active, based on the <paramref name="sceneInfos"/> array.</param>
         /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all scenes loaded.</returns>
         /// <exception cref="ArgumentException">When scene info group is null, empty or the setIndexName is bigger than the scene length.</exception>
         /// <exception cref="InvalidOperationException">When the provided scene info group fails to produce valid load scene operations.</exception>
@@ -65,6 +66,7 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneInfo">A reference to the scene that's going to be loaded.</param>
         /// <param name="setActive">Should the loaded scene be enabled as the active scene?</param>
         /// <param name="progress">Object to report the loading operation progress to, from 0 to 1.</param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the loaded scene as the result.</returns>
         /// <exception cref="ArgumentException">When scene info is null.</exception>
         /// <exception cref="InvalidOperationException">When the provided scene info fails to produce a valid load scene operation.</exception>
@@ -74,6 +76,7 @@ namespace MyGameDevTools.SceneLoading
         /// Unloads all scenes provided by the <paramref name="sceneInfos"/> array in parallel.
         /// </summary>
         /// <param name="sceneInfos">Reference to all scenes to unload.</param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>
         /// A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all the unloaded scenes.
         /// <br/>
@@ -87,6 +90,7 @@ namespace MyGameDevTools.SceneLoading
         /// Unloads a scene referenced by the <paramref name="sceneInfo"/>.
         /// </summary>
         /// <param name="sceneInfo">A reference to the scene that's going to be unloaded.</param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>
         /// A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the unloaded scene as the result.
         /// <br/>

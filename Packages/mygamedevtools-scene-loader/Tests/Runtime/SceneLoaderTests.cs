@@ -13,6 +13,15 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
+    enum SceneLoaderType
+    {
+        Async,
+#if ENABLE_UNITASK
+        UniTask,
+#endif
+        Coroutine,
+    }
+
     public class SceneLoaderTests : SceneTestEnvironment
     {
         const int _defaultTimeout = 3000;
@@ -276,12 +285,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             yield return LoadFirstScene(sceneLoader);
 
-            int type;
-            if (sceneLoader is ISceneLoaderAsync)
-                type = 1;
-            else if (sceneLoader is ISceneLoaderUniTask)
-                type = 2;
-            else
+            SceneLoaderType type = GetSceneLoaderType(sceneLoader);
+            if (type == SceneLoaderType.Coroutine)
                 yield break; // There is currently no way to correctly get the loaded/unloaded scene in the SceneLoaderCoroutine
 
             Scene loadedScene = default;
@@ -291,16 +296,19 @@ namespace MyGameDevTools.SceneLoading.Tests
             {
                 switch (type)
                 {
-                    case 1:
+                    case SceneLoaderType.Async:
                         var task = ((ISceneLoaderAsync)sceneLoader).TransitionToSceneAsync(targetScene, loadingScene).AsTask();
                         yield return new WaitTask(task);
                         loadedScene = task.Result;
                         break;
-                    case 2:
+#if ENABLE_UNITASK
+                    case SceneLoaderType.UniTask:
                         var unitask = ((ISceneLoaderUniTask)sceneLoader).TransitionToSceneAsync(targetScene, loadingScene).AsTask();
                         yield return new WaitTask(unitask);
                         loadedScene = unitask.Result;
                         break;
+#endif
+                    default: throw new NotImplementedException($"Type {type} was not implemented");
                 }
 
                 Assert.AreEqual(loadedScene.handle, sceneLoader.Manager.GetActiveScene().handle);
@@ -341,6 +349,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_Simple([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -349,6 +358,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -358,6 +368,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -367,6 +378,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringUnloadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -378,6 +390,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringUnloadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -396,6 +409,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringTransitionToScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -408,6 +422,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringTransitionToScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -418,6 +433,264 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.DoesNotThrow(loader.Dispose);
             yield return null;
         }
+
+#if ENABLE_UNITASK
+        [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        public IEnumerator Dispose_DuringLoadSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            SceneLoaderType type = GetSceneLoaderType(loader);
+            ILoadSceneInfo targetScene = _targetSceneInfos[0];
+
+            UniTask<Scene> task = default;
+            bool isCoroutine = false;
+            switch (type)
+            {
+                case SceneLoaderType.Async:
+                    task = ((ISceneLoaderAsync)loader).LoadSceneAsync(targetScene).AsTask().AsUniTask();
+                    break;
+                case SceneLoaderType.UniTask:
+                    task = ((ISceneLoaderUniTask)loader).LoadSceneAsync(targetScene);
+                    break;
+                case SceneLoaderType.Coroutine:
+                    ((ISceneLoaderCoroutine)loader).LoadSceneAsync(targetScene);
+                    isCoroutine = true;
+                    break;
+                default: throw new NotImplementedException($"Type {type} was not implemented");
+            }
+            loader.Dispose();
+
+            if (isCoroutine)
+                return;
+
+            bool canceled = false;
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            Assert.True(canceled);
+        });
+
+        [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        public IEnumerator Dispose_DuringLoadScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            SceneLoaderType type = GetSceneLoaderType(loader);
+
+            UniTask<Scene[]> task = default;
+            bool isCoroutine = false;
+            switch (type)
+            {
+                case SceneLoaderType.Async:
+                    task = ((ISceneLoaderAsync)loader).LoadScenesAsync(_targetSceneGroups[0]).AsTask().AsUniTask();
+                    break;
+                case SceneLoaderType.UniTask:
+                    task = ((ISceneLoaderUniTask)loader).LoadScenesAsync(_targetSceneGroups[0]);
+                    break;
+                case SceneLoaderType.Coroutine:
+                    ((ISceneLoaderCoroutine)loader).LoadScenesAsync(_targetSceneGroups[0]);
+                    isCoroutine = true;
+                    break;
+                default: throw new NotImplementedException($"Type {type} was not implemented");
+            }
+            loader.Dispose();
+
+            if (isCoroutine)
+                return;
+
+            bool canceled = false;
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            Assert.True(canceled);
+        });
+
+        [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        public IEnumerator Dispose_DuringUnloadSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            await LoadFirstScene(loader);
+
+            SceneLoaderType type = GetSceneLoaderType(loader);
+            ILoadSceneInfo sceneInfo = new LoadSceneInfoScene(loader.Manager.GetLastLoadedScene());
+
+            UniTask<Scene> task = default;
+            bool isCoroutine = false;
+            switch (type)
+            {
+                case SceneLoaderType.Async:
+                    task = ((ISceneLoaderAsync)loader).UnloadSceneAsync(sceneInfo).AsTask().AsUniTask();
+                    break;
+                case SceneLoaderType.UniTask:
+                    task = ((ISceneLoaderUniTask)loader).UnloadSceneAsync(sceneInfo);
+                    break;
+                case SceneLoaderType.Coroutine:
+                    ((ISceneLoaderCoroutine)loader).UnloadSceneAsync(sceneInfo);
+                    isCoroutine = true;
+                    break;
+                default: throw new NotImplementedException($"Type {type} was not implemented");
+            }
+            loader.Dispose();
+
+            if (isCoroutine)
+                return;
+
+            bool canceled = false;
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            Assert.True(canceled);
+        });
+
+        [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        public IEnumerator Dispose_DuringUnloadScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
+            int sceneCount = targetScenes.Length;
+            loader.LoadScenes(targetScenes);
+
+            await UniTask.WaitUntil(() => loader.Manager.SceneCount == sceneCount).TimeoutWithoutException(TimeSpan.FromMilliseconds(_defaultTimeout));
+
+            SceneLoaderType type = GetSceneLoaderType(loader);
+
+            UniTask<Scene[]> task = default;
+            bool isCoroutine = false;
+            switch (type)
+            {
+                case SceneLoaderType.Async:
+                    task = ((ISceneLoaderAsync)loader).UnloadScenesAsync(targetScenes).AsTask().AsUniTask();
+                    break;
+                case SceneLoaderType.UniTask:
+                    task = ((ISceneLoaderUniTask)loader).UnloadScenesAsync(targetScenes);
+                    break;
+                case SceneLoaderType.Coroutine:
+                    ((ISceneLoaderCoroutine)loader).UnloadScenesAsync(targetScenes);
+                    isCoroutine = true;
+                    break;
+                default: throw new NotImplementedException($"Type {type} was not implemented");
+            }
+            loader.Dispose();
+
+            if (isCoroutine)
+                return;
+
+            bool canceled = false;
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            Assert.True(canceled);
+        });
+
+        [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        public IEnumerator Dispose_DuringTransitionToSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene) => UniTask.ToCoroutine(async () =>
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            await LoadFirstScene(loader);
+            ILoadSceneInfo targetScene = _targetSceneInfos[0];
+
+            SceneLoaderType type = GetSceneLoaderType(loader);
+
+            UniTask<Scene> task = default;
+            bool isCoroutine = false;
+            switch (type)
+            {
+                case SceneLoaderType.Async:
+                    task = ((ISceneLoaderAsync)loader).TransitionToSceneAsync(targetScene, loadingScene).AsTask().AsUniTask();
+                    break;
+                case SceneLoaderType.UniTask:
+                    task = ((ISceneLoaderUniTask)loader).TransitionToSceneAsync(targetScene, loadingScene);
+                    break;
+                case SceneLoaderType.Coroutine:
+                    ((ISceneLoaderCoroutine)loader).TransitionToSceneAsync(targetScene, loadingScene);
+                    isCoroutine = true;
+                    break;
+                default: throw new NotImplementedException($"Type {type} was not implemented");
+            }
+            loader.Dispose();
+
+            if (isCoroutine)
+                return;
+
+            bool canceled = false;
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            Assert.True(canceled);
+        });
+
+        [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        public IEnumerator Dispose_DuringTransitionToScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene) => UniTask.ToCoroutine(async () =>
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            await LoadFirstScene(loader);
+            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
+
+            SceneLoaderType type = GetSceneLoaderType(loader);
+
+            UniTask<Scene[]> task = default;
+            bool isCoroutine = false;
+            switch (type)
+            {
+                case SceneLoaderType.Async:
+                    task = ((ISceneLoaderAsync)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene).AsTask().AsUniTask();
+                    break;
+                case SceneLoaderType.UniTask:
+                    task = ((ISceneLoaderUniTask)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene);
+                    break;
+                case SceneLoaderType.Coroutine:
+                    ((ISceneLoaderCoroutine)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene);
+                    isCoroutine = true;
+                    break;
+                default: throw new NotImplementedException($"Type {type} was not implemented");
+            }
+            loader.Dispose();
+
+            if (isCoroutine)
+                return;
+
+            bool canceled = false;
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            Assert.True(canceled);
+        });
+#endif
 
         /// <summary>
         /// Required to test transition scenarios, otherwise the initial (test) scene would be unloaded and stop the tests.
@@ -442,6 +715,20 @@ namespace MyGameDevTools.SceneLoading.Tests
             {
                 loadedScene = scene;
             }
+        }
+
+        SceneLoaderType GetSceneLoaderType(ISceneLoader loader)
+        {
+            if (loader is SceneLoaderAsync)
+                return SceneLoaderType.Async;
+#if ENABLE_UNITASK
+            else if (loader is SceneLoaderUniTask)
+                return SceneLoaderType.UniTask;
+#endif
+            else if (loader is SceneLoaderCoroutine)
+                return SceneLoaderType.Coroutine;
+
+            throw new Exception("Unexpected ISceneLoader type");
         }
     }
 }
