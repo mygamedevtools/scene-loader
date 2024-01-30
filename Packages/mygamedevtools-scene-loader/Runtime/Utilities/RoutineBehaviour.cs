@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Threading;
 using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
@@ -21,15 +19,5 @@ namespace MyGameDevTools.SceneLoading
         }
 
         static RoutineBehaviour _instance;
-
-        public Coroutine StartCoroutineWithDisposableToken(IEnumerator routine, CancellationTokenSource cancellationTokenSource)
-        {
-            return StartCoroutine(wrapperRoutine());
-            IEnumerator wrapperRoutine()
-            {
-                yield return routine;
-                cancellationTokenSource.Dispose();
-            }
-        }
     }
 }

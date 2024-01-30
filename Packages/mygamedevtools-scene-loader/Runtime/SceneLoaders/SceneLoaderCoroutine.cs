@@ -57,39 +57,36 @@ namespace MyGameDevTools.SceneLoading
             LoadSceneAsync(sceneInfo, setActive);
         }
 
-        public Coroutine TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default, CancellationToken token = default)
+        public Coroutine TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return RoutineBehaviour.Instance.StartCoroutineWithDisposableToken(intermediateSceneReference == null
-                ? TransitionDirectlyRoutine(targetScenes, setIndexActive, externalOriginScene, linkedSource.Token)
-                : TransitionWithIntermediateRoutine(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene, linkedSource.Token), linkedSource);
+            return RoutineBehaviour.Instance.StartCoroutine(intermediateSceneReference == null
+                ? TransitionDirectlyRoutine(targetScenes, setIndexActive, externalOriginScene, _lifetimeTokenSource.Token)
+                : TransitionWithIntermediateRoutine(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene, _lifetimeTokenSource.Token));
         }
 
-        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default, CancellationToken token = default)
+        public Coroutine TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default)
         {
-            return TransitionToScenesAsync(new ILoadSceneInfo[] { targetSceneInfo }, 0, intermediateSceneInfo, externalOriginScene, token);
+            return TransitionToScenesAsync(new ILoadSceneInfo[] { targetSceneInfo }, 0, intermediateSceneInfo, externalOriginScene);
         }
 
-        public Coroutine UnloadScenesAsync(ILoadSceneInfo[] sceneReferences, CancellationToken token = default)
+        public Coroutine UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return RoutineBehaviour.Instance.StartCoroutineWithDisposableToken(GetUnloadScenesWaitTask(sceneReferences, linkedSource.Token), linkedSource);
+            return RoutineBehaviour.Instance.StartCoroutine(GetUnloadScenesWaitTask(sceneReferences, _lifetimeTokenSource.Token));
         }
 
-        public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default)
+        public Coroutine UnloadSceneAsync(ILoadSceneInfo sceneInfo)
         {
-            return UnloadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, token);
+            return UnloadScenesAsync(new ILoadSceneInfo[] { sceneInfo });
         }
 
-        public Coroutine LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default)
+        public Coroutine LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return RoutineBehaviour.Instance.StartCoroutineWithDisposableToken(GetLoadScenesWaitTask(sceneReferences, setIndexActive, progress, linkedSource.Token), linkedSource);
+            return RoutineBehaviour.Instance.StartCoroutine(GetLoadScenesWaitTask(sceneReferences, setIndexActive, progress, _lifetimeTokenSource.Token));
         }
 
-        public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default)
+        public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
         {
-            return LoadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress, token);
+            return LoadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress);
         }
 
         WaitTask GetLoadScenesWaitTask(ILoadSceneInfo[] sceneReferences, int setIndexActive, IProgress<float> progress, CancellationToken token)

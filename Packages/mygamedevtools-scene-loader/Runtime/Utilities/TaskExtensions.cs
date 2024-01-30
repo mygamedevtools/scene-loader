@@ -52,21 +52,4 @@ namespace MyGameDevTools.SceneLoading
             }
         }
     }
-
-#if ENABLE_UNITASK
-    public static class UniTaskExtensions
-    {
-        public static async UniTask<T> RunAndDisposeToken<T>(this UniTask<T> uniTask, CancellationTokenSource tokenSource)
-        {
-            try
-            {
-                return await uniTask;
-            }
-            finally
-            {
-                tokenSource.Dispose();
-            }
-        }
-    }
-#endif
 }

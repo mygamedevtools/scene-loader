@@ -33,13 +33,10 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="externalOriginScene">
         /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
         /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
         /// <returns>
         /// The transition operation.
         /// </returns>
-        TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default, CancellationToken token = default);
+        TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.TransitionToScene(ILoadSceneInfo, ILoadSceneInfo, Scene)"/>.
@@ -54,13 +51,10 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="externalOriginScene">
         /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
         /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
         /// <returns>
         /// The transition operation.
         /// </returns>
-        TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default, CancellationToken token = default);
+        TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.LoadScenes(ILoadSceneInfo[], int)"/>.
@@ -74,13 +68,10 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="progress">
         /// Optional <see cref="IProgress{T}"/> reference to report the scene group loading progress (ranging from 0 to 1).
         /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
         /// <returns>
         /// The loading operation.
         /// </returns>
-        TAsyncSceneArray LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default);
+        TAsyncSceneArray LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.LoadScene(ILoadSceneInfo, bool)"/>.
@@ -94,13 +85,10 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="progress">
         /// Optional <see cref="IProgress{T}"/> reference to report the scene loading progress (ranging from 0 to 1).
         /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
         /// <returns>
         /// The loading operation.
         /// </returns>
-        TAsyncScene LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default);
+        TAsyncScene LoadSceneAsync(ILoadSceneInfo sceneReference, bool setActive = false, IProgress<float> progress = null);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.UnloadScenes(ILoadSceneInfo[])"/>
@@ -108,13 +96,10 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneReferences">
         /// Reference to all scenes to be unloaded.
         /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
         /// <returns>
         /// The unloading operation.
         /// </returns>
-        TAsyncSceneArray UnloadScenesAsync(ILoadSceneInfo[] sceneReferences, CancellationToken token = default);
+        TAsyncSceneArray UnloadScenesAsync(ILoadSceneInfo[] sceneReferences);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.UnloadScene(ILoadSceneInfo)"/>.
@@ -122,13 +107,10 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneReference">
         /// Reference to the desired scene to be unloaded.
         /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
         /// <returns>
         /// The unloading operation.
         /// </returns>
-        TAsyncScene UnloadSceneAsync(ILoadSceneInfo sceneReference, CancellationToken token = default);
+        TAsyncScene UnloadSceneAsync(ILoadSceneInfo sceneReference);
     }
 
     /// <summary>

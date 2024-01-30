@@ -58,42 +58,37 @@ namespace MyGameDevTools.SceneLoading.UniTaskSupport
             LoadSceneAsync(sceneInfo, setActive).Forget(HandleFireAndForgetException);
         }
 
-        public UniTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default, CancellationToken token = default)
+        public UniTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
         {
-            CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
             return intermediateSceneReference == null
-                ? TransitionDirectlyAsync(targetScenes, setIndexActive, externalOriginScene, linkedToken.Token).RunAndDisposeToken(linkedToken)
-                : TransitionWithIntermediateAsync(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene, linkedToken.Token).RunAndDisposeToken(linkedToken);
+                ? TransitionDirectlyAsync(targetScenes, setIndexActive, externalOriginScene, _lifetimeTokenSource.Token)
+                : TransitionWithIntermediateAsync(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene, _lifetimeTokenSource.Token);
         }
 
-        public async UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default, CancellationToken token = default)
+        public async UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default)
         {
             var result = await TransitionToScenesAsync(new ILoadSceneInfo[] { targetSceneInfo }, 0, intermediateSceneInfo, externalOriginScene);
             return result == null || result.Length == 0 ? default : result[0];
         }
 
-        public async UniTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default)
+        public async UniTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneReferences, int setIndexActive = -1, IProgress<float> progress = null)
         {
-            CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return await _manager.LoadScenesAsync(sceneReferences, setIndexActive, progress, linkedToken.Token).RunAndDisposeToken(linkedToken);
+            return await _manager.LoadScenesAsync(sceneReferences, setIndexActive, progress, _lifetimeTokenSource.Token);
         }
 
-        public async UniTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default)
+        public async UniTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null)
         {
-            CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return await _manager.LoadSceneAsync(sceneInfo, setActive, progress, linkedToken.Token).RunAndDisposeToken(linkedToken);
+            return await _manager.LoadSceneAsync(sceneInfo, setActive, progress, _lifetimeTokenSource.Token);
         }
 
-        public async UniTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences, CancellationToken token = default)
+        public async UniTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)
         {
-            CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return await _manager.UnloadScenesAsync(sceneReferences, linkedToken.Token).RunAndDisposeToken(linkedToken);
+            return await _manager.UnloadScenesAsync(sceneReferences, _lifetimeTokenSource.Token);
         }
 
-        public async UniTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default)
+        public async UniTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo)
         {
-            CancellationTokenSource linkedToken = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return await _manager.UnloadSceneAsync(sceneInfo, linkedToken.Token).RunAndDisposeToken(linkedToken);
+            return await _manager.UnloadSceneAsync(sceneInfo, _lifetimeTokenSource.Token);
         }
 
         async UniTask<Scene[]> TransitionDirectlyAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, Scene externalOriginScene, CancellationToken token)
