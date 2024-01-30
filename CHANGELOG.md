@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.3.0](https://github.com/mygamedevtools/scene-loader/compare/2.2.3...2.3.0) (2024-01-30)
+
+
+### Features
+
+* implement IDisposable on ISceneManager and ISceneLoader ([#27](https://github.com/mygamedevtools/scene-loader/issues/27)) ([fae1cf4](https://github.com/mygamedevtools/scene-loader/commit/fae1cf471e930a2b773ead6d99b3b1418cf022b9))
+
 ## [2.2.3](https://github.com/mygamedevtools/scene-loader/compare/2.2.2...2.2.3) (2023-12-20)
 
 
