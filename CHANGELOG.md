@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/mygamedevtools/scene-loader/compare/2.3.0...2.3.1) (2024-01-30)
+
+
+### Bug Fixes
+
+* improve dispose/cancellation error handling ([#28](https://github.com/mygamedevtools/scene-loader/issues/28)) ([2bfbcb9](https://github.com/mygamedevtools/scene-loader/commit/2bfbcb95487aa4a81bc4e0d7547908c00597715c))
+
 # [2.3.0](https://github.com/mygamedevtools/scene-loader/compare/2.2.3...2.3.0) (2024-01-30)
 
 
