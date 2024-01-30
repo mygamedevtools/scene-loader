@@ -32,6 +32,7 @@ Summary
   * [Description](#description)
 * [Usage](#usage)
   * [The Scene Managers](#the-scene-managers)
+    * [IDisposable and CancellationToken](#idisposable-and-cancellationtoken)
   * [The LoadSceneInfo objects](#the-loadsceneinfo-objects)
   * [The Scene Loaders](#the-scene-loaders)
   * [Practical examples](#practical-examples)
@@ -95,7 +96,8 @@ In this package, you'll have the possibility to standardize the scene loading pr
 
 Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between. Also, starting from version `2.2` you can **Load**, **Unload**, and **Transition** to **multiple scenes** in parallel!
 
-:information_source: You don't need to understand what **Addressables** or **UniTask** do in order to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
+> [!NOTE]
+> You don't need to understand what **Addressables** or **UniTask** do in order to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
 
 Usage
 ---
@@ -124,7 +126,7 @@ These structures are meant to be used together. If you do not plan to use scene 
 The `ISceneManager` interface exposes a few methods and events to standardize the scene load operations:
 
 ```cs
-public interface ISceneManager
+public interface ISceneManager : IDisposable
 {
   event Action<Scene, Scene> ActiveSceneChanged;
   event Action<Scene> SceneUnloaded;
@@ -134,13 +136,13 @@ public interface ISceneManager
 
   void SetActiveScene(Scene scene);
 
-  ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null);
+  ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default);
 
-  ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null);
+  ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default);
 
-  ValueTask<Scene[]> UnloadSceneAsync(ILoadSceneInfo[] sceneInfos);
+  ValueTask<Scene[]> UnloadSceneAsync(ILoadSceneInfo[] sceneInfos, CancellationToken token = default);
 
-  ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo);
+  ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default);
 
   Scene GetActiveScene();
 
@@ -188,6 +190,11 @@ So, instead of having multiple methods for receiving the scene's build index or 
 
 Alternatively, you can also use the `LoadScenesAsync` and `UnloadScenesAsync` methods, to perform the operations on multiple scenes in parallel. These will return a `ValueTask<Scene[]>`.
 
+#### IDisposable and CancellationToken
+
+The `ISceneManager` interface also implements `IDisposable`, meaning that the Scene Managers should implement the `Dispose()` method. This is used with the `CancellationToken` parameters in the Scene Manager methods to ensure that it will clear its internal context during disposal.
+Even if its methods get canceled by the `CancellationToken`, the Unity Scene Manager methods are not cancellable and therefore will continue to operate when called.
+
 ### The LoadSceneInfo objects
 
 As its name states, these objects hold references to a scene to be loaded (or unloaded) and can validate whether they are a reference to a loaded scene.
@@ -223,7 +230,7 @@ There are two interfaces for them, the base one with a reference to the `ISceneM
 The `ISceneLoader` interface defines:
 
 ```cs
-public interface ISceneLoader
+public interface ISceneLoader : IDisposable
 {
   ISceneManager Manager { get; }
 
@@ -277,7 +284,6 @@ public interface ISceneLoaderAsync : ISceneLoaderAsync<ValueTask<Scene>, ValueTa
 
 public interface ISceneLoaderUniTask : ISceneLoaderAsync<UniTask<Scene>, UniTask<Scene[]>> { }
 ```
-
 
 The `Manager` property can be used to listen to the `SceneLoaded`, `SceneUnloaded`, and `ActiveSceneChanged` events.
 Both `LoadSceneAsync` and `UnloadSceneAsync` methods will simply call the `ISceneManager` equivalents, while the `LoadScene` and `UnloadScene` will do the same but without _await_.
