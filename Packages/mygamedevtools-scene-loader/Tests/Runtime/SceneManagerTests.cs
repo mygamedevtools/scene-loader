@@ -427,7 +427,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Dispose_AfterLoadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
             Task task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask();
@@ -437,7 +437,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Dispose_AfterLoadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
             Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
@@ -447,7 +447,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Dipose_AfterUnloadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dipose_DuringUnloadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
             ILoadSceneInfo sceneInfo = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
@@ -461,7 +461,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Dipose_AfterUnloadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dipose_DuringUnloadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
             Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
@@ -474,7 +474,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_AfterLoadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringLoadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             CancellationTokenSource tokenSource = new();
             Task task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), token: tokenSource.Token).AsTask();
@@ -485,7 +485,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_AfterLoadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringLoadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             CancellationTokenSource tokenSource = new();
             Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0], token: tokenSource.Token).AsTask();
@@ -496,7 +496,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_AfterUnloadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringUnloadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             CancellationTokenSource tokenSource = new();
             ILoadSceneInfo sceneInfo = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
@@ -511,7 +511,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_AfterUnloadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringUnloadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             CancellationTokenSource tokenSource = new();
             Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();

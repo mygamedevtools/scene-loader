@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -16,6 +18,11 @@ namespace MyGameDevTools.SceneLoading
         public SceneLoaderCoroutine(ISceneManager manager)
         {
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
+        }
+
+        public void Dispose()
+        {
+            _manager.Dispose();
         }
 
         public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default) => TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene);
@@ -42,21 +49,36 @@ namespace MyGameDevTools.SceneLoading
 
         public Coroutine LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null) => LoadScenesAsync(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress);
 
+        WaitTask GetLoadScenesWaitTask(ILoadSceneInfo[] sceneReferences, int setIndexActive, IProgress<float> progress)
+        {
+            return new WaitTask(_manager.LoadScenesAsync(sceneReferences, setIndexActive, progress).AsTask());
+        }
+
+        WaitTask GetUnloadScenesWaitTask(ILoadSceneInfo[] sceneReferences)
+        {
+            return new WaitTask(_manager.UnloadScenesAsync(sceneReferences).AsTask());
+        }
+
         IEnumerator LoadScenesRoutine(ILoadSceneInfo[] sceneReferences, int setIndexActive, IProgress<float> progress)
         {
-            yield return new WaitTask(_manager.LoadScenesAsync(sceneReferences, setIndexActive, progress).AsTask());
+            yield return GetLoadScenesWaitTask(sceneReferences, setIndexActive, progress);
         }
 
         IEnumerator UnloadScenesRoutine(ILoadSceneInfo[] sceneReferences)
         {
-            yield return new WaitTask(_manager.UnloadScenesAsync(sceneReferences).AsTask());
+            yield return GetUnloadScenesWaitTask(sceneReferences);
         }
 
         IEnumerator TransitionDirectlyRoutine(ILoadSceneInfo[] targetScenes, int setIndexActive, Scene externalOriginScene)
         {
             var externalOrigin = externalOriginScene.IsValid();
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
-            yield return UnloadCurrentScene(currentScene, externalOrigin);
+            
+            var unloadWait = new WaitCurrentSceneUnload(this, currentScene, externalOrigin);
+            yield return unloadWait;
+            if (unloadWait.IsTaskCanceled)
+                yield break;
+
             yield return LoadScenesRoutine(targetScenes, setIndexActive, null);
         }
 
@@ -66,13 +88,16 @@ namespace MyGameDevTools.SceneLoading
             
             var task = _manager.LoadSceneAsync(intermediateSceneInfo).AsTask();
             yield return new WaitTask(task);
+            if (task.IsCanceled)
+                yield break;
+
             var loadingScene = task.Result;
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
             var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
 
 #if UNITY_2023_2_OR_NEWER
-            var loadingBehavior = Object.FindObjectsByType<LoadingBehavior>(UnityEngine.FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
+            var loadingBehavior = Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #else
             var loadingBehavior = Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #endif
@@ -89,9 +114,16 @@ namespace MyGameDevTools.SceneLoading
             if (!externalOrigin)
                 currentScene = _manager.GetActiveScene();
 
-            yield return UnloadCurrentScene(currentScene, externalOrigin);
+            var unloadWait = new WaitCurrentSceneUnload(this, currentScene, externalOrigin);
+            yield return unloadWait;
+            if (unloadWait.IsTaskCanceled)
+                yield break;
 
-            yield return new WaitTask(_manager.LoadScenesAsync(targetScenes, setIndexActive, progress).AsTask());
+            var loadWaitTask = GetLoadScenesWaitTask(targetScenes, setIndexActive, null);
+            yield return loadWaitTask;
+            if (loadWaitTask.IsTaskCanceled)
+                yield break;
+
             progress.SetState(LoadingState.TargetSceneLoaded);
 
             yield return new WaitUntil(() => progress.State == LoadingState.TransitionComplete);
@@ -101,25 +133,73 @@ namespace MyGameDevTools.SceneLoading
 
         IEnumerator TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene currentScene, bool externalOrigin)
         {
-            yield return UnloadCurrentScene(currentScene, externalOrigin);
-            yield return LoadScenesRoutine(targetScenes, setIndexActive, null);
-            UnloadSceneAsync(intermediateSceneInfo);
-        }
-
-        IEnumerator UnloadCurrentScene(Scene currentScene, bool externalOrigin)
-        {
-            if (!currentScene.IsValid())
+            var unloadWait = new WaitCurrentSceneUnload(this, currentScene, externalOrigin);
+            yield return unloadWait;
+            if (unloadWait.IsTaskCanceled)
                 yield break;
 
-            if (externalOrigin)
-                yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
-            else
-                yield return UnloadScenesRoutine(new ILoadSceneInfo[] { new LoadSceneInfoScene(currentScene) });
+            var loadWaitTask = GetLoadScenesWaitTask(targetScenes, setIndexActive, null);
+            yield return loadWaitTask;
+            if (loadWaitTask.IsTaskCanceled)
+                yield break;
+            UnloadSceneAsync(intermediateSceneInfo);
         }
 
         public override string ToString()
         {
             return $"Scene Loader [Coroutine] with {_manager.GetType().Name}";
+        }
+
+        readonly struct WaitCurrentSceneUnload : IEnumerator
+        {
+            public object Current => null;
+            public bool IsTaskCanceled => !_externalOrigin && _unloadWaitTask.IsTaskCanceled;
+
+            readonly AsyncOperation _unloadOperation;
+            readonly WaitTask _unloadWaitTask;
+            readonly bool _externalOrigin;
+            readonly bool _validScene;
+
+            public WaitCurrentSceneUnload(SceneLoaderCoroutine sceneLoader, Scene currentScene, bool externalOrigin)
+            {
+                _validScene = currentScene.IsValid();
+                _externalOrigin = externalOrigin;
+                if (!_validScene)
+                {
+                    _unloadOperation = default;
+                    _unloadWaitTask = default;
+                }
+                else
+                {
+                    if (externalOrigin)
+                    {
+                        _unloadOperation = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
+                        _unloadWaitTask = default;
+                    }
+                    else
+                    {
+                        _unloadWaitTask = sceneLoader.GetUnloadScenesWaitTask(new ILoadSceneInfo[] { new LoadSceneInfoScene(currentScene) });
+                        _unloadOperation = default;
+                    }
+                }
+            }
+
+            public bool MoveNext()
+            {
+                if (!_validScene)
+                    return true;
+
+                if (_externalOrigin)
+                {
+                    return !_unloadOperation.isDone;
+                }
+                else
+                {
+                    return _unloadWaitTask.MoveNext();
+                }
+            }
+
+            public void Reset() {}
         }
     }
 }

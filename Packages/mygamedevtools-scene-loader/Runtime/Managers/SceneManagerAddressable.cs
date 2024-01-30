@@ -89,8 +89,9 @@ namespace MyGameDevTools.SceneLoading
             {
                 return await LoadScenesAsync_Internal(sceneInfos, setIndexActive, progress, linkedSource.Token);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException cancelException)
             {
+                Debug.LogWarningFormat("[{0}] LoadScenesAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
                 throw;
             }
             finally
@@ -109,8 +110,9 @@ namespace MyGameDevTools.SceneLoading
             {
                 loadedScenes = await LoadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress, linkedSource.Token);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException cancelException)
             {
+                Debug.LogWarningFormat("[{0}] LoadSceneAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
                 throw;
             }
             finally
@@ -128,8 +130,9 @@ namespace MyGameDevTools.SceneLoading
             {
                 return await UnloadScenesAsync_Internal(sceneInfos, linkedSource.Token);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException cancelException)
             {
+                Debug.LogWarningFormat("[{0}] UnloadScenesAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
                 throw;
             }
             finally
@@ -148,8 +151,9 @@ namespace MyGameDevTools.SceneLoading
             {
                 unloadedScenes = await UnloadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, linkedSource.Token);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException cancelException)
             {
+                Debug.LogWarningFormat("[{0}] UnloadSceneAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
                 throw;
             }
             finally

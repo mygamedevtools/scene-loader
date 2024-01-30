@@ -3,9 +3,11 @@ using Cysharp.Threading.Tasks;
 using MyGameDevTools.SceneLoading.UniTaskSupport;
 #endif
 using NUnit.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -58,13 +60,36 @@ namespace MyGameDevTools.SceneLoading.Tests
         static ISceneLoader[] _sceneLoaders = new ISceneLoader[]
         {
             new SceneLoaderAsync(_managers[0]),
+#if ENABLE_ADDRESSABLES
             new SceneLoaderAsync(_managers[1]),
+#endif
 #if ENABLE_UNITASK
             new SceneLoaderUniTask(_managers[0]),
+#if ENABLE_ADDRESSABLES
             new SceneLoaderUniTask(_managers[1]),
 #endif
+#endif
             new SceneLoaderCoroutine(_managers[0]),
+#if ENABLE_ADDRESSABLES
             new SceneLoaderCoroutine(_managers[1])
+#endif
+        };
+        static Func<ISceneLoader>[] _sceneLoaderCreateFuncs = new Func<ISceneLoader>[]
+        {
+            () => new SceneLoaderAsync(new SceneManager()),
+#if ENABLE_ADDRESSABLES
+            () => new SceneLoaderAsync(new SceneManagerAddressable()),
+#endif
+#if ENABLE_UNITASK
+            () => new SceneLoaderUniTask(new SceneManager()),
+#if ENABLE_ADDRESSABLES
+            () => new SceneLoaderUniTask(new SceneManagerAddressable()),
+#endif
+#endif
+            () => new SceneLoaderCoroutine(new SceneManager()),
+#if ENABLE_ADDRESSABLES
+            () => new SceneLoaderCoroutine(new SceneManagerAddressable()),
+#endif
         };
 
         [UnityTearDown]
@@ -72,6 +97,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             foreach (var m in _managers)
                 yield return SceneLoaderTestUtilities.UnloadManagerScenes(m);
+
+            yield return SceneLoaderTestUtilities.UnloadRemainingScenes();
+            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.sceneCount);
         }
 
         [UnityTest]
@@ -310,6 +338,78 @@ namespace MyGameDevTools.SceneLoading.Tests
                 if (targetScene.IsReferenceToScene(scene))
                     loadedScene = scene;
             }
+        }
+
+        [Test]
+        public void Dispose_Simple([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            Assert.DoesNotThrow(loader.Dispose);
+        }
+
+        [Test]
+        public void Dispose_DuringLoadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            loader.LoadScene(new LoadSceneInfoName(SceneBuilder.SceneNames[1]));
+            Assert.DoesNotThrow(loader.Dispose);
+        }
+
+        [Test]
+        public void Dispose_DuringLoadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            loader.LoadScenes(_targetSceneGroups[0]);
+            Assert.DoesNotThrow(loader.Dispose);
+        }
+
+        [UnityTest]
+        public IEnumerator Dispose_DuringUnloadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            yield return LoadFirstScene(loader);
+
+            loader.UnloadScene(new LoadSceneInfoScene(loader.Manager.GetLastLoadedScene()));
+            Assert.DoesNotThrow(loader.Dispose);
+        }
+
+        [UnityTest]
+        public IEnumerator Dispose_DuringUnloadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
+            int sceneCount = targetScenes.Length;
+            loader.LoadScenes(targetScenes);
+
+            var watch = new Stopwatch();
+            watch.Start();
+            yield return new WaitUntil(() => loader.Manager.SceneCount == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
+            watch.Stop();
+
+            loader.UnloadScenes(targetScenes);
+            Assert.DoesNotThrow(loader.Dispose);
+        }
+
+        [UnityTest]
+        public IEnumerator Dispose_DuringTransitionToScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            yield return LoadFirstScene(loader);
+            ILoadSceneInfo targetScene = _targetSceneInfos[0];
+
+            loader.TransitionToScene(targetScene, loadingScene);
+            Assert.DoesNotThrow(loader.Dispose);
+        }
+
+        [UnityTest]
+        public IEnumerator Dispose_DuringTransitionToScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        {
+            ISceneLoader loader = loaderCreateFunc();
+            yield return LoadFirstScene(loader);
+            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
+
+            loader.TransitionToScenes(targetScenes, 0, loadingScene);
+            Assert.DoesNotThrow(loader.Dispose);
         }
 
         /// <summary>

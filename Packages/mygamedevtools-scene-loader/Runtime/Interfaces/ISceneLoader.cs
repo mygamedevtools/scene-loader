@@ -1,3 +1,4 @@
+using System;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -5,7 +6,7 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// Interface to standardize scene loading operations.
     /// </summary>
-    public interface ISceneLoader
+    public interface ISceneLoader : IDisposable
     {
         /// <summary>
         /// Reference to the <see cref="ISceneManager"/>, responsible for performing the scene loading operations.

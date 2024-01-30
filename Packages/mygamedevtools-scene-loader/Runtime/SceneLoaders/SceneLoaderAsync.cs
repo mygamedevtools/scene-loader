@@ -17,6 +17,11 @@ namespace MyGameDevTools.SceneLoading
             _manager = manager ?? throw new ArgumentNullException("Cannot create a scene loader with a null Scene Manager");
         }
 
+        public void Dispose()
+        {
+            _manager.Dispose();
+        }
+
         public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default) => TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene);
 
         public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default) => _ = TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Threading.Tasks;
 
@@ -9,6 +8,7 @@ namespace MyGameDevTools.SceneLoading
         readonly Task _task;
 
         public object Current => null;
+        public bool IsTaskCanceled => _task.IsCanceled;
 
         public WaitTask(Task task)
         {
