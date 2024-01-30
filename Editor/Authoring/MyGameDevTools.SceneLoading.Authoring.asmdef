@@ -1,0 +1,18 @@
+{
+    "name": "MyGameDevTools.SceneLoading.Authoring",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "SCENE_LOADER_AUTHORING"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
