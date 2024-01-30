@@ -420,6 +420,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public void Dispose_Simple([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
@@ -427,6 +428,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
@@ -437,6 +439,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
@@ -447,6 +450,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dipose_DuringUnloadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();
@@ -461,6 +465,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
         public IEnumerator Dipose_DuringUnloadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
         {
             ISceneManager manager = managerCreateFunc();

@@ -1,20 +1,35 @@
+using System.Collections;
+using System.Threading;
 using UnityEngine;
 
-public class RoutineBehaviour : MonoBehaviour 
+namespace MyGameDevTools.SceneLoading
 {
-    public static RoutineBehaviour Instance
+    public class RoutineBehaviour : MonoBehaviour 
     {
-        get
+        public static RoutineBehaviour Instance
         {
-            if (!_instance)
+            get
             {
-                _instance = new GameObject(nameof(RoutineBehaviour)).AddComponent<RoutineBehaviour>();
-                DontDestroyOnLoad(_instance.gameObject);
-                _instance.hideFlags = HideFlags.HideAndDontSave;
+                if (!_instance)
+                {
+                    _instance = new GameObject(nameof(RoutineBehaviour)).AddComponent<RoutineBehaviour>();
+                    DontDestroyOnLoad(_instance.gameObject);
+                    _instance.hideFlags = HideFlags.HideAndDontSave;
+                }
+                return _instance;
             }
-            return _instance;
+        }
+
+        static RoutineBehaviour _instance;
+
+        public Coroutine StartCoroutineWithDisposableToken(IEnumerator routine, CancellationTokenSource cancellationTokenSource)
+        {
+            return StartCoroutine(wrapperRoutine());
+            IEnumerator wrapperRoutine()
+            {
+                yield return routine;
+                cancellationTokenSource.Dispose();
+            }
         }
     }
-
-    static RoutineBehaviour _instance;
 }

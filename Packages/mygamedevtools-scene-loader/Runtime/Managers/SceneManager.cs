@@ -29,14 +29,14 @@ namespace MyGameDevTools.SceneLoading
 
         readonly List<Scene> _unloadingScenes = new List<Scene>();
         readonly List<Scene> _loadedScenes = new List<Scene>();
-        readonly CancellationTokenSource _lifetimeToken = new CancellationTokenSource();
+        readonly CancellationTokenSource _lifetimeTokenSource = new CancellationTokenSource();
 
         Scene _activeScene;
 
         public void Dispose()
         {
-            _lifetimeToken.Cancel();
-            _lifetimeToken.Dispose();
+            _lifetimeTokenSource.Cancel();
+            _lifetimeTokenSource.Dispose();
 
             _unloadingScenes.Clear();
             _loadedScenes.Clear();
@@ -82,82 +82,32 @@ namespace MyGameDevTools.SceneLoading
 
         public async ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
-            try
-            {
-                return await LoadScenesAsync_Internal(sceneInfos, setIndexActive, progress, linkedSource.Token);
-            }
-            catch (OperationCanceledException cancelException)
-            {
-                Debug.LogWarningFormat("[{0}] LoadScenesAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
-                throw;
-            }
-            finally
-            {
-                linkedSource.Dispose();
-            }
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
+            return await LoadScenesAsync_Internal(sceneInfos, setIndexActive, progress, linkedSource.Token).RunAndDisposeToken(linkedSource);
         }
 
         public async ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default)
         {
             sceneInfo = sceneInfo ?? throw new NullReferenceException($"[{GetType().Name}] Provided scene info is null.");
 
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
-            Scene[] loadedScenes = null;
-            try
-            {
-                loadedScenes = await LoadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress, linkedSource.Token);
-            }
-            catch (OperationCanceledException cancelException)
-            {
-                Debug.LogWarningFormat("[{0}] LoadSceneAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
-                throw;
-            }
-            finally
-            {
-                linkedSource.Dispose();
-            }
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
+            Scene[] loadedScenes = await LoadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, setActive ? 0 : -1, progress, linkedSource.Token).RunAndDisposeToken(linkedSource);
 
             return loadedScenes != null && loadedScenes.Length > 0 ? loadedScenes[0] : default;
         }
 
         public async ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos, CancellationToken token = default)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
-            try
-            {
-                return await UnloadScenesAsync_Internal(sceneInfos, linkedSource.Token);
-            }
-            catch (OperationCanceledException cancelException)
-            {
-                Debug.LogWarningFormat("[{0}] UnloadScenesAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
-                throw;
-            }
-            finally
-            {
-                linkedSource.Dispose();
-            }
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
+            return await UnloadScenesAsync_Internal(sceneInfos, linkedSource.Token).RunAndDisposeToken(linkedSource);
         }
 
         public async ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default)
         {
             sceneInfo = sceneInfo ?? throw new ArgumentNullException(nameof(sceneInfo), $"[{GetType().Name}] Provided scene info is null.");
 
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken.Token, token);
-            Scene[] unloadedScenes = null;
-            try
-            {
-                unloadedScenes = await UnloadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, linkedSource.Token);
-            }
-            catch (OperationCanceledException cancelException)
-            {
-                Debug.LogWarningFormat("[{0}] UnloadSceneAsync was canceled. Exception:\n{1}", GetType().Name, cancelException);
-                throw;
-            }
-            finally
-            {
-                linkedSource.Dispose();
-            }
+            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
+            Scene[] unloadedScenes = await UnloadScenesAsync_Internal(new ILoadSceneInfo[] { sceneInfo }, linkedSource.Token).RunAndDisposeToken(linkedSource);
 
             return unloadedScenes != null && unloadedScenes.Length > 0 ? unloadedScenes[0] : default;
         }
