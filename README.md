@@ -34,7 +34,7 @@ Summary
   * [The Scene Managers](#the-scene-managers)
   * [The LoadSceneInfo objects](#the-loadsceneinfo-objects)
   * [The Scene Loaders](#the-scene-loaders)
-  * [IDisposable and CancellationTokens](#idisposable-and-cancellationtokens)
+  * [Disposable and CancellationTokens](#disposable-and-cancellationtokens)
   * [Practical examples](#practical-examples)
     * [Creating your scene loader](#creating-your-scene-loader)
     * [Loading scenes with load scene info](#loading-scenes-with-load-scene-info)
@@ -97,14 +97,14 @@ In this package, you'll have the possibility to standardize the scene loading pr
 Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between. Also, starting from version `2.2` you can **Load**, **Unload**, and **Transition** to **multiple scenes** in parallel!
 
 > [!NOTE]
-> You don't need to understand what **Addressables** or **UniTask** do in order to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
+> You don't need to understand what **Addressables** or **UniTask** do to use this package. There are scene loaders that only rely on basic Unity Engine functionalities.
 
 Usage
 ---
 
 Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
 
-In order to standardize how the scenes are loaded, you'll be using `ISceneLoader`, `ISceneManager`, and `ILoadSceneInfo` objects.
+To standardize how the scenes are loaded, you'll be using `ISceneLoader`, `ISceneManager`, and `ILoadSceneInfo` objects.
 
 ```mermaid
 flowchart BT
@@ -304,7 +304,7 @@ The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provid
 
 You can also transition from a scene **outside** of the scene manager context, by providing a scene in the `externalOriginScene` parameter in the Transition methods. Just make sure this scene **is not** in another scene manager context.
 
-### IDisposable and CancellationTokens
+### Disposable and CancellationTokens
 
 Both the `ISceneManager` and the `ISceneLoader` interfaces implement `IDisposable`, meaning that the Scene Managers and Loaders should implement the `Dispose()` method.
 This is used with the `CancellationToken` parameters in `ISceneManager` methods to ensure that it will clear its internal data and stop async code execution during disposal.
@@ -312,10 +312,10 @@ Note that even when its methods get canceled by the `CancellationToken`, the Uni
 
 The disposal of the implemented Scene Managers will clear its data and stop any running logic.
 This is useful for shutting down the application, for example.
-In this context, the Unity Scene Manager has its own internal logic to stop itself.
-In other contexts, the Unity Scene Manager operations may continue to run after the `ISceneManager` got disposed.
+In this context, the Unity Scene Manager has its internal logic to stop itself.
+In other contexts, the Unity Scene Manager operations may continue to run after the `ISceneManager` is disposed.
 
-If you are going to manually dispose your scene loaders or managers, prefer the following scenarios:
+If you are going to manually dispose of your scene loaders or managers, prefer the following scenarios:
 * You can ensure that there are no load/unload/transition operations in progress.
 * You are quitting/shutting down the application or an application module.
 
@@ -590,7 +590,7 @@ The `LoadingFader` component does just that.
 Add it to an [UI CanvasGroup] [GameObject] to control the group's alpha value during the visual transitions.
 You can also set the fade time and customize the fade in/out animation curves to suit your preference.
 
-In order to use the `LoadingFader` effectively, you must **enable** both `WaitForScriptedStart` and `WaitForScriptedEnd` toggles in your `LoadingBehavior` component.
+To use the `LoadingFader` effectively, you must **enable** both `WaitForScriptedStart` and `WaitForScriptedEnd` toggles in your `LoadingBehavior` component.
 
 #### Loading Screen Example
 
@@ -611,7 +611,7 @@ You can test this scene by passing its `ILoadSceneInfo` reference as the `interm
 
 ### Why so many interfaces?
 
-The idea behind the interfaces is first to decouple things and second to allow you to build your own systems if you require something very different from the provided content.
+The idea behind the interfaces is first to decouple things and second to allow you to build your systems if you require something very different from the provided content.
 Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best in each use case.
 
 I am always open to suggestions, so please if you have any, don't hesitate to share!
