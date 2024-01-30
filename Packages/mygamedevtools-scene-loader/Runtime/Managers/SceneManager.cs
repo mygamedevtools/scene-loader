@@ -171,7 +171,7 @@ namespace MyGameDevTools.SceneLoading
 
             var operationGroup = GetLoadSceneOperations(sceneInfos, ref setIndexActive);
             if (operationGroup.Operations.Count == 0)
-                return Array.Empty<Scene>();
+                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid load scene operations.");
 
             while (!operationGroup.IsDone && !token.IsCancellationRequested)
             {
@@ -204,7 +204,7 @@ namespace MyGameDevTools.SceneLoading
 
             var loadedScenes = GetLastLoadedScenesByInfos(sceneInfos, out var unloadingIndexes);
             if (loadedScenes.Count == 0)
-                return Array.Empty<Scene>();
+                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid unload scene operations.");
 
             int unloadingLength = unloadingIndexes.Length;
             var unloadingScenes = new Scene[unloadingLength];

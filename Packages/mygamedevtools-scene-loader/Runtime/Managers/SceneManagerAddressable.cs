@@ -173,7 +173,7 @@ namespace MyGameDevTools.SceneLoading
 
             var operationGroup = await GetLoadSceneOperations(sceneInfos, setIndexActive, token);
             if (operationGroup.Operations.Count == 0)
-                return Array.Empty<Scene>();
+                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid load scene operations.");
 
             while (!operationGroup.IsDone && !token.IsCancellationRequested)
             {
@@ -206,7 +206,7 @@ namespace MyGameDevTools.SceneLoading
 
             var loadedScenes = GetLastLoadedScenesByInfos(sceneInfos, out var unloadingIndexes);
             if (loadedScenes.Count == 0)
-                return Array.Empty<Scene>();
+                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid unload scene operations.");
 
             int unloadingLength = unloadingIndexes.Length;
             var unloadingScenes = new SceneInstance[unloadingLength];
@@ -266,8 +266,9 @@ namespace MyGameDevTools.SceneLoading
             while (_unloadingScenes.Contains(sceneInstance) && !token.IsCancellationRequested)
                 await Task.Yield();
 #endif
+            token.ThrowIfCancellationRequested();
 
-            return token.IsCancellationRequested ? default : sceneInstance.Scene;
+            return sceneInstance.Scene;
         }
 
         async ValueTask<AsyncOperationHandleGroup> GetLoadSceneOperations(ILoadSceneInfo[] sceneInfos, int setIndexActive, CancellationToken token)

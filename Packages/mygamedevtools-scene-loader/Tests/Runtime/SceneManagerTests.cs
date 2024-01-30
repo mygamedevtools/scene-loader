@@ -280,7 +280,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             if (manager is SceneManager)
                 LogAssert.Expect(LogType.Error, new Regex("'not-a-real-scene' couldn't be loaded"));
             var wait = new WaitTask(manager.LoadSceneAsync(new LoadSceneInfoName(sceneName), false).AsTask());
-            wait.MoveNext();
+            Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]
@@ -358,7 +358,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var sceneName = "not-a-real-scene";
             LogAssert.Expect(LogType.Warning, new Regex("Some of the scenes could not be found loaded"));
             var wait = new WaitTask(manager.UnloadSceneAsync(new LoadSceneInfoName(sceneName)).AsTask());
-            wait.MoveNext();
+            Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]

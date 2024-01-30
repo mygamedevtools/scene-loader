@@ -54,6 +54,8 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="setIndexActive">Index of the desired scene to set active, based on the <paramref name="sceneInfos"/> array.</param>
         /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all scenes loaded.</returns>
+        /// <exception cref="ArgumentException">When scene info group is null, empty or the setIndexName is bigger than the scene length.</exception>
+        /// <exception cref="InvalidOperationException">When the provided scene info group fails to produce valid load scene operations.</exception>
         ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default);
 
         /// <summary>
@@ -64,6 +66,8 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="setActive">Should the loaded scene be enabled as the active scene?</param>
         /// <param name="progress">Object to report the loading operation progress to, from 0 to 1.</param>
         /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the loaded scene as the result.</returns>
+        /// <exception cref="ArgumentException">When scene info is null.</exception>
+        /// <exception cref="InvalidOperationException">When the provided scene info fails to produce a valid load scene operation.</exception>
         ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default);
 
         /// <summary>
@@ -75,6 +79,8 @@ namespace MyGameDevTools.SceneLoading
         /// <br/>
         /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
+        /// <exception cref="ArgumentException">When scene info group is null or empty.</exception>
+        /// <exception cref="InvalidOperationException">When the provided scene info group fails to produce valid unload scene operations.</exception>
         ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos, CancellationToken token = default);
 
         /// <summary>
@@ -86,6 +92,8 @@ namespace MyGameDevTools.SceneLoading
         /// <br/>
         /// Note that in some cases, the returned scene might no longer have a reference to its native representation, which means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
+        /// <exception cref="ArgumentException">When scene info is null.</exception>
+        /// <exception cref="InvalidOperationException">When the provided scene info fails to produce a valid unload scene operation.</exception>
         ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default);
 
         /// <summary>

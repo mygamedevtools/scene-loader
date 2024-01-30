@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -85,7 +86,7 @@ namespace MyGameDevTools.SceneLoading
             var externalOrigin = externalOriginScene.IsValid();
             
             var task = _manager.LoadSceneAsync(intermediateSceneInfo).AsTask();
-            yield return new WaitTask(task);
+            yield return new WaitTask(task, false);
             if (task.IsCanceled)
                 yield break;
 
@@ -119,7 +120,7 @@ namespace MyGameDevTools.SceneLoading
 
             var loadWaitTask = GetLoadScenesWaitTask(targetScenes, setIndexActive, null);
             yield return loadWaitTask;
-            if (loadWaitTask.IsTaskCanceled)
+            if (loadWaitTask.Task.IsCanceled)
                 yield break;
 
             progress.SetState(LoadingState.TargetSceneLoaded);
@@ -138,7 +139,7 @@ namespace MyGameDevTools.SceneLoading
 
             var loadWaitTask = GetLoadScenesWaitTask(targetScenes, setIndexActive, null);
             yield return loadWaitTask;
-            if (loadWaitTask.IsTaskCanceled)
+            if (loadWaitTask.Task.IsCanceled)
                 yield break;
             UnloadSceneAsync(intermediateSceneInfo);
         }
@@ -151,7 +152,7 @@ namespace MyGameDevTools.SceneLoading
         readonly struct WaitCurrentSceneUnload : IEnumerator
         {
             public object Current => null;
-            public bool IsTaskCanceled => !_externalOrigin && _unloadWaitTask.IsTaskCanceled;
+            public bool IsTaskCanceled => !_externalOrigin && _unloadWaitTask.Task.IsCanceled;
 
             readonly AsyncOperation _unloadOperation;
             readonly WaitTask _unloadWaitTask;
