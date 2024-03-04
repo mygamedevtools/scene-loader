@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/mygamedevtools/scene-loader/compare/2.3.1...2.3.2) (2024-03-04)
+
+
+### Bug Fixes
+
+* remove unitask dependency ([#31](https://github.com/mygamedevtools/scene-loader/issues/31)) ([4bf74d0](https://github.com/mygamedevtools/scene-loader/commit/4bf74d0d7e246d1ec9de42e73ea70aba7d260f1d))
+
 ## [2.3.1](https://github.com/mygamedevtools/scene-loader/compare/2.3.0...2.3.1) (2024-01-30)
 
 
