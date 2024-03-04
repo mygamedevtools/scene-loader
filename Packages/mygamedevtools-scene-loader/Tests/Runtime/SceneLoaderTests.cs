@@ -107,7 +107,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 yield return SceneLoaderTestUtilities.UnloadManagerScenes(m);
 
             yield return SceneLoaderTestUtilities.UnloadRemainingScenes();
-            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.sceneCount);
+            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.loadedSceneCount);
         }
 
         [UnityTest]
