@@ -346,7 +346,7 @@ ISceneManager standardSceneManager = new SceneManager();
 ISceneLoader coroutineSceneLoader = new SceneLoaderCoroutine(standardSceneManager);
 
 ISceneManager addressableSceneManager = new SceneManagerAddressable();
-ISceneLoader asyncSceneLoader = new SceneLoaderAsync(addressableSceneLoader);
+ISceneLoader asyncSceneLoader = new SceneLoaderAsync(addressableSceneManager);
 ```
 
 You can also define the scene loader types as their `ISceneLoaderAsync` implementations:
