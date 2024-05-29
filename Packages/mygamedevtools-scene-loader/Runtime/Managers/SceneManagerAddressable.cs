@@ -239,7 +239,7 @@ namespace MyGameDevTools.SceneLoading
         async ValueTask<AsyncOperationHandle<SceneInstance>> GetLoadSceneOperation(ILoadSceneInfo sceneInfo, CancellationToken token)
         {
             if (sceneInfo.Reference is AssetReference assetReference)
-                return assetReference.LoadSceneAsync(LoadSceneMode.Additive);
+                return Addressables.LoadSceneAsync(assetReference.RuntimeKey, LoadSceneMode.Additive);
             else if (sceneInfo.Reference is string name)
             {
                 if (await ValidateAssetReference(name, token))
