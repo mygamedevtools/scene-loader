@@ -400,6 +400,37 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return new WaitTask(task);
 
             Assert.Zero(_sceneManagers[1].SceneCount);
+
+            Addressables.Release(sceneReferenceDataOperation);
+        }
+
+        [UnityTest]
+        public IEnumerator LoadAndUnload_AssetReference_Multiple()
+        {
+            var sceneReferenceDataOperation = Addressables.LoadAssetAsync<SceneReferenceData>(nameof(SceneReferenceData));
+            sceneReferenceDataOperation.WaitForCompletion();
+
+            var sceneReferenceData = sceneReferenceDataOperation.Result;
+            var targetScenes = new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[1]),
+                new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[1]),
+                new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[1])
+            };
+            int length = targetScenes.Length;
+
+            var task = _sceneManagers[1].LoadScenesAsync(targetScenes).AsTask();
+            yield return new WaitTask(task);
+
+            for (int i = 0; i < length; i++)
+                Assert.True(targetScenes[i].IsReferenceToScene(task.Result[i]));
+
+            task = _sceneManagers[1].UnloadScenesAsync(targetScenes).AsTask();
+            yield return new WaitTask(task);
+
+            Assert.Zero(_sceneManagers[1].SceneCount);
+
+            Addressables.Release(sceneReferenceDataOperation);
         }
 #endif
 
