@@ -7,6 +7,8 @@ namespace MyGameDevTools.SceneLoading
     /// </summary>
     public interface ILoadSceneInfo
     {
+        LoadSceneInfoType Type { get; }
+
         /// <summary>
         /// Exposes a reference to a scene, such as build index, name or addressable asset address.
         /// </summary>

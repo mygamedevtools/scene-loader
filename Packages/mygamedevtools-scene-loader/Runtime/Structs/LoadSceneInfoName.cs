@@ -8,6 +8,8 @@ namespace MyGameDevTools.SceneLoading
     /// </summary>
     public readonly struct LoadSceneInfoName : ILoadSceneInfo
     {
+        public readonly LoadSceneInfoType Type => LoadSceneInfoType.Name;
+
         public object Reference => _sceneName;
 
         readonly string _sceneName;

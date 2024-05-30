@@ -8,6 +8,8 @@ namespace MyGameDevTools.SceneLoading
     /// </summary>
     public readonly struct LoadSceneInfoIndex : ILoadSceneInfo
     {
+        public readonly LoadSceneInfoType Type => LoadSceneInfoType.BuildIndex;
+
         public object Reference => _buildIndex;
 
         readonly int _buildIndex;
