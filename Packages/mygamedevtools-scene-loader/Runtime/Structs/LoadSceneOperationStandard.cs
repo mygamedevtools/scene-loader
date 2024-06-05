@@ -1,8 +1,6 @@
-#if ENABLE_ADDRESSABLES
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#endif
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -12,16 +10,18 @@ namespace MyGameDevTools.SceneLoading
 
         public readonly bool IsDone => _loadSceneOperation.isDone;
 
+        public readonly bool HasDirectReferenceToScene => false;
+
         readonly AsyncOperation _loadSceneOperation;
 
         public LoadSceneOperationStandard(AsyncOperation operation)
         {
-            _loadSceneOperation = operation ?? throw new ArgumentException("Cannot create a LoadSceneOperationStandard without a valid AsyncOperation instance.", nameof(operation));
+            _loadSceneOperation = operation ?? throw new ArgumentException($"Cannot create a {nameof(LoadSceneOperationStandard)} without a valid AsyncOperation instance.", nameof(operation));
         }
 
         public Scene GetResult()
         {
-            Debug.LogWarning("Unable to get the loaded scene from standard scene operations.");
+            Debug.LogWarning("Standard Load Scene Operations cannot link directly to the loaded scene due to SceneManager API limitations.");
             return default;
         }
     }

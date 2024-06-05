@@ -9,16 +9,18 @@ namespace MyGameDevTools.SceneLoading
 {
     public readonly struct LoadSceneOperationAddressable : ILoadSceneOperation
     {
-        public float Progress => _loadSceneOperationHandle.PercentComplete;
+        public readonly float Progress => _loadSceneOperationHandle.PercentComplete;
 
-        public bool IsDone => _loadSceneOperationHandle.IsDone;
+        public readonly bool IsDone => _loadSceneOperationHandle.IsDone;
+
+        public readonly bool HasDirectReferenceToScene => true;
 
         readonly AsyncOperationHandle<SceneInstance> _loadSceneOperationHandle;
 
         public LoadSceneOperationAddressable(AsyncOperationHandle<SceneInstance> operationHandle)
         {
             if (!operationHandle.IsValid())
-                throw new ArgumentException("Cannot create a LoadSceneOperationAddressable from an invalid AsyncOperationHandle.", nameof(operationHandle));
+                throw new ArgumentException($"Cannot create a {nameof(LoadSceneOperationAddressable)} from an invalid AsyncOperationHandle.", nameof(operationHandle));
 
             _loadSceneOperationHandle = operationHandle;
         }

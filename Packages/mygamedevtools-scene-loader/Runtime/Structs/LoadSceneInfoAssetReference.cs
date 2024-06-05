@@ -1,7 +1,6 @@
 #if ENABLE_ADDRESSABLES
 using System;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -23,11 +22,8 @@ namespace MyGameDevTools.SceneLoading
 
         public bool IsReferenceToScene(Scene scene)
         {
-            if (!_assetReference.OperationHandle.IsValid() || !_assetReference.OperationHandle.IsDone)
-                throw new Exception($"Asset Reference with key '{_assetReference.RuntimeKey}' does not reference a loaded scene.");
-
-            var sceneInstance = _assetReference.OperationHandle.Convert<SceneInstance>().Result;
-            return sceneInstance.Scene == scene;
+            UnityEngine.Debug.LogError($"{nameof(LoadSceneInfoAssetReference)} is not supposed to validate scene references, since the {nameof(ILoadSceneOperation)} related to this type of {nameof(ILoadSceneInfo)} has direct reference to the loaded scene.");
+            return false;
         }
 
         public override string ToString()

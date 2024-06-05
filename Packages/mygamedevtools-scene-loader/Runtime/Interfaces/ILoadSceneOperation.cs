@@ -6,6 +6,7 @@ namespace MyGameDevTools.SceneLoading
     {
         float Progress { get; }
         bool IsDone { get; }
+        bool HasDirectReferenceToScene { get; }
 
         Scene GetResult();
     }
