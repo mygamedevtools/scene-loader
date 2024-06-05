@@ -1,3 +1,4 @@
+using System;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -5,7 +6,7 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// Interface to standardize scene loading information.
     /// </summary>
-    public interface ILoadSceneInfo
+    public interface ILoadSceneInfo : IEquatable<ILoadSceneInfo>
     {
         LoadSceneInfoType Type { get; }
 

@@ -24,5 +24,10 @@ namespace MyGameDevTools.SceneLoading
         {
             return $"Scene \"{_scene.name}\" [{_scene.handle}]";
         }
+
+        public bool Equals(ILoadSceneInfo other)
+        {
+            return Type == other.Type && Reference.Equals(other.Reference);
+        }
     }
 }

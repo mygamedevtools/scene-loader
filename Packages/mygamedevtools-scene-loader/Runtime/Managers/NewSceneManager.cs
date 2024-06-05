@@ -6,7 +6,6 @@ using Cysharp.Threading.Tasks;
 #endif
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -43,7 +42,7 @@ namespace MyGameDevTools.SceneLoading
         {
             ISceneData sceneData = null;
             bool isTargetSceneValid = scene.IsValid();
-            if (isTargetSceneValid && !TryGetSceneDataByLoadedScene(scene, out sceneData))
+            if (isTargetSceneValid && !SceneDataUtilities.TryGetSceneDataByLoadedScene(scene, _loadedScenes, out sceneData))
                 throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
 
             ISceneData previousScene = _activeScene;
@@ -51,10 +50,10 @@ namespace MyGameDevTools.SceneLoading
             if (isTargetSceneValid)
                 UnitySceneManager.SetActiveScene(scene);
 
-            ActiveSceneChanged?.Invoke(previousScene != null ? previousScene.LoadedScene : default, scene);
+            ActiveSceneChanged?.Invoke(previousScene != null ? previousScene.SceneReference : default, scene);
         }
 
-        public Scene GetActiveScene() => _activeScene.LoadedScene;
+        public Scene GetActiveScene() => _activeScene != null ? _activeScene.SceneReference : default;
 
         public Scene GetLastLoadedScene()
         {
@@ -62,19 +61,19 @@ namespace MyGameDevTools.SceneLoading
                 return default;
 
             for (int i = SceneCount - 1; i >= 0; i--)
-                if (!_unloadingScenes.Contains(_loadedScenes[i]) && _loadedScenes[i].LoadedScene.isLoaded)
-                    return _loadedScenes[i].LoadedScene;
+                if (!_unloadingScenes.Contains(_loadedScenes[i]) && _loadedScenes[i].SceneReference.isLoaded)
+                    return _loadedScenes[i].SceneReference;
 
             return default;
         }
 
-        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index].LoadedScene;
+        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index].SceneReference;
 
         public Scene GetLoadedSceneByName(string name)
         {
             foreach (ISceneData sceneData in _loadedScenes)
-                if (sceneData.LoadedScene.name == name)
-                    return sceneData.LoadedScene;
+                if (sceneData.SceneReference.name == name)
+                    return sceneData.SceneReference;
             throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
@@ -138,18 +137,18 @@ namespace MyGameDevTools.SceneLoading
 
             token.ThrowIfCancellationRequested();
 
-            LinkLoadedScenesWithSceneDataArray(sceneDataArray);
+            SceneDataUtilities.LinkLoadedScenesWithSceneDataArray(sceneDataArray, _loadedScenes);
 
             _loadedScenes.AddRange(sceneDataArray);
             for (i = 0; i < scenesToLoad; i++)
             {
-                SceneLoaded?.Invoke(sceneDataArray[i].LoadedScene);
+                SceneLoaded?.Invoke(sceneDataArray[i].SceneReference);
             }
 
             if (setIndexActive >= 0)
-                SetActiveScene(sceneDataArray[setIndexActive].LoadedScene);
+                SetActiveScene(sceneDataArray[setIndexActive].SceneReference);
 
-            return SceneDataUtilities.GetLoadedScenesFromSceneDataArray(sceneDataArray);
+            return SceneDataUtilities.GetScenesFromSceneDataArray(sceneDataArray);
         }
 
         async ValueTask<Scene[]> UnloadScenesAsync_Internal(ILoadSceneInfo[] sceneInfos, CancellationToken token)
@@ -157,29 +156,17 @@ namespace MyGameDevTools.SceneLoading
             if (sceneInfos == null || sceneInfos.Length == 0)
                 throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneInfos));
 
-            // TODO: instead of getting generic last loaded scenes by infos, get from the list of loaded scenes (ISceneData), by directly matching the load scene info
-            var loadedScenes = GetLastLoadedScenesByInfos(sceneInfos, out var unloadingIndexes);
-            if (loadedScenes.Count == 0)
-                throw new InvalidOperationException($"[{GetType().Name} Provided scene group was not able to generate any valid unload scene operations.");
+            ISceneData[] sceneDataArray = SceneDataUtilities.GetLoadedSceneDatasWithLoadSceneInfos(sceneInfos, _loadedScenes);
 
-            int unloadingLength = unloadingIndexes.Length;
-            var unloadingScenes = new Scene[unloadingLength];
+            int sceneCount = sceneInfos.Length;
             int i;
-            for (i = 0; i < unloadingLength; i++)
-                unloadingScenes[i] = loadedScenes[unloadingIndexes[i]];
-
-            for (i = 0; i < unloadingLength; i++)
-                loadedScenes.Remove(unloadingScenes[i]);
-
-            var operationGroup = new AsyncOperationGroup(loadedScenes.Count);
-            foreach (var scene in loadedScenes)
+            for (i = 0; i < sceneCount; i++)
             {
-                operationGroup.Operations.Add(UnitySceneManager.UnloadSceneAsync(scene));
-                _loadedScenes.Remove(scene);
-                _unloadingScenes.Add(scene);
+                _loadedScenes.Remove(sceneDataArray[i]);
+                sceneDataArray[i].UnloadSceneAsync();
             }
 
-            while (!operationGroup.IsDone && !token.IsCancellationRequested)
+            while (!SceneDataUtilities.HasCompletedAllSceneLoadOperations(sceneDataArray) && !token.IsCancellationRequested)
             {
 #if USE_UNITASK
                 await UniTask.Yield(token);
@@ -190,158 +177,16 @@ namespace MyGameDevTools.SceneLoading
 
             token.ThrowIfCancellationRequested();
 
-            foreach (var scene in loadedScenes)
+            ISceneData tempSceneData;
+            for (i = 0; i < sceneCount; i++)
             {
-                _unloadingScenes.Remove(scene);
-                SceneUnloaded?.Invoke(scene);
-                if (_activeScene == scene)
+                tempSceneData = sceneDataArray[i];
+                SceneUnloaded?.Invoke(tempSceneData.SceneReference);
+                if (_activeScene == tempSceneData)
                     SetActiveScene(GetLastLoadedScene());
             }
 
-            var tasks = new Task[unloadingLength];
-            for (i = 0; i < unloadingLength; i++)
-                tasks[i] = WaitForSceneUnload(unloadingScenes[i], token).AsTask();
-
-            await Task.WhenAll(tasks);
-
-            foreach (var scene in unloadingScenes)
-                loadedScenes.Add(scene);
-            return loadedScenes.ToArray();
-        }
-
-        async ValueTask<Scene> WaitForSceneUnload(Scene scene, CancellationToken token)
-        {
-#if USE_UNITASK
-            await UniTask.WaitUntil(() => !_unloadingScenes.Contains(scene), cancellationToken: token);
-#else
-            while (_unloadingScenes.Contains(scene) && !token.IsCancellationRequested)
-                await Task.Yield();
-#endif
-            token.ThrowIfCancellationRequested();
-
-            return scene;
-        }
-
-        void LinkLoadedScenesWithSceneDataArray(ISceneData[] sceneDataArray)
-        {
-            // Fill this list with all loaded scenes from the Unity Scene Manager;
-            int totalSceneCount = UnitySceneManager.sceneCount;
-            List<Scene> unmatchedScenes = new(totalSceneCount);
-
-            int i;
-            for (i = 0; i < totalSceneCount; i++)
-            {
-                Scene scene = UnitySceneManager.GetSceneAt(i);
-                if (scene.isLoaded)
-                    unmatchedScenes.Add(scene);
-            }
-
-            // Remove scenes already tracked by the scene manager
-            totalSceneCount = _loadedScenes.Count;
-            for (i = 0; i < totalSceneCount; i++)
-            {
-                unmatchedScenes.Remove(_loadedScenes[i].LoadedScene);
-            }
-
-            // Loop through all ISceneData and update those that have direct reference to their scene
-            // through their ILoadSceneOperation.
-            int sceneDataCount = sceneDataArray.Length;
-            List<ISceneData> unmatchedSceneDatas = new(sceneDataArray);
-
-            ISceneData sceneData;
-            for (i = 0; i < sceneDataCount; i++)
-            {
-                sceneData = sceneDataArray[i];
-                if (sceneData.LoadOperation.HasDirectReferenceToScene)
-                {
-                    sceneData.UpdateSceneReference();
-                    unmatchedScenes.Remove(sceneData.LoadedScene);
-                    unmatchedSceneDatas.Remove(sceneData);
-                }
-            }
-
-            // Then, loop through all remaining unmatched scenes and check if they can match one of the indirect reference loaded scenes.
-            for (i = unmatchedScenes.Count - 1; i >= 0 && unmatchedSceneDatas.Count > 0; i--)
-            {
-                if (SceneDataUtilities.TryLinkLoadedSceneWithSceneData(unmatchedScenes[i], unmatchedSceneDatas, out ISceneData matchedData))
-                {
-                    unmatchedScenes.RemoveAt(i);
-                    unmatchedSceneDatas.Remove(matchedData);
-                }
-            }
-
-            if (unmatchedSceneDatas.Count > 0)
-            {
-                Debug.LogError($"Unable to link all scene datas to loaded scenes. Linked {sceneDataCount - unmatchedSceneDatas.Count}/{sceneDataCount}.");
-            }
-        }
-
-        List<Scene> GetLastLoadedScenesByInfos(ILoadSceneInfo[] sceneInfos, out int[] unloadingIndexes)
-        {
-            var unloadingIndexesList = new List<int>();
-            var sceneInfosList = new List<ILoadSceneInfo>(sceneInfos);
-            var scenes = new List<Scene>(sceneInfos.Length);
-
-            int sceneCount = SceneCount;
-            int i;
-            for (i = sceneCount - 1; i >= 0 && sceneInfosList.Count > 0; i--)
-                tryValidateSceneReference(_loadedScenes[i], out _);
-
-            sceneCount = _unloadingScenes.Count;
-            for (i = 0; i < sceneCount; i++)
-                if (tryValidateSceneReference(_unloadingScenes[i], out int index))
-                    unloadingIndexesList.Add(index);
-
-            if (sceneInfosList.Count > 0)
-            {
-                var builder = new StringBuilder($"[{GetType().Name}] Some of the scenes could not be found loaded in the Unity Scene Manager:\n");
-                for (i = 0; i < sceneInfosList.Count; i++)
-                    builder.AppendLine($" ({i}): {sceneInfosList[i]}");
-
-                Debug.LogWarning(builder.ToString());
-            }
-
-            unloadingIndexes = unloadingIndexesList.ToArray();
-            return scenes;
-
-            bool tryValidateSceneReference(Scene scene, out int index)
-            {
-                foreach (var info in sceneInfosList)
-                {
-                    if (info.IsReferenceToScene(scene))
-                    {
-                        sceneInfosList.Remove(info);
-                        scenes.Add(scene);
-                        index = scenes.Count - 1;
-                        return true;
-                    }
-                }
-                index = -1;
-                return false;
-            }
-        }
-
-        bool TryGetSceneDataByLoadedScene(Scene scene, out ISceneData sceneData)
-        {
-            if (!scene.IsValid() || !scene.isLoaded)
-            {
-                Debug.LogWarning($"[{GetType().Name}] Attempted to get an ISceneData through an invalid or unloaded scene.");
-                sceneData = default;
-                return false;
-            }
-
-            foreach (ISceneData tempSceneData in _loadedScenes)
-            {
-                if (scene == tempSceneData.LoadedScene)
-                {
-                    sceneData = tempSceneData;
-                    return true;
-                }
-            }
-
-            Debug.LogWarning($"[{GetType().Name}] Unable to get an ISceneData with the loaded scene {scene.name} ({scene.handle}).");
-            sceneData = default;
-            return false;
+            return SceneDataUtilities.GetScenesFromSceneDataArray(sceneDataArray);
         }
     }
 }

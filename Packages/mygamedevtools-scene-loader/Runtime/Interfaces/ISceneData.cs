@@ -4,14 +4,16 @@ namespace MyGameDevTools.SceneLoading
 {
     public interface ISceneData
     {
-        ILoadSceneOperation LoadOperation { get; }
+        IAsyncSceneOperation AsyncOperation { get; }
         ILoadSceneInfo LoadSceneInfo { get; }
-        Scene LoadedScene { get; }
+        Scene SceneReference { get; }
 
         void SetSceneReferenceManually(Scene scene);
 
         void UpdateSceneReference();
 
-        ILoadSceneOperation LoadSceneAsync();
+        IAsyncSceneOperation LoadSceneAsync();
+
+        IAsyncSceneOperation UnloadSceneAsync();
     }
 }

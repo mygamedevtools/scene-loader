@@ -32,5 +32,10 @@ namespace MyGameDevTools.SceneLoading
         {
             return $"Scene with index [{_buildIndex}]";
         }
+
+        public bool Equals(ILoadSceneInfo other)
+        {
+            return Type == other.Type && Reference.Equals(other.Reference);
+        }
     }
 }

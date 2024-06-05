@@ -22,13 +22,18 @@ namespace MyGameDevTools.SceneLoading
 
         public bool IsReferenceToScene(Scene scene)
         {
-            UnityEngine.Debug.LogError($"{nameof(LoadSceneInfoAssetReference)} is not supposed to validate scene references, since the {nameof(ILoadSceneOperation)} related to this type of {nameof(ILoadSceneInfo)} has direct reference to the loaded scene.");
+            UnityEngine.Debug.LogError($"{nameof(LoadSceneInfoAssetReference)} is not supposed to validate scene references, since the {nameof(IAsyncSceneOperation)} related to this type of {nameof(ILoadSceneInfo)} has direct reference to the loaded scene.");
             return false;
         }
 
         public override string ToString()
         {
             return $"Scene with asset reference {_assetReference}";
+        }
+
+        public bool Equals(ILoadSceneInfo other)
+        {
+            return Type == other.Type && Reference.Equals(other.Reference);
         }
     }
 }

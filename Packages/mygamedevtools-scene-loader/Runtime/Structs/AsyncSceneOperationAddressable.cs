@@ -1,0 +1,42 @@
+#if ENABLE_ADDRESSABLES
+using System;
+using UnityEngine;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.SceneManagement;
+
+namespace MyGameDevTools.SceneLoading
+{
+    public readonly struct AsyncSceneOperationAddressable : IAsyncSceneOperation
+    {
+        public readonly float Progress => _asyncOperationHandle.PercentComplete;
+
+        public readonly bool IsDone => _asyncOperationHandle.IsDone;
+
+        public readonly bool HasDirectReferenceToScene => true;
+
+        public AsyncOperationHandle<SceneInstance> AsyncOperationHandle => _asyncOperationHandle;
+
+        readonly AsyncOperationHandle<SceneInstance> _asyncOperationHandle;
+
+        public AsyncSceneOperationAddressable(AsyncOperationHandle<SceneInstance> operationHandle)
+        {
+            if (!operationHandle.IsValid())
+                throw new ArgumentException($"Cannot create a {nameof(AsyncSceneOperationAddressable)} from an invalid AsyncOperationHandle.", nameof(operationHandle));
+
+            _asyncOperationHandle = operationHandle;
+        }
+
+        public Scene GetResult()
+        {
+            if (_asyncOperationHandle.Status == AsyncOperationStatus.Failed)
+            {
+                Debug.LogException(_asyncOperationHandle.OperationException);
+                return default;
+            }
+
+            return _asyncOperationHandle.Result.Scene;
+        }
+    }
+}
+#endif
