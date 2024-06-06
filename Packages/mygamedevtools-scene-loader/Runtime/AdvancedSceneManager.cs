@@ -10,18 +10,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class NewSceneManager : ISceneManager, ISceneManagerReporter
+    public class AdvancedSceneManager : ISceneManager
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
 
-        public bool IsUnloadingScenes => _unloadingScenes.Count > 0;
-        public int SceneCount => _loadedScenes.Count;
+        public int LoadedSceneCount => _loadedScenes.Count;
+        public int TotalSceneCount => _loadedScenes.Count + _unloadingScenes.Count;
 
         readonly List<ISceneData> _unloadingScenes = new();
         readonly List<ISceneData> _loadedScenes = new();
@@ -48,7 +47,7 @@ namespace MyGameDevTools.SceneLoading
             ISceneData previousScene = _activeScene;
             _activeScene = sceneData;
             if (isTargetSceneValid)
-                UnitySceneManager.SetActiveScene(scene);
+                UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
 
             ActiveSceneChanged?.Invoke(previousScene != null ? previousScene.SceneReference : default, scene);
         }
@@ -57,10 +56,10 @@ namespace MyGameDevTools.SceneLoading
 
         public Scene GetLastLoadedScene()
         {
-            if (SceneCount == 0)
+            if (LoadedSceneCount == 0)
                 return default;
 
-            for (int i = SceneCount - 1; i >= 0; i--)
+            for (int i = LoadedSceneCount - 1; i >= 0; i--)
                 if (!_unloadingScenes.Contains(_loadedScenes[i]) && _loadedScenes[i].SceneReference.isLoaded)
                     return _loadedScenes[i].SceneReference;
 
@@ -159,11 +158,14 @@ namespace MyGameDevTools.SceneLoading
             ISceneData[] sceneDataArray = SceneDataUtilities.GetLoadedSceneDatasWithLoadSceneInfos(sceneInfos, _loadedScenes);
 
             int sceneCount = sceneInfos.Length;
+            ISceneData tempSceneData;
             int i;
             for (i = 0; i < sceneCount; i++)
             {
-                _loadedScenes.Remove(sceneDataArray[i]);
-                sceneDataArray[i].UnloadSceneAsync();
+                tempSceneData = sceneDataArray[i];
+                _loadedScenes.Remove(tempSceneData);
+                _unloadingScenes.Add(tempSceneData);
+                tempSceneData.UnloadSceneAsync();
             }
 
             while (!SceneDataUtilities.HasCompletedAllSceneLoadOperations(sceneDataArray) && !token.IsCancellationRequested)
@@ -177,10 +179,10 @@ namespace MyGameDevTools.SceneLoading
 
             token.ThrowIfCancellationRequested();
 
-            ISceneData tempSceneData;
             for (i = 0; i < sceneCount; i++)
             {
                 tempSceneData = sceneDataArray[i];
+                _unloadingScenes.Remove(tempSceneData);
                 SceneUnloaded?.Invoke(tempSceneData.SceneReference);
                 if (_activeScene == tempSceneData)
                     SetActiveScene(GetLastLoadedScene());

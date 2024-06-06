@@ -44,7 +44,7 @@ namespace MyGameDevTools.SceneLoading
             switch (_loadSceneInfo.Type)
             {
                 case LoadSceneInfoType.AssetReference:
-                case LoadSceneInfoType.Name:
+                case LoadSceneInfoType.Address:
                     _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     return _asyncSceneOperation;
                 default:

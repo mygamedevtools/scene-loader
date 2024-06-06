@@ -19,14 +19,14 @@ using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneManagerAddressable : ISceneManager, ISceneManagerReporter
+    public class SceneManagerAddressable : ISceneManager
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
 
-        public bool IsUnloadingScenes => _unloadingScenes.Count > 0;
-        public int SceneCount => _loadedScenes.Count;
+        public int LoadedSceneCount => _loadedScenes.Count;
+        public int TotalSceneCount => _loadedScenes.Count + _unloadingScenes.Count;
 
         readonly List<SceneInstance> _unloadingScenes = new List<SceneInstance>();
         readonly List<SceneInstance> _loadedScenes = new List<SceneInstance>();
@@ -62,10 +62,10 @@ namespace MyGameDevTools.SceneLoading
 
         public Scene GetLastLoadedScene()
         {
-            if (SceneCount == 0)
+            if (LoadedSceneCount == 0)
                 return default;
 
-            for (int i = SceneCount - 1; i >= 0; i--)
+            for (int i = LoadedSceneCount - 1; i >= 0; i--)
                 if (!_unloadingScenes.Contains(_loadedScenes[i]))
                     return _loadedScenes[i].Scene;
 
@@ -271,7 +271,7 @@ namespace MyGameDevTools.SceneLoading
             var sceneInfosList = new List<ILoadSceneInfo>(sceneInfos);
             var scenes = new List<SceneInstance>(sceneInfos.Length);
 
-            int sceneCount = SceneCount;
+            int sceneCount = LoadedSceneCount;
             int i;
             for (i = sceneCount - 1; i >= 0 && sceneInfosList.Count > 0; i--)
                 tryValidateSceneReference(_loadedScenes[i], out _);

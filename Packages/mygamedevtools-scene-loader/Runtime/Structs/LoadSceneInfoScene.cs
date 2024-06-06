@@ -7,7 +7,7 @@ namespace MyGameDevTools.SceneLoading
     {
         public readonly LoadSceneInfoType Type => LoadSceneInfoType.SceneHandle;
 
-        public object Reference => _scene;
+        public readonly object Reference => _scene;
 
         readonly Scene _scene;
 

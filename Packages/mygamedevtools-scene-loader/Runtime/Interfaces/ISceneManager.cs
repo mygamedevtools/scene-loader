@@ -36,7 +36,8 @@ namespace MyGameDevTools.SceneLoading
         /// <br/>
         /// You can have multiple <see cref="ISceneManager"/> instances with their loaded scenes inside their own scope.
         /// </summary>
-        int SceneCount { get; }
+        int LoadedSceneCount { get; }
+        int TotalSceneCount { get; }
 
         /// <summary>
         /// Sets the target <paramref name="scene"/> as the active scene.
@@ -126,10 +127,5 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="name">Name of the loaded scene to be found.</param>
         /// <returns>A loaded scene with the given <paramref name="name"/>.</returns>
         Scene GetLoadedSceneByName(string name);
-    }
-
-    internal interface ISceneManagerReporter
-    {
-        bool IsUnloadingScenes { get; }
     }
 }

@@ -6,7 +6,6 @@ using Cysharp.Threading.Tasks;
 #endif
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,18 +13,16 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
-[assembly: InternalsVisibleTo("MyGameDevTools.SceneLoading.Tests")]
-
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneManager : ISceneManager, ISceneManagerReporter
+    public class SceneManager : ISceneManager
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
 
-        public bool IsUnloadingScenes => _unloadingScenes.Count > 0;
-        public int SceneCount => _loadedScenes.Count;
+        public int LoadedSceneCount => _loadedScenes.Count;
+        public int TotalSceneCount => _loadedScenes.Count + _unloadingScenes.Count;
 
         readonly List<Scene> _unloadingScenes = new List<Scene>();
         readonly List<Scene> _loadedScenes = new List<Scene>();
@@ -60,10 +57,10 @@ namespace MyGameDevTools.SceneLoading
 
         public Scene GetLastLoadedScene()
         {
-            if (SceneCount == 0)
+            if (LoadedSceneCount == 0)
                 return default;
 
-            for (int i = SceneCount - 1; i >= 0; i--)
+            for (int i = LoadedSceneCount - 1; i >= 0; i--)
                 if (!_unloadingScenes.Contains(_loadedScenes[i]) && _loadedScenes[i].isLoaded)
                     return _loadedScenes[i];
 
@@ -236,7 +233,7 @@ namespace MyGameDevTools.SceneLoading
             var sceneInfosList = new List<ILoadSceneInfo>(sceneInfos);
             var scenes = new List<Scene>(sceneInfos.Length);
 
-            int sceneCount = SceneCount;
+            int sceneCount = LoadedSceneCount;
             int i;
             for (i = sceneCount - 1; i >= 0 && sceneInfosList.Count > 0; i--)
                 tryValidateSceneReference(_loadedScenes[i], out _);

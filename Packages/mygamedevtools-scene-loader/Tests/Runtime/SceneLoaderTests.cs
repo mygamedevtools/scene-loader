@@ -157,10 +157,10 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => sceneLoader.Manager.SceneCount == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
+            yield return new WaitUntil(() => sceneLoader.Manager.LoadedSceneCount == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
-            Assert.AreEqual(sceneCount, sceneLoader.Manager.SceneCount);
+            Assert.AreEqual(sceneCount, sceneLoader.Manager.LoadedSceneCount);
 
             var unloadedScenes = new List<Scene>(sceneCount);
 
@@ -174,7 +174,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.Manager.SceneUnloaded -= sceneUnloaded;
 
             Assert.AreEqual(sceneCount, unloadedScenes.Count);
-            Assert.AreEqual(0, sceneLoader.Manager.SceneCount);
+            Assert.AreEqual(0, sceneLoader.Manager.LoadedSceneCount);
 
             void sceneUnloaded(Scene scene)
             {
@@ -235,7 +235,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(sceneCount, loadedScenes.Count);
             Assert.AreEqual(getTargetActiveScene(), UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
-            yield return new WaitUntil(() => !((ISceneManagerReporter)sceneLoader.Manager).IsUnloadingScenes);
+            yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == sceneCount);
 
             void sceneLoaded(Scene scene)
             {
@@ -271,7 +271,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(loadedScene, sceneLoader.Manager.GetActiveScene());
             Assert.AreEqual(loadedScene.name, targetScene.Reference);
 
-            yield return new WaitUntil(() => !((ISceneManagerReporter)sceneLoader.Manager).IsUnloadingScenes);
+            yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
 
             void sceneLoaded(Scene scene)
             {
@@ -315,7 +315,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 Assert.AreEqual(loadedScene.name, targetScene.Reference);
             }
 
-            yield return new WaitUntil(() => !((ISceneManagerReporter)sceneLoader.Manager).IsUnloadingScenes);
+            yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
         }
 
         [UnityTest]
@@ -339,7 +339,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(loadedScene, sceneLoader.Manager.GetActiveScene());
             Assert.AreEqual(loadedScene.name, targetScene.Reference);
 
-            yield return new WaitUntil(() => !((ISceneManagerReporter)sceneLoader.Manager).IsUnloadingScenes);
+            yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
 
             void sceneLoaded(Scene scene)
             {
@@ -400,7 +400,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loader.Manager.SceneCount == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
+            yield return new WaitUntil(() => loader.Manager.LoadedSceneCount == sceneCount || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             loader.UnloadScenes(targetScenes);
@@ -568,7 +568,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             int sceneCount = targetScenes.Length;
             loader.LoadScenes(targetScenes);
 
-            await UniTask.WaitUntil(() => loader.Manager.SceneCount == sceneCount).TimeoutWithoutException(TimeSpan.FromMilliseconds(_defaultTimeout));
+            await UniTask.WaitUntil(() => loader.Manager.LoadedSceneCount == sceneCount).TimeoutWithoutException(TimeSpan.FromMilliseconds(_defaultTimeout));
 
             SceneLoaderType type = GetSceneLoaderType(loader);
 

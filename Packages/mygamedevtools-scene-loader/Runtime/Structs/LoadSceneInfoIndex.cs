@@ -10,7 +10,7 @@ namespace MyGameDevTools.SceneLoading
     {
         public readonly LoadSceneInfoType Type => LoadSceneInfoType.BuildIndex;
 
-        public object Reference => _buildIndex;
+        public readonly object Reference => _buildIndex;
 
         readonly int _buildIndex;
 

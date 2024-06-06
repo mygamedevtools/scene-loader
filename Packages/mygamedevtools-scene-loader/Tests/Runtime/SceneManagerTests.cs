@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 #if ENABLE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+
 #endif
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -17,7 +19,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneManagerTests : SceneTestEnvironment
     {
-        static readonly ILoadSceneInfo[][] _loadSceneInfos_multiple = new ILoadSceneInfo[][]
+        static readonly List<ILoadSceneInfo[]> _loadSceneInfos_multiple = new()
         {
             new ILoadSceneInfo[]
             {
@@ -30,31 +32,58 @@ namespace MyGameDevTools.SceneLoading.Tests
                 new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
                 new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
                 new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            }
+            },
+            new ILoadSceneInfo[]
+            {
+#if UNITY_EDITOR
+                new LoadSceneInfoIndex(0),
+#endif
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(2),
+#if !UNITY_EDITOR
+                new LoadSceneInfoIndex(3),
+#endif
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(1),
+            },
+#if ENABLE_ADDRESSABLES
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+            },
+#endif
         };
-        static readonly ILoadSceneInfo[] _loadSceneInfos_single = new ILoadSceneInfo[]
+        static readonly List<ILoadSceneInfo> _loadSceneInfos_single = new()
         {
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1])
+            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+            new LoadSceneInfoIndex(1),
+#if ENABLE_ADDRESSABLES
+            new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+#endif
         };
         static readonly bool[] _setActiveValues = new bool[] { true, false };
         static readonly int[] _setIndexActiveValues = new int[] { -1, 1 };
 
         static readonly ISceneManager[] _sceneManagers = new ISceneManager[]
         {
-            new SceneManager(),
-#if ENABLE_ADDRESSABLES
-            new SceneManagerAddressable(),
-#endif
-            new NewSceneManager(),
+            new AdvancedSceneManager(),
         };
 
         static readonly Func<ISceneManager>[] _sceneManagerCreateFuncs = new Func<ISceneManager>[]
         {
-            () => new SceneManager(),
-#if ENABLE_ADDRESSABLES
-            () => new SceneManagerAddressable(),
-#endif
-            () => new NewSceneManager(),
+            () => new AdvancedSceneManager(),
         };
 
         int _scenesActivated;
@@ -64,7 +93,29 @@ namespace MyGameDevTools.SceneLoading.Tests
         [OneTimeSetUp]
         public void OneTimeSetup()
         {
-            for (int i = 0; i < _sceneManagers.Length; i++)
+            int i;
+
+#if ENABLE_ADDRESSABLES
+            // Add AssetReference LoadSceneInfos to the test lists
+            AsyncOperationHandle<SceneReferenceData> sceneReferenceDataOperation = Addressables.LoadAssetAsync<SceneReferenceData>(nameof(SceneReferenceData));
+            sceneReferenceDataOperation.WaitForCompletion();
+
+            SceneReferenceData sceneReferenceData = sceneReferenceDataOperation.Result;
+            _loadSceneInfos_single.Add(new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[1]));
+
+            int count = sceneReferenceData.sceneReferences.Count;
+            ILoadSceneInfo[] assetReferenceLoadSceneInfos = new ILoadSceneInfo[count];
+            for (i = 0; i < count; i++)
+            {
+                assetReferenceLoadSceneInfos[i] = new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[i]);
+            }
+
+            _loadSceneInfos_multiple.Add(assetReferenceLoadSceneInfos);
+
+            Addressables.Release(sceneReferenceDataOperation);
+#endif
+
+            for (i = 0; i < _sceneManagers.Length; i++)
             {
                 var manager = _sceneManagers[i];
                 manager.ActiveSceneChanged += ReportSceneActivation;
@@ -185,7 +236,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             manager.SceneLoaded -= setEventScene;
             var loadedScene = loadTask.Result;
 
-            Assert.AreEqual(1, manager.SceneCount);
+            Assert.AreEqual(1, manager.LoadedSceneCount);
             Assert.That(setActive ? loadedScene == manager.GetActiveScene() : loadedScene != manager.GetActiveScene());
             Assert.AreEqual(loadedScene, manager.GetLastLoadedScene());
             Assert.AreEqual(loadedScene, manager.GetLoadedSceneByName(loadedScene.name));
@@ -217,28 +268,14 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(1, progress.Value);
             Assert.AreEqual(scenesToLoad, loadedScenes.Length);
             Assert.AreEqual(scenesToLoad, reportedScenes.Count);
-            Assert.AreEqual(scenesToLoad, manager.SceneCount);
+            Assert.AreEqual(scenesToLoad, manager.LoadedSceneCount);
             if (setIndexActive >= 0)
                 Assert.AreEqual(manager.GetActiveScene(), loadedScenes[setIndexActive]);
             Assert.AreEqual(scenesToLoad, _scenesLoaded);
             Assert.AreEqual(0, _scenesUnloaded);
             Assert.AreEqual(setIndexActive >= 0 ? 1 : 0, _scenesActivated);
 
-            for (int i = 0; i < scenesToLoad; i++)
-                Assert.True(hasReference(sceneInfos[i], reportedScenes));
-
             void reportSceneLoaded(Scene loadedScene) => reportedScenes.Add(loadedScene);
-
-            bool hasReference(ILoadSceneInfo info, List<Scene> scenes)
-            {
-                foreach (var scene in scenes)
-                    if (info.IsReferenceToScene(scene))
-                    {
-                        scenes.Remove(scene);
-                        return true;
-                    }
-                return false;
-            }
         }
 
         [UnityTest]
@@ -263,7 +300,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 loadedScenes[i] = loadTask.Result;
             }
 
-            Assert.AreEqual(length, manager.SceneCount);
+            Assert.AreEqual(length, manager.LoadedSceneCount);
             Assert.AreEqual(loadedScenes[^1], manager.GetLastLoadedScene());
 
             for (int i = 0; i < length; i++)
@@ -279,7 +316,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void LoadScene_NotInBuild([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             var sceneName = "not-a-real-scene";
-            if (manager is SceneManager || manager is NewSceneManager)
+            if (manager is SceneManager || manager is AdvancedSceneManager)
                 LogAssert.Expect(LogType.Error, new Regex("'not-a-real-scene' couldn't be loaded"));
             var wait = new WaitTask(manager.LoadSceneAsync(new LoadSceneInfoName(sceneName), false).AsTask());
             Assert.Throws<AggregateException>(() => wait.MoveNext());
@@ -305,7 +342,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(workingScene, eventScene);
             Assert.IsFalse(workingScene.isLoaded);
             Assert.IsFalse(manager.GetActiveScene().IsValid());
-            Assert.AreEqual(0, manager.SceneCount);
+            Assert.AreEqual(0, manager.LoadedSceneCount);
             Assert.AreEqual(1, _scenesLoaded);
             Assert.AreEqual(1, _scenesUnloaded);
             Assert.AreEqual(setActive ? 2 : 0, _scenesActivated, "Activated scenes did not match expectation");
@@ -332,7 +369,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.AreEqual(scenesToUnload, unloadedScenes.Length);
             Assert.AreEqual(scenesToUnload, reportedScenes.Count);
-            Assert.AreEqual(0, manager.SceneCount);
+            Assert.AreEqual(0, manager.LoadedSceneCount);
             Assert.AreEqual(scenesToUnload, _scenesLoaded);
             Assert.AreEqual(scenesToUnload, _scenesUnloaded);
             Assert.AreEqual(setIndexActive >= 0 ? 2 : 0, _scenesActivated, "Activated scenes did not match expectation");
@@ -358,96 +395,16 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void UnloadScene_NotLoaded([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             var sceneName = "not-a-real-scene";
-            if (manager is not NewSceneManager)
+            if (manager is not AdvancedSceneManager)
                 LogAssert.Expect(LogType.Warning, new Regex("Some of the scenes could not be found loaded"));
             var wait = new WaitTask(manager.UnloadSceneAsync(new LoadSceneInfoName(sceneName)).AsTask());
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]
-        public IEnumerator LoadAndUnload_BuildIndex()
+        public IEnumerator LoadByInfo_UnloadByScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager, [ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo)
         {
-#if UNITY_EDITOR
-            var firstScene = new LoadSceneInfoIndex(0);
-#else
-            var firstScene = new LoadSceneInfoIndex(1);
-#endif
-
-            var task = _sceneManagers[0].LoadSceneAsync(firstScene).AsTask();
-            yield return new WaitTask(task);
-
-            Assert.True(firstScene.IsReferenceToScene(task.Result));
-            var handle = task.Result.handle;
-
-            task = _sceneManagers[0].UnloadSceneAsync(firstScene).AsTask();
-            yield return new WaitTask(task);
-
-            Assert.AreEqual(handle, task.Result.handle);
-        }
-
-#if ENABLE_ADDRESSABLES
-        [UnityTest]
-        public IEnumerator LoadAndUnload_AssetReference([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
-        {
-            if (manager is SceneManager)
-            {
-                Assert.Ignore("Standard scene manager does not handle addressable scenes");
-                yield break;
-            }
-
-            var sceneReferenceDataOperation = Addressables.LoadAssetAsync<SceneReferenceData>(nameof(SceneReferenceData));
-            sceneReferenceDataOperation.WaitForCompletion();
-
-            var targetScene = new LoadSceneInfoAssetReference(sceneReferenceDataOperation.Result.sceneReferences[1]);
-
-            var task = manager.LoadSceneAsync(targetScene).AsTask();
-            yield return new WaitTask(task);
-
-            //Assert.True(targetScene.IsReferenceToScene(task.Result));
-
-            task = manager.UnloadSceneAsync(targetScene).AsTask();
-            yield return new WaitTask(task);
-
-            Assert.Zero(manager.SceneCount);
-
-            Addressables.Release(sceneReferenceDataOperation);
-        }
-
-        [UnityTest]
-        public IEnumerator LoadAndUnload_AssetReference_Multiple([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
-        {
-            if (manager is SceneManager)
-            {
-                Assert.Ignore("Standard scene manager does not handle addressable scenes");
-                yield break;
-            }
-
-            var sceneReferenceDataOperation = Addressables.LoadAssetAsync<SceneReferenceData>(nameof(SceneReferenceData));
-            sceneReferenceDataOperation.WaitForCompletion();
-
-            var sceneReferenceData = sceneReferenceDataOperation.Result;
-            var targetScenes = _loadSceneInfos_multiple[1];
-            int length = targetScenes.Length;
-
-            var task = _sceneManagers[2].LoadScenesAsync(targetScenes).AsTask();
-            yield return new WaitTask(task);
-
-            // for (int i = 0; i < length; i++)
-            //     Assert.True(targetScenes[i].IsReferenceToScene(task.Result[i]));
-
-            task = _sceneManagers[2].UnloadScenesAsync(targetScenes).AsTask();
-            yield return new WaitTask(task);
-
-            Assert.Zero(_sceneManagers[2].SceneCount);
-
-            Addressables.Release(sceneReferenceDataOperation);
-        }
-#endif
-
-        [UnityTest]
-        public IEnumerator LoadByName_UnloadByScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
-        {
-            var task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask();
+            var task = manager.LoadSceneAsync(sceneInfo).AsTask();
 
             yield return new WaitTask(task);
 
@@ -457,7 +414,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             yield return new WaitTask(task);
 
-            Assert.Zero(_sceneManagers[1].SceneCount);
+            Assert.Zero(manager.LoadedSceneCount);
         }
 
         [Test]
@@ -470,10 +427,10 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         [UnityTest]
         [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo)
         {
             ISceneManager manager = managerCreateFunc();
-            Task task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1])).AsTask();
+            Task task = manager.LoadSceneAsync(sceneInfo).AsTask();
             manager.Dispose();
             yield return new WaitTask(task);
             Assert.That(task.IsCompleted);
@@ -481,10 +438,10 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         [UnityTest]
         [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(nameof(_loadSceneInfos_multiple))] ILoadSceneInfo[] sceneInfos)
         {
             ISceneManager manager = managerCreateFunc();
-            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            Task task = manager.LoadScenesAsync(sceneInfos).AsTask();
             manager.Dispose();
             yield return new WaitTask(task);
             Assert.True(task.IsCanceled);
@@ -492,10 +449,9 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         [UnityTest]
         [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dipose_DuringUnloadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dipose_DuringUnloadScene([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo)
         {
             ISceneManager manager = managerCreateFunc();
-            ILoadSceneInfo sceneInfo = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
             Task task = manager.LoadSceneAsync(sceneInfo).AsTask();
             yield return new WaitTask(task);
 
@@ -507,23 +463,23 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         [UnityTest]
         [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dipose_DuringUnloadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc)
+        public IEnumerator Dipose_DuringUnloadScenes([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(nameof(_loadSceneInfos_multiple))] ILoadSceneInfo[] sceneInfos)
         {
             ISceneManager manager = managerCreateFunc();
-            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            Task task = manager.LoadScenesAsync(sceneInfos).AsTask();
             yield return new WaitTask(task);
 
-            task = manager.UnloadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            task = manager.UnloadScenesAsync(sceneInfos).AsTask();
             manager.Dispose();
             yield return new WaitTask(task);
             Assert.True(task.IsCanceled);
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_DuringLoadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringLoadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager, [ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo)
         {
             CancellationTokenSource tokenSource = new();
-            Task task = manager.LoadSceneAsync(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), token: tokenSource.Token).AsTask();
+            Task task = manager.LoadSceneAsync(sceneInfo, token: tokenSource.Token).AsTask();
             tokenSource.Cancel();
             yield return new WaitTask(task);
             Assert.That(task.IsCompleted);
@@ -531,10 +487,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_DuringLoadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringLoadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager, [ValueSource(nameof(_loadSceneInfos_multiple))] ILoadSceneInfo[] sceneInfos)
         {
             CancellationTokenSource tokenSource = new();
-            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0], token: tokenSource.Token).AsTask();
+            Task task = manager.LoadScenesAsync(sceneInfos, token: tokenSource.Token).AsTask();
             tokenSource.Cancel();
             yield return new WaitTask(task);
             Assert.True(task.IsCanceled);
@@ -542,10 +498,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_DuringUnloadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringUnloadScene([ValueSource(nameof(_sceneManagers))] ISceneManager manager, [ValueSource(nameof(_loadSceneInfos_single))] ILoadSceneInfo sceneInfo)
         {
             CancellationTokenSource tokenSource = new();
-            ILoadSceneInfo sceneInfo = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
             Task task = manager.LoadSceneAsync(sceneInfo).AsTask();
             yield return new WaitTask(task);
 
@@ -557,13 +512,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Cancellation_DuringUnloadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
+        public IEnumerator Cancellation_DuringUnloadScenes([ValueSource(nameof(_sceneManagers))] ISceneManager manager, [ValueSource(nameof(_loadSceneInfos_multiple))] ILoadSceneInfo[] sceneInfos)
         {
             CancellationTokenSource tokenSource = new();
-            Task task = manager.LoadScenesAsync(_loadSceneInfos_multiple[0]).AsTask();
+            Task task = manager.LoadScenesAsync(sceneInfos).AsTask();
             yield return new WaitTask(task);
 
-            task = manager.UnloadScenesAsync(_loadSceneInfos_multiple[0], token: tokenSource.Token).AsTask();
+            task = manager.UnloadScenesAsync(sceneInfos, token: tokenSource.Token).AsTask();
             tokenSource.Cancel();
             yield return new WaitTask(task);
             Assert.True(task.IsCanceled);

@@ -9,7 +9,7 @@ namespace MyGameDevTools.SceneLoading
     {
         public readonly LoadSceneInfoType Type => LoadSceneInfoType.AssetReference;
 
-        public object Reference => _assetReference;
+        public readonly object Reference => _assetReference;
 
         readonly AssetReference _assetReference;
 

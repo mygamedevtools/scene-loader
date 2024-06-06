@@ -5,6 +5,7 @@ namespace MyGameDevTools.SceneLoading
         BuildIndex,
         Name,
         SceneHandle,
-        AssetReference
+        AssetReference,
+        Address
     }
 }
