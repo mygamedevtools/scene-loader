@@ -8,8 +8,6 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// Interface to standardize scene management operations.
     /// The scene manager is responsible for scene loading operations, keeping track of its loaded scene stack and dispatching scene load events.
-    /// <br/>
-    /// A scene manager should only keep track of scenes loaded within its own scope.
     /// </summary>
     public interface ISceneManager : IDisposable
     {
@@ -32,16 +30,18 @@ namespace MyGameDevTools.SceneLoading
 
         /// <summary>
         /// The amount of scenes loaded through this <see cref="ISceneManager"/>.
-        /// To get the total amount of loaded scenes, check <see cref="UnityEngine.SceneManagement.SceneManager.sceneCount"/>.
-        /// <br/>
-        /// You can have multiple <see cref="ISceneManager"/> instances with their loaded scenes inside their own scope.
+        /// To get the total amount of loaded scenes, check <see cref="SceneManager.sceneCount"/>.
         /// </summary>
         int LoadedSceneCount { get; }
+        /// <summary>
+        /// The amount of scenes managed by this <see cref="ISceneManager"/>.
+        /// This includes scenes that are being unloaded.
+        /// </summary>
         int TotalSceneCount { get; }
 
         /// <summary>
         /// Sets the target <paramref name="scene"/> as the active scene.
-        /// Internally calls <see cref="UnityEngine.SceneManagement.SceneManager.SetActiveScene(Scene)"/>.
+        /// Internally calls <see cref="SceneManager.SetActiveScene(Scene)"/>.
         /// </summary>
         /// <param name="scene">Scene to be enabled as the active scene.</param>
         void SetActiveScene(Scene scene);
@@ -103,7 +103,7 @@ namespace MyGameDevTools.SceneLoading
 
         /// <summary>
         /// Gets the current active scene in this <see cref="ISceneManager"/> instance.
-        /// This should point to the same scene you get via <see cref="UnityEngine.SceneManagement.SceneManager.GetActiveScene()"/> if it was loaded through this <see cref="ISceneManager"/>.
+        /// This should point to the same scene you get via <see cref="SceneManager.GetActiveScene()"/> if it was loaded through this <see cref="ISceneManager"/>.
         /// </summary>
         /// <returns>The current active scene, or an invalid scene if none of the loaded scenes are enabled as the active scene.</returns>
         Scene GetActiveScene();

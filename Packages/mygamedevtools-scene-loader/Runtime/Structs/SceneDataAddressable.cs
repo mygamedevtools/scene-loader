@@ -1,10 +1,14 @@
 #if ENABLE_ADDRESSABLES
+using System;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// Struct to manage the link between addressable scene operations, its <see cref="ILoadSceneInfo"/> and resulting loaded scene.
+    /// </summary>
     public struct SceneDataAddressable : ISceneData
     {
         public readonly IAsyncSceneOperation AsyncOperation => _asyncSceneOperation;
@@ -18,8 +22,17 @@ namespace MyGameDevTools.SceneLoading
         AsyncSceneOperationAddressable _asyncSceneOperation;
         Scene _sceneReference;
 
+        /// <summary>
+        /// Creates a new <see cref="SceneDataAddressable"/> with the provided <see cref="ILoadSceneInfo"/>.
+        /// Only supports an <see cref="ILoadSceneInfo"/> with the types <see cref="LoadSceneInfoType.AssetReference" /> or <see cref="LoadSceneInfoType.Address"/>, since those are addressable types.
+        /// </summary>
         public SceneDataAddressable(ILoadSceneInfo loadSceneInfo)
         {
+            if (loadSceneInfo.Type != LoadSceneInfoType.AssetReference && loadSceneInfo.Type != LoadSceneInfoType.Address)
+            {
+                throw new ArgumentException($"Cannot create a {nameof(SceneDataAddressable)} with an {nameof(ILoadSceneInfo)} of type '{loadSceneInfo.Type}'. It only supports the {nameof(LoadSceneInfoType.AssetReference)} and {nameof(LoadSceneInfoType.Address)}");
+            }
+
             _loadSceneInfo = loadSceneInfo;
             _asyncSceneOperation = default;
             _sceneReference = default;
@@ -34,7 +47,7 @@ namespace MyGameDevTools.SceneLoading
         public void UpdateSceneReference()
         {
             if (!AsyncOperation.IsDone)
-                throw new System.Exception($"[{GetType().Name}] Cannot update the scene reference before the scene has been loaded.");
+                throw new Exception($"[{GetType().Name}] Cannot update the scene reference before the scene has been loaded.");
 
             _sceneReference = AsyncOperation.GetResult();
         }

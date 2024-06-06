@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// Struct to manage scene operations with the scene's Addressable Asset Reference. Implements <see cref="ILoadSceneInfo"/>.
+    /// </summary>
     public readonly struct LoadSceneInfoAssetReference : ILoadSceneInfo
     {
         public readonly LoadSceneInfoType Type => LoadSceneInfoType.AssetReference;
@@ -13,6 +16,11 @@ namespace MyGameDevTools.SceneLoading
 
         readonly AssetReference _assetReference;
 
+        /// <summary>
+        /// Creates a new <see cref="ILoadSceneInfo"/> based on the scene's Addressable Asset Reference.
+        /// The scene must be added to an Addressable group in order to be loaded.
+        /// </summary>
+        /// <param name="assetReference">The scene's Asset Reference.</param>
         public LoadSceneInfoAssetReference(AssetReference assetReference)
         {
             if (!assetReference.RuntimeKeyIsValid())

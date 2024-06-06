@@ -7,6 +7,9 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// Struct to implement <see cref="IAsyncSceneOperation"/> with the addressable <see cref="AsyncOperationHandle<SceneInstance>"/>.
+    /// </summary>
     public readonly struct AsyncSceneOperationAddressable : IAsyncSceneOperation
     {
         public readonly float Progress => _asyncOperationHandle.PercentComplete;

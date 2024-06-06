@@ -6,8 +6,18 @@ using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// Static utility class to handle common <see cref="ISceneData"/> operations.
+    /// </summary>
     public static class SceneDataUtilities
     {
+        /// <summary>
+        /// Links an array of <see cref="ISceneData"/> to the last loaded scenes, excluding already linked <see cref="ISceneData"/> via the parameter <paramref name="sceneDatasToExclude"/>.
+        /// <br/>
+        /// First, the <paramref name="sceneDatasToExclude"/> removes scenes already linked from the possible match list.
+        /// Then, the <see cref="ISceneData"/> that have a direct reference to their loaded scenes (in <see cref="IAsyncSceneOperation.HasDirectReferenceToScene"/>) are linked.
+        /// Finally, the remaining <see cref="ISceneData"/> are linked through indirect reference via their <see cref="ILoadSceneInfo"/> (by <see cref="ILoadSceneInfo.IsReferenceToScene(Scene)"/>).
+        /// </summary>
         public static void LinkLoadedScenesWithSceneDataArray(ISceneData[] sceneDataArray, IList<ISceneData> sceneDatasToExclude)
         {
             // Fill this list with all loaded scenes from the Unity Scene Manager;
@@ -63,6 +73,9 @@ namespace MyGameDevTools.SceneLoading
             }
         }
 
+        /// <summary>
+        /// Gets an array of <see cref="ISceneData"/>, from a list of loaded <see cref="ISceneData"/>, that have been loaded through the given array of <see cref="ILoadSceneInfo"/>.
+        /// </summary>
         public static ISceneData[] GetLoadedSceneDatasWithLoadSceneInfos(ILoadSceneInfo[] sourceSceneInfos, IList<ISceneData> loadedSceneDataList)
         {
             int sceneCount = sourceSceneInfos.Length;
@@ -85,6 +98,9 @@ namespace MyGameDevTools.SceneLoading
             return sceneDataArray;
         }
 
+        /// <summary>
+        /// Gets an array of scenes loaded by the given <see cref="ISceneData"/> array.
+        /// </summary>
         public static Scene[] GetScenesFromSceneDataArray(ISceneData[] sceneDataArray)
         {
             int sceneCount = sceneDataArray.Length;
@@ -96,6 +112,9 @@ namespace MyGameDevTools.SceneLoading
             return loadedScenes;
         }
 
+        /// <summary>
+        /// Gets the average progress of an array of <see cref="ISceneData"/>'s <see cref="IAsyncSceneOperation"/>s.
+        /// </summary>
         public static float GetAverageSceneLoadOperationProgress(ISceneData[] sceneDataArray)
         {
             int length = sceneDataArray.Length;
@@ -136,6 +155,9 @@ namespace MyGameDevTools.SceneLoading
             return false;
         }
 
+        /// <summary>
+        /// Tries to get an <see cref="ISceneData"/> from a collection of <see cref="ISceneData"/>s that match the given <see cref="ILoadSceneInfo"/>.
+        /// </summary>
         public static bool TryGetSceneDataByLoadSceneInfo(ILoadSceneInfo loadSceneInfo, ICollection<ISceneData> sceneDataList, out ISceneData sceneData)
         {
             if (loadSceneInfo == null)
@@ -156,6 +178,9 @@ namespace MyGameDevTools.SceneLoading
             return false;
         }
 
+        /// <summary>
+        /// Tries to get an <see cref="ISceneData"/> from a collection of <see cref="ISceneData"/>s that match the given loaded <see cref="Scene"/>.
+        /// </summary>
         public static bool TryGetSceneDataByLoadedScene(Scene scene, ICollection<ISceneData> sceneDataList, out ISceneData sceneData)
         {
             if (!scene.IsValid() || !scene.isLoaded)
@@ -177,6 +202,9 @@ namespace MyGameDevTools.SceneLoading
             return false;
         }
 
+        /// <summary>
+        /// Gets whether all <see cref="IAsyncSceneOperation"/>s have completed in an array of <see cref="ISceneData"/>.
+        /// </summary>
         public static bool HasCompletedAllSceneLoadOperations(ISceneData[] sceneDataArray)
         {
             int length = sceneDataArray.Length;

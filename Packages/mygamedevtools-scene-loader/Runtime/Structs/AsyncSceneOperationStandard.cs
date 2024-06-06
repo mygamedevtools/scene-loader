@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// Struct to implement <see cref="IAsyncSceneOperation"/> with the non-addressable <see cref="AsyncOperation"/>.
+    /// </summary>
     public readonly struct AsyncSceneOperationStandard : IAsyncSceneOperation
     {
         public readonly float Progress => _asyncOperation.progress;
