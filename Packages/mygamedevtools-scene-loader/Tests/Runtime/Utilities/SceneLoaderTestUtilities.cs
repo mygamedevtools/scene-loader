@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using NUnit.Framework;
-using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
+using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
@@ -27,9 +27,13 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         public static IEnumerator UnloadRemainingScenes()
         {
-            while (UnitySceneManager.loadedSceneCount > 1)
+            while (SceneManager.sceneCount > 1)
             {
-                yield return UnitySceneManager.UnloadSceneAsync(UnitySceneManager.GetSceneAt(UnitySceneManager.loadedSceneCount - 1));
+                Scene scene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
+                if (scene.isLoaded)
+                    yield return SceneManager.UnloadSceneAsync(scene);
+                else
+                    yield return null;
             }
         }
     }

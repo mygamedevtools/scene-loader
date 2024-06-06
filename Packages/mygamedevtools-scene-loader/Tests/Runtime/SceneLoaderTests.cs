@@ -28,10 +28,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         static ISceneManager[] _managers = new ISceneManager[]
         {
-            new SceneManager(),
-#if ENABLE_ADDRESSABLES
-            new SceneManagerAddressable()
-#endif
+            new AdvancedSceneManager(),
         };
 
         static ILoadSceneInfo[][] _targetSceneGroups = new ILoadSceneInfo[][]
@@ -68,36 +65,18 @@ namespace MyGameDevTools.SceneLoading.Tests
         static ISceneLoader[] _sceneLoaders = new ISceneLoader[]
         {
             new SceneLoaderAsync(_managers[0]),
-#if ENABLE_ADDRESSABLES
-            new SceneLoaderAsync(_managers[1]),
-#endif
 #if ENABLE_UNITASK
             new SceneLoaderUniTask(_managers[0]),
-#if ENABLE_ADDRESSABLES
-            new SceneLoaderUniTask(_managers[1]),
-#endif
 #endif
             new SceneLoaderCoroutine(_managers[0]),
-#if ENABLE_ADDRESSABLES
-            new SceneLoaderCoroutine(_managers[1])
-#endif
         };
         static Func<ISceneLoader>[] _sceneLoaderCreateFuncs = new Func<ISceneLoader>[]
         {
-            () => new SceneLoaderAsync(new SceneManager()),
-#if ENABLE_ADDRESSABLES
-            () => new SceneLoaderAsync(new SceneManagerAddressable()),
-#endif
+            () => new SceneLoaderAsync(new AdvancedSceneManager()),
 #if ENABLE_UNITASK
-            () => new SceneLoaderUniTask(new SceneManager()),
-#if ENABLE_ADDRESSABLES
-            () => new SceneLoaderUniTask(new SceneManagerAddressable()),
+            () => new SceneLoaderUniTask(new AdvancedSceneManager()),
 #endif
-#endif
-            () => new SceneLoaderCoroutine(new SceneManager()),
-#if ENABLE_ADDRESSABLES
-            () => new SceneLoaderCoroutine(new SceneManagerAddressable()),
-#endif
+            () => new SceneLoaderCoroutine(new AdvancedSceneManager()),
         };
 
         [UnityTearDown]
@@ -107,7 +86,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 yield return SceneLoaderTestUtilities.UnloadManagerScenes(m);
 
             yield return SceneLoaderTestUtilities.UnloadRemainingScenes();
-            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.loadedSceneCount);
+            Assert.AreEqual(1, SceneManager.loadedSceneCount);
         }
 
         [UnityTest]
@@ -127,7 +106,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
             Assert.AreEqual(sceneCount, loadedScenes.Count);
-            Assert.AreEqual(getTargetActiveScene(), UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Assert.AreEqual(getTargetActiveScene(), SceneManager.GetActiveScene());
 
             void sceneLoaded(Scene scene)
             {
@@ -233,7 +212,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
             Assert.AreEqual(sceneCount, loadedScenes.Count);
-            Assert.AreEqual(getTargetActiveScene(), UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Assert.AreEqual(getTargetActiveScene(), SceneManager.GetActiveScene());
 
             yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == sceneCount);
 
@@ -321,8 +300,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator Transition_FromExternalOrigin([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
-            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
-            var currentScene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(SceneBuilder.SceneNames[1]);
+            yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+            var currentScene = SceneManager.GetSceneByName(SceneBuilder.SceneNames[1]);
 
             sceneLoader.Manager.SceneLoaded += sceneLoaded;
 
@@ -709,7 +688,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
             Assert.AreEqual(loadedScene.name, SceneBuilder.SceneNames[1]);
-            Assert.AreEqual(loadedScene, UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Assert.AreEqual(loadedScene, SceneManager.GetActiveScene());
 
             void sceneLoaded(Scene scene)
             {

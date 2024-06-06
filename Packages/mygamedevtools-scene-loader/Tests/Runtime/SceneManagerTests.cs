@@ -151,25 +151,25 @@ namespace MyGameDevTools.SceneLoading.Tests
                 yield return SceneLoaderTestUtilities.UnloadManagerScenes(_sceneManagers[i]);
 
             yield return SceneLoaderTestUtilities.UnloadRemainingScenes();
-            Assert.AreEqual(1, UnityEngine.SceneManagement.SceneManager.sceneCount);
+            Assert.AreEqual(1, SceneManager.sceneCount);
         }
 
         [UnityTest]
         public IEnumerator SetActive_NotThroughManager([ValueSource(nameof(_sceneManagers))] ISceneManager manager)
         {
             Scene loadedScene = default;
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded += assignLoadedScene;
+            SceneManager.sceneLoaded += assignLoadedScene;
 
-            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+            yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
             yield return new WaitUntil(() => loadedScene.IsValid());
 
             Assert.Throws<InvalidOperationException>(() => manager.SetActiveScene(loadedScene));
 
-            yield return UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(SceneBuilder.SceneNames[1]);
+            yield return SceneManager.UnloadSceneAsync(SceneBuilder.SceneNames[1]);
 
             void assignLoadedScene(Scene scene, LoadSceneMode loadSceneMode)
             {
-                UnityEngine.SceneManagement.SceneManager.sceneLoaded -= assignLoadedScene;
+                SceneManager.sceneLoaded -= assignLoadedScene;
                 loadedScene = scene;
             }
         }

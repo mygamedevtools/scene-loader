@@ -47,7 +47,7 @@ namespace MyGameDevTools.SceneLoading
             ISceneData previousScene = _activeScene;
             _activeScene = sceneData;
             if (isTargetSceneValid)
-                UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
+                SceneManager.SetActiveScene(scene);
 
             ActiveSceneChanged?.Invoke(previousScene != null ? previousScene.SceneReference : default, scene);
         }
