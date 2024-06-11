@@ -2,7 +2,6 @@
 using Cysharp.Threading.Tasks;
 #endif
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -115,8 +114,9 @@ namespace MyGameDevTools.SceneLoading
 
     /// <summary>
     /// Convenience interface to standardize <see cref="Coroutine"/> async scene loading operations.
+    /// You can use the <see cref="WaitTask{T}"/> to yield return inside coroutines.
     /// </summary>
-    public interface ISceneLoaderCoroutine : ISceneLoaderAsync<Coroutine, Coroutine> { }
+    public interface ISceneLoaderCoroutine : ISceneLoaderAsync<WaitTask<Scene>, WaitTask<Scene[]>> { }
 
     /// <summary>
     /// Convenience interface to standardize <see cref="System.Threading.Tasks.ValueTask{TResult}"/> async scene loading operations.

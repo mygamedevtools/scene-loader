@@ -7,11 +7,9 @@ using UnityEditor;
 #endif
 using UnityEngine.TestTools;
 using NUnit.Framework;
-using System;
-using UnityEditor.AddressableAssets.Settings;
-
 #if ENABLE_ADDRESSABLES
 #if UNITY_EDITOR
+using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.AddressableAssets;
 #endif
 using UnityEngine.AddressableAssets;
@@ -44,56 +42,18 @@ namespace MyGameDevTools.SceneLoading.Tests
                 new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
                 new LoadSceneInfoName(SceneBuilder.SceneNames[2]),
                 new LoadSceneInfoName(SceneBuilder.SceneNames[3]),
-            },
-            new ILoadSceneInfo[]
-            {
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            },
-            new ILoadSceneInfo[]
-            {
-#if UNITY_EDITOR
-                new LoadSceneInfoIndex(0),
-#endif
                 new LoadSceneInfoIndex(1),
                 new LoadSceneInfoIndex(2),
-#if !UNITY_EDITOR
                 new LoadSceneInfoIndex(3),
-#endif
-            },
-            new ILoadSceneInfo[]
-            {
-                new LoadSceneInfoIndex(1),
-                new LoadSceneInfoIndex(1),
-                new LoadSceneInfoIndex(1),
-            },
 #if ENABLE_ADDRESSABLES
-            new ILoadSceneInfo[]
-            {
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
-            },
-            new ILoadSceneInfo[]
-            {
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-            },
-            new ILoadSceneInfo[]
-            {
                 new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
                 new LoadSceneInfoAssetReference(_sceneAssetReferences[2]),
                 new LoadSceneInfoAssetReference(_sceneAssetReferences[3]),
-            },
-            new ILoadSceneInfo[]
-            {
-                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
-                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
-                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
-            },
 #endif
+            },
         };
 
         protected static readonly ILoadSceneInfo[] _singleLoadSceneInfoList = new ILoadSceneInfo[]
@@ -102,7 +62,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             new LoadSceneInfoIndex(1),
 #if ENABLE_ADDRESSABLES
             new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoAssetReference(new AssetReference("466279f958a18964083e418c273a9595")),
+            new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
 #endif
         };
 

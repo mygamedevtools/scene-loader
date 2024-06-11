@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public class SceneLoaderAsync : ISceneLoaderAsync
+    public readonly struct SceneLoaderAsync : ISceneLoaderAsync
     {
         public ISceneManager Manager => _manager;
 
@@ -101,7 +101,7 @@ namespace MyGameDevTools.SceneLoading
         async ValueTask<Scene[]> TransitionWithIntermediateAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene, CancellationToken token)
         {
             var externalOrigin = externalOriginScene.IsValid();
-            
+
             Scene loadingScene;
             try
             {
