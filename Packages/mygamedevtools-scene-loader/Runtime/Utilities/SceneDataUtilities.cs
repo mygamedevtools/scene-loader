@@ -127,12 +127,12 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Attempts to link a loaded scene with an <see cref="ISceneData"> from a list.
+        /// Attempts to link a loaded scene with an <see cref="ISceneData"/>, that cannot directly link to its loaded scene (has a false <see cref="IAsyncSceneOperation.HasDirectReferenceToScene"/>), from a list.
         /// </summary>
         /// <param name="scene">The loaded scene to be linked.</param>
-        /// <param name="sceneDataList"/>The list of <see cref="ISceneData"/> to validate.</param>
+        /// <param name="sceneDataList">The list of <see cref="ISceneData"/> to validate.</param>
         /// <param name="matchedData">The matched <see cref="ISceneData"/>.</param>
-        /// <returns>Whether a match has been found</match>
+        /// <returns>Whether a match has been found</returns>
         public static bool TryLinkLoadedSceneWithSceneData(Scene scene, IList<ISceneData> sceneDataList, out ISceneData matchedData)
         {
             if (!scene.IsValid() || !scene.isLoaded)
@@ -143,7 +143,7 @@ namespace MyGameDevTools.SceneLoading
             int sceneDataCount = sceneDataList.Count;
             for (int i = sceneDataCount - 1; i >= 0; i--)
             {
-                if (sceneDataList[i].LoadSceneInfo.IsReferenceToScene(scene))
+                if (sceneDataList[i].LoadSceneInfo.CanBeReferenceToScene(scene))
                 {
                     matchedData = sceneDataList[i];
                     return true;

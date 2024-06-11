@@ -7,6 +7,9 @@ using UnityEditor;
 #endif
 using UnityEngine.TestTools;
 using NUnit.Framework;
+using System;
+using UnityEditor.AddressableAssets.Settings;
+
 #if ENABLE_ADDRESSABLES
 #if UNITY_EDITOR
 using UnityEditor.AddressableAssets;
@@ -18,6 +21,96 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneTestEnvironment : IPrebuildSetup, IPostBuildCleanup
     {
+        protected const string _disposeCategoryName = "Dispose Tests";
+
+#if ENABLE_ADDRESSABLES
+        /// <summary>
+        /// Note: AssetReference guids are deterministic based on the <see cref="AssetDatabase.AssetPathToGUID"/>.
+        /// If the addressable scene generation changes, remember to update the addressable scene guids.
+        /// </summary>
+        protected static readonly AssetReference[] _sceneAssetReferences = new AssetReference[]
+        {
+            new AssetReference("baa7036acde30204aac9b51385e12c3f"),
+            new AssetReference("466279f958a18964083e418c273a9595"),
+            new AssetReference("547f8ae62e408b3419e168a8f326d17a"),
+            new AssetReference("bdce3e0b7d1e86447846538f4433e712"),
+        };
+#endif
+
+        protected static readonly ILoadSceneInfo[][] _multipleLoadSceneInfoList = new ILoadSceneInfo[][]
+        {
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[2]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[3]),
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+            },
+            new ILoadSceneInfo[]
+            {
+#if UNITY_EDITOR
+                new LoadSceneInfoIndex(0),
+#endif
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(2),
+#if !UNITY_EDITOR
+                new LoadSceneInfoIndex(3),
+#endif
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoIndex(1),
+            },
+#if ENABLE_ADDRESSABLES
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
+                new LoadSceneInfoAssetReference(_sceneAssetReferences[2]),
+                new LoadSceneInfoAssetReference(_sceneAssetReferences[3]),
+            },
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
+                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
+                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
+            },
+#endif
+        };
+
+        protected static readonly ILoadSceneInfo[] _singleLoadSceneInfoList = new ILoadSceneInfo[]
+        {
+            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+            new LoadSceneInfoIndex(1),
+#if ENABLE_ADDRESSABLES
+            new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+            new LoadSceneInfoAssetReference(new AssetReference("466279f958a18964083e418c273a9595")),
+#endif
+        };
+
+        protected static readonly ISceneManager[] _sceneManagers = new ISceneManager[]
+        {
+            new AdvancedSceneManager(),
+        };
+
 #if UNITY_EDITOR
         const string _scenePathBase = "Assets/_test";
 #if ENABLE_ADDRESSABLES
@@ -43,11 +136,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             SceneBuilder.TryBuildScenes(_addressableScenePathBase, (i, s, p) =>
             {
-                var guid = AssetDatabase.AssetPathToGUID(p);
-                var entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
+                string guid = AssetDatabase.AssetPathToGUID(p);
+                AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
                 entry.SetAddress(SceneBuilder.SceneNames[i]);
 
-                sceneReferenceData.sceneReferences.Add(new AssetReference(guid));
+                AssetReference assetReference = new AssetReference(guid);
+                sceneReferenceData.sceneReferences.Add(assetReference);
+                Debug.Log($"Generated AssetReference for scene '{SceneBuilder.SceneNames[i]}' with guid: '{assetReference.RuntimeKey}'");
             });
 
             AssetDatabase.CreateAsset(sceneReferenceData, _sceneReferencePath);

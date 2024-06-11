@@ -26,11 +26,11 @@ namespace MyGameDevTools.SceneLoading
             _buildIndex = buildIndex;
         }
 
-        public bool IsReferenceToScene(Scene scene) => scene.buildIndex == _buildIndex;
+        public bool CanBeReferenceToScene(Scene scene) => scene.buildIndex == _buildIndex;
 
         public override string ToString()
         {
-            return $"Scene with index [{_buildIndex}]";
+            return $"Scene with index '{_buildIndex}'";
         }
 
         public bool Equals(ILoadSceneInfo other)

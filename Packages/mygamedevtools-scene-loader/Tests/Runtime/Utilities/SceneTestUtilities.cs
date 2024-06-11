@@ -5,10 +5,8 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    public static class SceneLoaderTestUtilities
+    public static class SceneTestUtilities
     {
-        public const string DisposeCategoryName = "Dispose Tests";
-
         public static IEnumerator UnloadManagerScenes(ISceneManager sceneManager)
         {
             var lastScene = sceneManager.GetLastLoadedScene();

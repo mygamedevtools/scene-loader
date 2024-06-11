@@ -26,11 +26,11 @@ namespace MyGameDevTools.SceneLoading
             _sceneName = sceneName;
         }
 
-        public bool IsReferenceToScene(Scene scene) => scene.name == _sceneName;
+        public bool CanBeReferenceToScene(Scene scene) => scene.name == _sceneName;
 
         public override string ToString()
         {
-            return $"Scene with name \"{_sceneName}\"";
+            return $"Scene with name '{_sceneName}'";
         }
 
         public bool Equals(ILoadSceneInfo other)

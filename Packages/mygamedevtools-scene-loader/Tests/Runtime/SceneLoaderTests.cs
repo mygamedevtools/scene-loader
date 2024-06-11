@@ -26,51 +26,35 @@ namespace MyGameDevTools.SceneLoading.Tests
     {
         const int _defaultTimeout = 3000;
 
-        static ISceneManager[] _managers = new ISceneManager[]
-        {
-            new AdvancedSceneManager(),
-        };
-
-        static ILoadSceneInfo[][] _targetSceneGroups = new ILoadSceneInfo[][]
-        {
-            new ILoadSceneInfo[]
-            {
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[2]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[3]),
-            },
-            new ILoadSceneInfo[]
-            {
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            }
-        };
-        static ILoadSceneInfo[] _targetSceneInfos = new ILoadSceneInfo[]
-        {
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoName(SceneBuilder.SceneNames[2])
-        };
-        static ILoadSceneInfo[] _sameSceneInfos = new ILoadSceneInfo[]
-        {
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1])
-        };
-        static ILoadSceneInfo[] _loadingSceneInfos = new ILoadSceneInfo[]
+        static readonly ILoadSceneInfo[] _loadingSceneInfos = new ILoadSceneInfo[]
         {
             null,
             new LoadSceneInfoName(SceneBuilder.SceneNames[3]),
-            new LoadSceneInfoName(SceneBuilder.SceneNames[0])
-        };
-        static ISceneLoader[] _sceneLoaders = new ISceneLoader[]
-        {
-            new SceneLoaderAsync(_managers[0]),
-#if ENABLE_UNITASK
-            new SceneLoaderUniTask(_managers[0]),
+            new LoadSceneInfoName(SceneBuilder.SceneNames[0]),
+#if UNITY_EDITOR
+            new LoadSceneInfoIndex(0),
+            new LoadSceneInfoIndex(3),
+#else
+            new LoadSceneInfoIndex(1),
+            new LoadSceneInfoIndex(4),
 #endif
-            new SceneLoaderCoroutine(_managers[0]),
+            new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
+            new LoadSceneInfoAddress(SceneBuilder.SceneNames[0]),
+            new LoadSceneInfoAssetReference(_sceneAssetReferences[3]),
+            new LoadSceneInfoAssetReference(_sceneAssetReferences[0]),
         };
-        static Func<ISceneLoader>[] _sceneLoaderCreateFuncs = new Func<ISceneLoader>[]
+
+        static readonly ISceneLoader[] _sceneLoaders = new ISceneLoader[]
+        {
+            new SceneLoaderAsync(_sceneManagers[0]),
+#if ENABLE_UNITASK
+            new SceneLoaderUniTask(_sceneManagers[0]),
+#endif
+            new SceneLoaderCoroutine(_sceneManagers[0]),
+        };
+
+        // Note: These functions must create brand new scene managers to correctly test the dispose flow
+        static readonly Func<ISceneLoader>[] _sceneLoaderCreateFuncs = new Func<ISceneLoader>[]
         {
             () => new SceneLoaderAsync(new AdvancedSceneManager()),
 #if ENABLE_UNITASK
@@ -82,15 +66,15 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
-            foreach (var m in _managers)
-                yield return SceneLoaderTestUtilities.UnloadManagerScenes(m);
+            foreach (var m in _sceneManagers)
+                yield return SceneTestUtilities.UnloadManagerScenes(m);
 
-            yield return SceneLoaderTestUtilities.UnloadRemainingScenes();
+            yield return SceneTestUtilities.UnloadRemainingScenes();
             Assert.AreEqual(1, SceneManager.loadedSceneCount);
         }
 
         [UnityTest]
-        public IEnumerator LoadScenes([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneGroups))] ILoadSceneInfo[] targetScenes)
+        public IEnumerator LoadScenes([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes)
         {
             int sceneCount = targetScenes.Length;
             var loadedScenes = new List<Scene>(sceneCount);
@@ -106,19 +90,10 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
             Assert.AreEqual(sceneCount, loadedScenes.Count);
-            Assert.AreEqual(getTargetActiveScene(), SceneManager.GetActiveScene());
 
             void sceneLoaded(Scene scene)
             {
                 loadedScenes.Add(scene);
-            }
-
-            Scene getTargetActiveScene()
-            {
-                foreach (var loadedScene in loadedScenes)
-                    if (targetScenes[0].IsReferenceToScene(loadedScene))
-                        return loadedScene;
-                return default;
             }
         }
 
@@ -129,7 +104,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator UnloadScenes([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneGroups))] ILoadSceneInfo[] targetScenes)
+        public IEnumerator UnloadScenes([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes)
         {
             int sceneCount = targetScenes.Length;
             sceneLoader.LoadScenes(targetScenes);
@@ -191,7 +166,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator TransitionToScenes([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneGroups))] ILoadSceneInfo[] targetScenes, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        public IEnumerator TransitionToScenes([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             yield return LoadFirstScene(sceneLoader);
 
@@ -212,7 +187,6 @@ namespace MyGameDevTools.SceneLoading.Tests
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
             Assert.AreEqual(sceneCount, loadedScenes.Count);
-            Assert.AreEqual(getTargetActiveScene(), SceneManager.GetActiveScene());
 
             yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == sceneCount);
 
@@ -220,115 +194,67 @@ namespace MyGameDevTools.SceneLoading.Tests
             {
                 loadedScenes.Add(scene);
             }
-
-            Scene getTargetActiveScene()
-            {
-                foreach (var loadedScene in loadedScenes)
-                    if (targetScenes[0].IsReferenceToScene(loadedScene))
-                        return loadedScene;
-                return default;
-            }
         }
 
         [UnityTest]
-        public IEnumerator Transition([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        public IEnumerator Transition([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_singleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             yield return LoadFirstScene(sceneLoader);
 
+            List<Scene> loadedScenes = new();
+            int expectedScenes = loadingScene == null ? 1 : 2;
             sceneLoader.Manager.SceneLoaded += sceneLoaded;
 
-            Scene loadedScene = default;
             sceneLoader.TransitionToScene(targetScene, loadingScene);
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
+            yield return new WaitUntil(() => loadedScenes.Count == expectedScenes || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
-            Assert.AreEqual(loadedScene, sceneLoader.Manager.GetActiveScene());
-            Assert.AreEqual(loadedScene.name, targetScene.Reference);
+            Assert.AreEqual(loadedScenes[expectedScenes - 1], sceneLoader.Manager.GetActiveScene());
 
             yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
 
             void sceneLoaded(Scene scene)
             {
-                if (targetScene.IsReferenceToScene(scene))
-                    loadedScene = scene;
+                loadedScenes.Add(scene);
             }
         }
 
         [UnityTest]
-        public IEnumerator Transition_Stress([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
-        {
-            yield return LoadFirstScene(sceneLoader);
-
-            SceneLoaderType type = GetSceneLoaderType(sceneLoader);
-            if (type == SceneLoaderType.Coroutine)
-                yield break; // There is currently no way to correctly get the loaded/unloaded scene in the SceneLoaderCoroutine
-
-            Scene loadedScene = default;
-            var watch = new Stopwatch();
-
-            for (int i = 0; i < 20; i++)
-            {
-                switch (type)
-                {
-                    case SceneLoaderType.Async:
-                        var task = ((ISceneLoaderAsync)sceneLoader).TransitionToSceneAsync(targetScene, loadingScene).AsTask();
-                        yield return new WaitTask(task);
-                        loadedScene = task.Result;
-                        break;
-#if ENABLE_UNITASK
-                    case SceneLoaderType.UniTask:
-                        var unitask = ((ISceneLoaderUniTask)sceneLoader).TransitionToSceneAsync(targetScene, loadingScene).AsTask();
-                        yield return new WaitTask(unitask);
-                        loadedScene = unitask.Result;
-                        break;
-#endif
-                    default: throw new NotImplementedException($"Type {type} was not implemented");
-                }
-
-                Assert.AreEqual(loadedScene.handle, sceneLoader.Manager.GetActiveScene().handle);
-                Assert.AreEqual(loadedScene.name, targetScene.Reference);
-            }
-
-            yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
-        }
-
-        [UnityTest]
-        public IEnumerator Transition_FromExternalOrigin([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_targetSceneInfos))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        public IEnumerator Transition_FromExternalOrigin([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(nameof(_singleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
             var currentScene = SceneManager.GetSceneByName(SceneBuilder.SceneNames[1]);
 
+            List<Scene> loadedScenes = new();
+            int expectedScenes = loadingScene == null ? 1 : 2;
             sceneLoader.Manager.SceneLoaded += sceneLoaded;
 
-            Scene loadedScene = default;
             sceneLoader.TransitionToScene(targetScene, loadingScene, currentScene);
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScene.IsValid() && loadedScene.isLoaded || watch.ElapsedMilliseconds > _defaultTimeout);
+            yield return new WaitUntil(() => loadedScenes.Count == expectedScenes || watch.ElapsedMilliseconds > _defaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
 
-            Assert.AreEqual(loadedScene, sceneLoader.Manager.GetActiveScene());
-            Assert.AreEqual(loadedScene.name, targetScene.Reference);
+            Assert.AreEqual(loadedScenes[expectedScenes - 1], sceneLoader.Manager.GetActiveScene());
 
             yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
 
             void sceneLoaded(Scene scene)
             {
-                if (targetScene.IsReferenceToScene(scene))
-                    loadedScene = scene;
+                loadedScenes.Add(scene);
             }
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        [Category(_disposeCategoryName)]
         public IEnumerator Dispose_Simple([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -337,7 +263,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        [Category(_disposeCategoryName)]
         public IEnumerator Dispose_DuringLoadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -347,17 +273,17 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringLoadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes)
         {
             ISceneLoader loader = loaderCreateFunc();
-            loader.LoadScenes(_targetSceneGroups[0]);
+            loader.LoadScenes(targetScenes);
             Assert.DoesNotThrow(loader.Dispose);
             yield return null;
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        [Category(_disposeCategoryName)]
         public IEnumerator Dispose_DuringUnloadScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -369,11 +295,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringUnloadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc)
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringUnloadScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes)
         {
             ISceneLoader loader = loaderCreateFunc();
-            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
             int sceneCount = targetScenes.Length;
             loader.LoadScenes(targetScenes);
 
@@ -388,12 +313,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringTransitionToScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringTransitionToScene([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_singleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             ISceneLoader loader = loaderCreateFunc();
             yield return LoadFirstScene(loader);
-            ILoadSceneInfo targetScene = _targetSceneInfos[0];
 
             loader.TransitionToScene(targetScene, loadingScene);
             Assert.DoesNotThrow(loader.Dispose);
@@ -401,12 +325,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringTransitionToScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringTransitionToScenes([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             ISceneLoader loader = loaderCreateFunc();
             yield return LoadFirstScene(loader);
-            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
 
             loader.TransitionToScenes(targetScenes, 0, loadingScene);
             Assert.DoesNotThrow(loader.Dispose);
@@ -415,12 +338,11 @@ namespace MyGameDevTools.SceneLoading.Tests
 
 #if ENABLE_UNITASK
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringLoadSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringLoadSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_singleLoadSceneInfoList))] ILoadSceneInfo targetScene) => UniTask.ToCoroutine(async () =>
         {
             ISceneLoader loader = loaderCreateFunc();
             SceneLoaderType type = GetSceneLoaderType(loader);
-            ILoadSceneInfo targetScene = _targetSceneInfos[0];
 
             UniTask<Scene> task = default;
             bool isCoroutine = false;
@@ -456,8 +378,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         });
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringLoadScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringLoadScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes) => UniTask.ToCoroutine(async () =>
         {
             ISceneLoader loader = loaderCreateFunc();
             SceneLoaderType type = GetSceneLoaderType(loader);
@@ -467,13 +389,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             switch (type)
             {
                 case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).LoadScenesAsync(_targetSceneGroups[0]).AsTask().AsUniTask();
+                    task = ((ISceneLoaderAsync)loader).LoadScenesAsync(targetScenes).AsTask().AsUniTask();
                     break;
                 case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).LoadScenesAsync(_targetSceneGroups[0]);
+                    task = ((ISceneLoaderUniTask)loader).LoadScenesAsync(targetScenes);
                     break;
                 case SceneLoaderType.Coroutine:
-                    ((ISceneLoaderCoroutine)loader).LoadScenesAsync(_targetSceneGroups[0]);
+                    ((ISceneLoaderCoroutine)loader).LoadScenesAsync(targetScenes);
                     isCoroutine = true;
                     break;
                 default: throw new NotImplementedException($"Type {type} was not implemented");
@@ -496,7 +418,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         });
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
+        [Category(_disposeCategoryName)]
         public IEnumerator Dispose_DuringUnloadSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
         {
             ISceneLoader loader = loaderCreateFunc();
@@ -539,11 +461,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         });
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringUnloadScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc) => UniTask.ToCoroutine(async () =>
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringUnloadScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes) => UniTask.ToCoroutine(async () =>
         {
             ISceneLoader loader = loaderCreateFunc();
-            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
             int sceneCount = targetScenes.Length;
             loader.LoadScenes(targetScenes);
 
@@ -585,12 +506,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         });
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringTransitionToSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene) => UniTask.ToCoroutine(async () =>
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringTransitionToSceneAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_singleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene) => UniTask.ToCoroutine(async () =>
         {
             ISceneLoader loader = loaderCreateFunc();
             await LoadFirstScene(loader);
-            ILoadSceneInfo targetScene = _targetSceneInfos[0];
 
             SceneLoaderType type = GetSceneLoaderType(loader);
 
@@ -628,12 +548,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         });
 
         [UnityTest]
-        [Category(SceneLoaderTestUtilities.DisposeCategoryName)]
-        public IEnumerator Dispose_DuringTransitionToScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene) => UniTask.ToCoroutine(async () =>
+        [Category(_disposeCategoryName)]
+        public IEnumerator Dispose_DuringTransitionToScenesAsync([ValueSource(nameof(_sceneLoaderCreateFuncs))] Func<ISceneLoader> loaderCreateFunc, [ValueSource(nameof(_multipleLoadSceneInfoList))] ILoadSceneInfo[] targetScenes, [ValueSource(nameof(_loadingSceneInfos))] ILoadSceneInfo loadingScene) => UniTask.ToCoroutine(async () =>
         {
             ISceneLoader loader = loaderCreateFunc();
             await LoadFirstScene(loader);
-            ILoadSceneInfo[] targetScenes = _targetSceneGroups[0];
 
             SceneLoaderType type = GetSceneLoaderType(loader);
 

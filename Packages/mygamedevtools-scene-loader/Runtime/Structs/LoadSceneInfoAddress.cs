@@ -27,10 +27,14 @@ namespace MyGameDevTools.SceneLoading
             _address = address;
         }
 
-        public bool IsReferenceToScene(Scene scene)
+        public bool CanBeReferenceToScene(Scene scene)
         {
-            UnityEngine.Debug.LogError($"{nameof(LoadSceneInfoAddress)} is not supposed to validate scene references, since the {nameof(IAsyncSceneOperation)} related to this type of {nameof(ILoadSceneInfo)} has direct reference to the loaded scene.");
             return false;
+        }
+
+        public override string ToString()
+        {
+            return $"Scene with addressable address '{_address}'";
         }
 
         public bool Equals(ILoadSceneInfo other)
