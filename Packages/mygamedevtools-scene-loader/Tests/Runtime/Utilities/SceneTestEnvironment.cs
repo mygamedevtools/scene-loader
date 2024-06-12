@@ -19,25 +19,32 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneTestEnvironment : IPrebuildSetup, IPostBuildCleanup
     {
-        public const string DisposeCategoryName = "Dispose Tests";
+        public const int DefaultTimeout = 3000;
 
         public static readonly ILoadSceneInfo[][] MultipleLoadSceneInfoList = new ILoadSceneInfo[][]
         {
             new ILoadSceneInfo[]
             {
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[2]),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[3]),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[0]),
                 new LoadSceneInfoIndex(1),
-                new LoadSceneInfoIndex(2),
-                new LoadSceneInfoIndex(3),
 #if ENABLE_ADDRESSABLES
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
 #endif
             },
+            // This list of scenes expects two load scene infos that point to the same source scene,
+            // and validates whether that causes any issues when linking to the target loaded scene.
+            new ILoadSceneInfo[]
+            {
+                new LoadSceneInfoIndex(1),
+                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+#if ENABLE_ADDRESSABLES
+                // Since we can't test statically with AssetReference, we should at least validate
+                // that two AsyncOperations with the same addressable source do not cause issues.
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+#endif
+            }
         };
 
         public static readonly ILoadSceneInfo[] SingleLoadSceneInfoList = new ILoadSceneInfo[]
@@ -118,8 +125,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 #endif
         }
 
-        [OneTimeSetUp]
-        public void ValidateSceneEnvironment()
+        public static void ValidateSceneEnvironment()
         {
 #if UNITY_EDITOR
             var builtScenes = EditorBuildSettings.scenes;

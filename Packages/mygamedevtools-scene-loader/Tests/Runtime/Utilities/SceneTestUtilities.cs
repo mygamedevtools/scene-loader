@@ -34,5 +34,14 @@ namespace MyGameDevTools.SceneLoading.Tests
                     yield return null;
             }
         }
+
+        public static IEnumerator UnloadAllScenes()
+        {
+            ISceneManager[] sceneManagers = SceneTestEnvironment.SceneManagers;
+            for (int i = 0; i < sceneManagers.Length; i++)
+                yield return UnloadManagerScenes(sceneManagers[i]);
+
+            yield return UnloadRemainingScenes();
+        }
     }
 }
