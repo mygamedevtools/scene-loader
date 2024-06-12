@@ -19,23 +19,9 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneTestEnvironment : IPrebuildSetup, IPostBuildCleanup
     {
-        protected const string _disposeCategoryName = "Dispose Tests";
+        public const string DisposeCategoryName = "Dispose Tests";
 
-#if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// Note: AssetReference guids are deterministic based on the <see cref="AssetDatabase.AssetPathToGUID"/>.
-        /// If the addressable scene generation changes, remember to update the addressable scene guids.
-        /// </summary>
-        protected static readonly AssetReference[] _sceneAssetReferences = new AssetReference[]
-        {
-            new AssetReference("baa7036acde30204aac9b51385e12c3f"),
-            new AssetReference("466279f958a18964083e418c273a9595"),
-            new AssetReference("547f8ae62e408b3419e168a8f326d17a"),
-            new AssetReference("bdce3e0b7d1e86447846538f4433e712"),
-        };
-#endif
-
-        protected static readonly ILoadSceneInfo[][] _multipleLoadSceneInfoList = new ILoadSceneInfo[][]
+        public static readonly ILoadSceneInfo[][] MultipleLoadSceneInfoList = new ILoadSceneInfo[][]
         {
             new ILoadSceneInfo[]
             {
@@ -47,29 +33,30 @@ namespace MyGameDevTools.SceneLoading.Tests
                 new LoadSceneInfoIndex(3),
 #if ENABLE_ADDRESSABLES
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
-                new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
-                new LoadSceneInfoAssetReference(_sceneAssetReferences[2]),
-                new LoadSceneInfoAssetReference(_sceneAssetReferences[3]),
 #endif
             },
         };
 
-        protected static readonly ILoadSceneInfo[] _singleLoadSceneInfoList = new ILoadSceneInfo[]
+        public static readonly ILoadSceneInfo[] SingleLoadSceneInfoList = new ILoadSceneInfo[]
         {
             new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
             new LoadSceneInfoIndex(1),
 #if ENABLE_ADDRESSABLES
             new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoAssetReference(_sceneAssetReferences[1]),
 #endif
         };
 
-        protected static readonly ISceneManager[] _sceneManagers = new ISceneManager[]
+        public static readonly ISceneManager[] SceneManagers = new ISceneManager[]
         {
             new AdvancedSceneManager(),
         };
+
+#if ENABLE_ADDRESSABLES
+        public static AssetReference[] SceneAssetReferences;
+#endif
 
 #if UNITY_EDITOR
         const string _scenePathBase = "Assets/_test";
@@ -82,7 +69,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void Setup()
         {
 #if UNITY_EDITOR
-            var buildScenes = new List<EditorBuildSettingsScene>(SceneBuilder.SceneNames.Length);
+            int sceneCount = SceneBuilder.SceneNames.Length;
+            List<EditorBuildSettingsScene> buildScenes = new(sceneCount);
 
             if (!SceneBuilder.TryBuildScenes(_scenePathBase, (i, s, p) => buildScenes.Add(new EditorBuildSettingsScene(p, true))))
                 return;
@@ -91,24 +79,16 @@ namespace MyGameDevTools.SceneLoading.Tests
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Union(buildScenes).ToArray();
 
 #if ENABLE_ADDRESSABLES
-            var sceneReferenceData = ScriptableObject.CreateInstance<SceneReferenceData>();
-
-            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
+            SceneAssetReferences = new AssetReference[sceneCount];
             SceneBuilder.TryBuildScenes(_addressableScenePathBase, (i, s, p) =>
             {
                 string guid = AssetDatabase.AssetPathToGUID(p);
                 AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
                 entry.SetAddress(SceneBuilder.SceneNames[i]);
 
-                AssetReference assetReference = new AssetReference(guid);
-                sceneReferenceData.sceneReferences.Add(assetReference);
-                Debug.Log($"Generated AssetReference for scene '{SceneBuilder.SceneNames[i]}' with guid: '{assetReference.RuntimeKey}'");
+                SceneAssetReferences[i] = new AssetReference(guid);
             });
-
-            AssetDatabase.CreateAsset(sceneReferenceData, _sceneReferencePath);
-            var guid = AssetDatabase.AssetPathToGUID(_sceneReferencePath);
-            var entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
-            entry.SetAddress(nameof(SceneReferenceData));
 #endif
 #endif
         }
