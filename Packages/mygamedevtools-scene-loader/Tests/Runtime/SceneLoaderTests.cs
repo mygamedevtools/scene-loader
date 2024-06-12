@@ -333,19 +333,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             SceneLoaderType type = GetSceneLoaderType(loader);
 
             UniTask<Scene> task = default;
-            switch (type)
+            task = type switch
             {
-                case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).LoadSceneAsync(targetScene).AsTask().AsUniTask();
-                    break;
-                case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).LoadSceneAsync(targetScene);
-                    break;
-                case SceneLoaderType.Coroutine:
-                    task = ((ISceneLoaderCoroutine)loader).LoadSceneAsync(targetScene).Task.AsUniTask();
-                    break;
-                default: throw new NotImplementedException($"Type {type} was not implemented");
-            }
+                SceneLoaderType.Async => ((ISceneLoaderAsync)loader).LoadSceneAsync(targetScene).AsTask().AsUniTask(),
+                SceneLoaderType.UniTask => ((ISceneLoaderUniTask)loader).LoadSceneAsync(targetScene),
+                SceneLoaderType.Coroutine => ((ISceneLoaderCoroutine)loader).LoadSceneAsync(targetScene).Task.AsUniTask(),
+                _ => throw new NotImplementedException($"Type {type} was not implemented"),
+            };
             loader.Dispose();
 
             bool canceled = false;
@@ -368,19 +362,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             SceneLoaderType type = GetSceneLoaderType(loader);
 
             UniTask<Scene[]> task = default;
-            switch (type)
+            task = type switch
             {
-                case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).LoadScenesAsync(targetScenes).AsTask().AsUniTask();
-                    break;
-                case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).LoadScenesAsync(targetScenes);
-                    break;
-                case SceneLoaderType.Coroutine:
-                    task = ((ISceneLoaderCoroutine)loader).LoadScenesAsync(targetScenes).Task.AsUniTask();
-                    break;
-                default: throw new NotImplementedException($"Type {type} was not implemented");
-            }
+                SceneLoaderType.Async => ((ISceneLoaderAsync)loader).LoadScenesAsync(targetScenes).AsTask().AsUniTask(),
+                SceneLoaderType.UniTask => ((ISceneLoaderUniTask)loader).LoadScenesAsync(targetScenes),
+                SceneLoaderType.Coroutine => ((ISceneLoaderCoroutine)loader).LoadScenesAsync(targetScenes).Task.AsUniTask(),
+                _ => throw new NotImplementedException($"Type {type} was not implemented"),
+            };
             loader.Dispose();
 
             bool canceled = false;
@@ -406,19 +394,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             ILoadSceneInfo sceneInfo = new LoadSceneInfoScene(loader.Manager.GetLastLoadedScene());
 
             UniTask<Scene> task = default;
-            switch (type)
+            task = type switch
             {
-                case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).UnloadSceneAsync(sceneInfo).AsTask().AsUniTask();
-                    break;
-                case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).UnloadSceneAsync(sceneInfo);
-                    break;
-                case SceneLoaderType.Coroutine:
-                    task = ((ISceneLoaderCoroutine)loader).UnloadSceneAsync(sceneInfo).Task.AsUniTask();
-                    break;
-                default: throw new NotImplementedException($"Type {type} was not implemented");
-            }
+                SceneLoaderType.Async => ((ISceneLoaderAsync)loader).UnloadSceneAsync(sceneInfo).AsTask().AsUniTask(),
+                SceneLoaderType.UniTask => ((ISceneLoaderUniTask)loader).UnloadSceneAsync(sceneInfo),
+                SceneLoaderType.Coroutine => ((ISceneLoaderCoroutine)loader).UnloadSceneAsync(sceneInfo).Task.AsUniTask(),
+                _ => throw new NotImplementedException($"Type {type} was not implemented"),
+            };
             loader.Dispose();
 
             bool canceled = false;
@@ -446,19 +428,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             SceneLoaderType type = GetSceneLoaderType(loader);
 
             UniTask<Scene[]> task = default;
-            switch (type)
+            task = type switch
             {
-                case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).UnloadScenesAsync(targetScenes).AsTask().AsUniTask();
-                    break;
-                case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).UnloadScenesAsync(targetScenes);
-                    break;
-                case SceneLoaderType.Coroutine:
-                    task = ((ISceneLoaderCoroutine)loader).UnloadScenesAsync(targetScenes).Task.AsUniTask();
-                    break;
-                default: throw new NotImplementedException($"Type {type} was not implemented");
-            }
+                SceneLoaderType.Async => ((ISceneLoaderAsync)loader).UnloadScenesAsync(targetScenes).AsTask().AsUniTask(),
+                SceneLoaderType.UniTask => ((ISceneLoaderUniTask)loader).UnloadScenesAsync(targetScenes),
+                SceneLoaderType.Coroutine => ((ISceneLoaderCoroutine)loader).UnloadScenesAsync(targetScenes).Task.AsUniTask(),
+                _ => throw new NotImplementedException($"Type {type} was not implemented"),
+            };
             loader.Dispose();
 
             bool canceled = false;
@@ -483,19 +459,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             SceneLoaderType type = GetSceneLoaderType(loader);
 
             UniTask<Scene> task = default;
-            switch (type)
+            task = type switch
             {
-                case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).TransitionToSceneAsync(targetScene, loadingScene).AsTask().AsUniTask();
-                    break;
-                case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).TransitionToSceneAsync(targetScene, loadingScene);
-                    break;
-                case SceneLoaderType.Coroutine:
-                    task = ((ISceneLoaderCoroutine)loader).TransitionToSceneAsync(targetScene, loadingScene).Task.AsUniTask();
-                    break;
-                default: throw new NotImplementedException($"Type {type} was not implemented");
-            }
+                SceneLoaderType.Async => ((ISceneLoaderAsync)loader).TransitionToSceneAsync(targetScene, loadingScene).AsTask().AsUniTask(),
+                SceneLoaderType.UniTask => ((ISceneLoaderUniTask)loader).TransitionToSceneAsync(targetScene, loadingScene),
+                SceneLoaderType.Coroutine => ((ISceneLoaderCoroutine)loader).TransitionToSceneAsync(targetScene, loadingScene).Task.AsUniTask(),
+                _ => throw new NotImplementedException($"Type {type} was not implemented"),
+            };
             loader.Dispose();
 
             bool canceled = false;
@@ -520,19 +490,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             SceneLoaderType type = GetSceneLoaderType(loader);
 
             UniTask<Scene[]> task = default;
-            switch (type)
+            task = type switch
             {
-                case SceneLoaderType.Async:
-                    task = ((ISceneLoaderAsync)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene).AsTask().AsUniTask();
-                    break;
-                case SceneLoaderType.UniTask:
-                    task = ((ISceneLoaderUniTask)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene);
-                    break;
-                case SceneLoaderType.Coroutine:
-                    task = ((ISceneLoaderCoroutine)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene).Task.AsUniTask();
-                    break;
-                default: throw new NotImplementedException($"Type {type} was not implemented");
-            }
+                SceneLoaderType.Async => ((ISceneLoaderAsync)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene).AsTask().AsUniTask(),
+                SceneLoaderType.UniTask => ((ISceneLoaderUniTask)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene),
+                SceneLoaderType.Coroutine => ((ISceneLoaderCoroutine)loader).TransitionToScenesAsync(targetScenes, 0, loadingScene).Task.AsUniTask(),
+                _ => throw new NotImplementedException($"Type {type} was not implemented"),
+            };
             loader.Dispose();
 
             bool canceled = false;

@@ -1,6 +1,5 @@
 #if ENABLE_ADDRESSABLES
 using System;
-using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
@@ -34,8 +33,7 @@ namespace MyGameDevTools.SceneLoading
         {
             if (_asyncOperationHandle.Status == AsyncOperationStatus.Failed)
             {
-                Debug.LogException(_asyncOperationHandle.OperationException);
-                return default;
+                throw _asyncOperationHandle.OperationException;
             }
 
             return _asyncOperationHandle.Result.Scene;

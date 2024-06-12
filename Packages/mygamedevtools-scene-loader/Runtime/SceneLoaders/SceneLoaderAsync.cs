@@ -166,7 +166,7 @@ namespace MyGameDevTools.SceneLoading
 
             if (externalOrigin)
             {
-                var operation = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(currentScene);
+                var operation = SceneManager.UnloadSceneAsync(currentScene);
                 while (operation != null && !operation.isDone)
                     await Task.Yield();
 
@@ -178,7 +178,7 @@ namespace MyGameDevTools.SceneLoading
 
         void HandleFireAndForgetException(Exception exception)
         {
-            Debug.LogWarningFormat("[{0}] An exception was caught during a fire and forget task:\n{1}", nameof(SceneLoaderAsync), exception);
+            Debug.LogWarningFormat("[{0}] An exception was caught during a fire and forget task. Usually this can be caused due to internal task cancellation on exiting playmode. If that's not the case, investigate for issues on the async scene operations. Exception:\n{1}", GetType().Name, exception);
         }
 
         public override string ToString()
