@@ -11,7 +11,7 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     [PrebuildSetup(typeof(SceneTestEnvironment)), PostBuildCleanup(typeof(SceneTestEnvironment))]
-    public class SceneManagerTests : SceneTestBase
+    public partial class SceneManagerTests : SceneTestBase
     {
         static readonly bool[] _setActiveParameterValues = new bool[] { true, false };
 

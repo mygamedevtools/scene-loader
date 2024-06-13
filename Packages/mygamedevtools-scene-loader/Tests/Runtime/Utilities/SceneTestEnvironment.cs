@@ -61,10 +61,6 @@ namespace MyGameDevTools.SceneLoading.Tests
             new AdvancedSceneManager(),
         };
 
-#if ENABLE_ADDRESSABLES
-        public static AssetReference[] SceneAssetReferences;
-#endif
-
 #if UNITY_EDITOR
         const string _scenePathBase = "Assets/_test";
 #if ENABLE_ADDRESSABLES
@@ -86,16 +82,21 @@ namespace MyGameDevTools.SceneLoading.Tests
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Union(buildScenes).ToArray();
 
 #if ENABLE_ADDRESSABLES
+            SceneReferenceData sceneReferenceData = ScriptableObject.CreateInstance<SceneReferenceData>();
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
-            SceneAssetReferences = new AssetReference[sceneCount];
             SceneBuilder.TryBuildScenes(_addressableScenePathBase, (i, s, p) =>
             {
                 string guid = AssetDatabase.AssetPathToGUID(p);
                 AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
                 entry.SetAddress(SceneBuilder.SceneNames[i]);
 
-                SceneAssetReferences[i] = new AssetReference(guid);
+                sceneReferenceData.sceneReferences.Add(new AssetReference(guid));
             });
+
+            AssetDatabase.CreateAsset(sceneReferenceData, _sceneReferencePath);
+            var guid = AssetDatabase.AssetPathToGUID(_sceneReferencePath);
+            var entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
+            entry.SetAddress(nameof(SceneReferenceData));
 #endif
 #endif
         }
