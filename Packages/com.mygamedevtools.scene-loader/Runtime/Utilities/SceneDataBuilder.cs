@@ -1,3 +1,5 @@
+using UnityEngine.SceneManagement;
+
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
@@ -16,6 +18,14 @@ namespace MyGameDevTools.SceneLoading
                 LoadSceneInfoType.AssetReference or LoadSceneInfoType.Address => new SceneDataAddressable(sourceLoadSceneInfo),
                 _ => throw new System.Exception($"[{nameof(SceneDataBuilder)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type."),
             };
+        }
+
+        /// <summary>
+        /// Builds a non-addressable <see cref="ISceneData"/> with a loaded <see cref="Scene"/> reference.
+        /// </summary>
+        public static ISceneData BuildFromScene(Scene scene)
+        {
+            return new SceneDataStandard(scene);
         }
     }
 }

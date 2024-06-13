@@ -35,6 +35,22 @@ namespace MyGameDevTools.SceneLoading
             _asyncSceneOperation = default;
             _sceneReference = default;
         }
+        /// <summary>
+        /// Creates a new <see cref="SceneDataStandard"/> with an already loaded <see cref="Scene"/>.
+        /// This will create an <see cref="ISceneData"/> without a load <see cref="IAsyncSceneOperation"/>,
+        /// and with an <see cref="LoadSceneInfoScene"/> as its <see cref="ILoadSceneInfo"/>.
+        /// </summary>
+        public SceneDataStandard(Scene loadedScene)
+        {
+            if (!loadedScene.IsValid() || !loadedScene.isLoaded)
+            {
+                throw new ArgumentException($"Cannot create a {nameof(SceneDataStandard)} with an invalid or not loaded scene: {loadedScene.name} ({loadedScene.handle})");
+            }
+
+            _loadSceneInfo = new LoadSceneInfoScene(loadedScene);
+            _sceneReference = loadedScene;
+            _asyncSceneOperation = default;
+        }
 
         public void SetSceneReferenceManually(Scene scene)
         {

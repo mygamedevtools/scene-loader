@@ -92,15 +92,18 @@ namespace MyGameDevTools.SceneLoading
 
         async ValueTask<Scene[]> TransitionDirectlyAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, Scene externalOriginScene, CancellationToken token)
         {
-            var externalOrigin = externalOriginScene.IsValid();
-            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
-            await UnloadCurrentScene(currentScene, externalOrigin, token);
+            bool fromExternalOrigin = externalOriginScene.IsValid();
+            Scene sourceScene = fromExternalOrigin ? externalOriginScene : _manager.GetActiveScene();
+            if (sourceScene.IsValid())
+            {
+                await UnloadCurrentScene(sourceScene, fromExternalOrigin, token);
+            }
             return await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
         }
 
         async ValueTask<Scene[]> TransitionWithIntermediateAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene, CancellationToken token)
         {
-            var externalOrigin = externalOriginScene.IsValid();
+            bool fromExternalOrigin = externalOriginScene.IsValid();
 
             Scene loadingScene;
             try
@@ -114,32 +117,35 @@ namespace MyGameDevTools.SceneLoading
 
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
-            var currentScene = externalOrigin ? externalOriginScene : _manager.GetActiveScene();
+            Scene sourceScene = fromExternalOrigin ? externalOriginScene : _manager.GetActiveScene();
 
 #if UNITY_2023_2_OR_NEWER
-            var loadingBehavior = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
+            LoadingBehavior loadingBehavior = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #else
-            var loadingBehavior = UnityEngine.Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
+            LoadingBehavior loadingBehavior = UnityEngine.Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #endif
             return loadingBehavior
-                ? await TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, currentScene, externalOrigin, token)
-                : await TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, currentScene, externalOrigin, token);
+                ? await TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, sourceScene, fromExternalOrigin, token)
+                : await TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, sourceScene, fromExternalOrigin, token);
         }
 
-        async ValueTask<Scene[]> TransitionWithIntermediateLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, Scene currentScene, bool externalOrigin, CancellationToken token)
+        async ValueTask<Scene[]> TransitionWithIntermediateLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, Scene sourceScene, bool fromExternalOrigin, CancellationToken token)
         {
-            var progress = loadingBehavior.Progress;
+            LoadingProgress progress = loadingBehavior.Progress;
             while (progress.State != LoadingState.Loading && !token.IsCancellationRequested)
                 await Task.Yield();
 
             token.ThrowIfCancellationRequested();
 
-            if (!externalOrigin)
-                currentScene = _manager.GetActiveScene();
+            if (!fromExternalOrigin)
+                sourceScene = _manager.GetActiveScene();
 
-            await UnloadCurrentScene(currentScene, externalOrigin, token);
+            if (sourceScene.IsValid())
+            {
+                await UnloadCurrentScene(sourceScene, fromExternalOrigin, token);
+            }
 
-            var loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, progress, token);
+            Scene[] loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, progress, token);
             progress.SetState(LoadingState.TargetSceneLoaded);
 
             while (progress.State != LoadingState.TransitionComplete && !token.IsCancellationRequested)
@@ -151,22 +157,25 @@ namespace MyGameDevTools.SceneLoading
             return loadedScenes;
         }
 
-        async ValueTask<Scene[]> TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene currentScene, bool externalOrigin, CancellationToken token)
+        async ValueTask<Scene[]> TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene sourceScene, bool fromExternalOrigin, CancellationToken token)
         {
-            await UnloadCurrentScene(currentScene, externalOrigin, token);
-            var loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
+            if (sourceScene.IsValid())
+            {
+                await UnloadCurrentScene(sourceScene, fromExternalOrigin, token);
+            }
+            Scene[] loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
             _manager.UnloadSceneAsync(intermediateSceneInfo, token).Forget(HandleFireAndForgetException);
             return loadedScenes;
         }
 
-        async ValueTask UnloadCurrentScene(Scene currentScene, bool externalOrigin, CancellationToken token)
+        async ValueTask UnloadCurrentScene(Scene currentScene, bool fromExternalOrigin, CancellationToken token)
         {
             if (!currentScene.IsValid())
                 return;
 
-            if (externalOrigin)
+            if (fromExternalOrigin)
             {
-                var operation = SceneManager.UnloadSceneAsync(currentScene);
+                AsyncOperation operation = SceneManager.UnloadSceneAsync(currentScene);
                 while (operation != null && !operation.isDone)
                     await Task.Yield();
 

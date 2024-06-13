@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -55,6 +56,43 @@ namespace MyGameDevTools.SceneLoading.Tests
             _scenesActivated = 0;
             _scenesUnloaded = 0;
             _scenesLoaded = 0;
+        }
+
+        [UnityTest]
+        public IEnumerator Constructor_AddLoadedScenes()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+
+            ISceneManager sceneManager = new AdvancedSceneManager(true);
+
+            Assert.AreEqual(2, sceneManager.LoadedSceneCount);
+            Assert.AreEqual(sceneManager.TotalSceneCount, sceneManager.LoadedSceneCount);
+        }
+
+        [UnityTest]
+        public IEnumerator Constructor_InitializationScenes()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+            Scene loadedScene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
+
+            ISceneManager sceneManager = new AdvancedSceneManager(new Scene[] { loadedScene });
+
+            Assert.AreEqual(1, sceneManager.LoadedSceneCount);
+            Assert.AreEqual(sceneManager.TotalSceneCount, sceneManager.LoadedSceneCount);
+        }
+
+        [UnityTest]
+        public IEnumerator InitializationScene_Unload()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
+            Scene loadedScene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
+
+            ISceneManager sceneManager = new AdvancedSceneManager(new Scene[] { loadedScene });
+
+            WaitTask<Scene> waitTask = default;
+            Assert.DoesNotThrow(() => waitTask = new(sceneManager.UnloadSceneAsync(new LoadSceneInfoScene(loadedScene)).AsTask()));
+
+            yield return waitTask;
         }
 
         [UnityTest]

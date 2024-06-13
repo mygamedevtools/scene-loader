@@ -29,6 +29,8 @@ namespace MyGameDevTools.SceneLoading.Tests
                 new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[3]),
                 new LoadSceneInfoAssetReference(sceneReferenceData.sceneReferences[1]),
             };
+
+            Addressables.Release(operationHandle);
         }
 
         [UnityTest]

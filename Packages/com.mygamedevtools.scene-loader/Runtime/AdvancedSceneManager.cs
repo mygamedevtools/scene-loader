@@ -13,6 +13,9 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// The <see cref="AdvancedSceneManager"/> is capable of managing both addressable and non-addressable scene operations.
+    /// </summary>
     public class AdvancedSceneManager : ISceneManager
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
@@ -27,6 +30,55 @@ namespace MyGameDevTools.SceneLoading
         readonly CancellationTokenSource _lifetimeTokenSource = new();
 
         ISceneData _activeScene;
+
+        /// <summary>
+        /// Creates an <see cref="AdvancedSceneManager"/> with no initial scene references.
+        /// </summary>
+        public AdvancedSceneManager() : this(false) { }
+        /// <summary>
+        /// Creates a new <see cref="AdvancedSceneManager"/> with the option to add all loaded scenes to its management.
+        /// The advantage is that you can manage those scenes through this <see cref="ISceneManager"/> instead of having to
+        /// use the Unity <see cref="SceneManager"/>.
+        /// </summary>
+        public AdvancedSceneManager(bool addLoadedScenes)
+        {
+            if (!addLoadedScenes)
+            {
+                return;
+            }
+
+            int loadedSceneCount = SceneManager.sceneCount;
+            for (int i = 0; i < loadedSceneCount; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene.IsValid() && scene.isLoaded)
+                {
+                    _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
+                }
+            }
+        }
+        /// <summary>
+        /// Creates a new <see cref="AdvancedSceneManager"/> with the option to add a list of loaded scenes to its management.
+        /// The advantage is that you can manage those scenes through this <see cref="ISceneManager"/> instead of having to
+        /// use the Unity <see cref="SceneManager"/>.
+        /// </summary>
+        public AdvancedSceneManager(Scene[] initializationScenes)
+        {
+            if (initializationScenes == null || initializationScenes.Length == 0)
+            {
+                throw new ArgumentException($"Trying to create an {nameof(AdvancedSceneManager)} with a null or empty array of initialization scenes. If you want to create it without any scenes, use the empty constructor instead.", nameof(initializationScenes));
+            }
+
+            int loadedSceneCount = initializationScenes.Length;
+            for (int i = 0; i < loadedSceneCount; i++)
+            {
+                Scene scene = initializationScenes[i];
+                if (scene.IsValid() && scene.isLoaded)
+                {
+                    _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
+                }
+            }
+        }
 
         public void Dispose()
         {
