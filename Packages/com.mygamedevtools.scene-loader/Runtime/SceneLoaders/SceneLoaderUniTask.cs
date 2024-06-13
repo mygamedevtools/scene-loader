@@ -22,14 +22,14 @@ namespace MyGameDevTools.SceneLoading
             _sceneLoaderAsync.Dispose();
         }
 
-        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default)
+        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
         {
-            TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene);
+            TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo);
         }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default)
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null)
         {
-            TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
+            TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
         }
 
         public void UnloadScenes(ILoadSceneInfo[] sceneInfos)
@@ -52,14 +52,14 @@ namespace MyGameDevTools.SceneLoading
             LoadSceneAsync(sceneInfo, setActive);
         }
 
-        public UniTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
+        public UniTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
         {
-            return _sceneLoaderAsync.TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene).AsTask().AsUniTask();
+            return _sceneLoaderAsync.TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneReference).AsTask().AsUniTask();
         }
 
-        public UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
+        public UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null)
         {
-            return _sceneLoaderAsync.TransitionToSceneAsync(targetSceneReference, intermediateSceneReference, externalOriginScene).AsTask().AsUniTask();
+            return _sceneLoaderAsync.TransitionToSceneAsync(targetSceneReference, intermediateSceneReference).AsTask().AsUniTask();
         }
 
         public UniTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)
@@ -84,7 +84,7 @@ namespace MyGameDevTools.SceneLoading
 
         public override string ToString()
         {
-            return $"Scene Loader [UniTask Alt] with {_sceneLoaderAsync.Manager.GetType().Name}";
+            return $"Scene Loader [UniTask] with {_sceneLoaderAsync.Manager.GetType().Name}";
         }
     }
 }

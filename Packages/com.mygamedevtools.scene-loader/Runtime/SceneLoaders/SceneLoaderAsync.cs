@@ -27,14 +27,14 @@ namespace MyGameDevTools.SceneLoading
             _manager.Dispose();
         }
 
-        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default)
+        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
         {
-            TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene).AsTask().Forget(HandleFireAndForgetException);
+            TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo).AsTask().Forget(HandleFireAndForgetException);
         }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default)
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default)
         {
-            TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene).AsTask().Forget(HandleFireAndForgetException);
+            TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo).AsTask().Forget(HandleFireAndForgetException);
         }
 
         public void UnloadScenes(ILoadSceneInfo[] sceneInfos)
@@ -57,16 +57,16 @@ namespace MyGameDevTools.SceneLoading
             LoadSceneAsync(sceneInfo, setActive, null).AsTask().Forget(HandleFireAndForgetException);
         }
 
-        public ValueTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
+        public ValueTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
         {
             return intermediateSceneReference == null
-                ? TransitionDirectlyAsync(targetScenes, setIndexActive, externalOriginScene, _lifetimeTokenSource.Token)
-                : TransitionWithIntermediateAsync(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene, _lifetimeTokenSource.Token);
+                ? TransitionDirectlyAsync(targetScenes, setIndexActive, _lifetimeTokenSource.Token)
+                : TransitionWithIntermediateAsync(targetScenes, setIndexActive, intermediateSceneReference, _lifetimeTokenSource.Token);
         }
 
-        public async ValueTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default, Scene externalOriginScene = default)
+        public async ValueTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = default)
         {
-            var result = await TransitionToScenesAsync(new ILoadSceneInfo[] { targetSceneInfo }, 0, intermediateSceneInfo, externalOriginScene);
+            var result = await TransitionToScenesAsync(new ILoadSceneInfo[] { targetSceneInfo }, 0, intermediateSceneInfo);
             return result == null || result.Length == 0 ? default : result[0];
         }
 
@@ -90,21 +90,14 @@ namespace MyGameDevTools.SceneLoading
             return _manager.UnloadSceneAsync(sceneInfo, _lifetimeTokenSource.Token);
         }
 
-        async ValueTask<Scene[]> TransitionDirectlyAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, Scene externalOriginScene, CancellationToken token)
+        async ValueTask<Scene[]> TransitionDirectlyAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, CancellationToken token)
         {
-            bool fromExternalOrigin = externalOriginScene.IsValid();
-            Scene sourceScene = fromExternalOrigin ? externalOriginScene : _manager.GetActiveScene();
-            if (sourceScene.IsValid())
-            {
-                await UnloadCurrentScene(sourceScene, fromExternalOrigin, token);
-            }
+            await UnloadSourceSceneAsync(token);
             return await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
         }
 
-        async ValueTask<Scene[]> TransitionWithIntermediateAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene externalOriginScene, CancellationToken token)
+        async ValueTask<Scene[]> TransitionWithIntermediateAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, CancellationToken token)
         {
-            bool fromExternalOrigin = externalOriginScene.IsValid();
-
             Scene loadingScene;
             try
             {
@@ -117,19 +110,17 @@ namespace MyGameDevTools.SceneLoading
 
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
-            Scene sourceScene = fromExternalOrigin ? externalOriginScene : _manager.GetActiveScene();
-
 #if UNITY_2023_2_OR_NEWER
             LoadingBehavior loadingBehavior = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #else
             LoadingBehavior loadingBehavior = UnityEngine.Object.FindObjectsOfType<LoadingBehavior>().FirstOrDefault(l => l.gameObject.scene == loadingScene);
 #endif
             return loadingBehavior
-                ? await TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, sourceScene, fromExternalOrigin, token)
-                : await TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, sourceScene, fromExternalOrigin, token);
+                ? await TransitionWithIntermediateLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, loadingBehavior, token)
+                : await TransitionWithIntermediateNoLoadingAsync(targetScenes, setIndexActive, intermediateSceneInfo, token);
         }
 
-        async ValueTask<Scene[]> TransitionWithIntermediateLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, Scene sourceScene, bool fromExternalOrigin, CancellationToken token)
+        async ValueTask<Scene[]> TransitionWithIntermediateLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, CancellationToken token)
         {
             LoadingProgress progress = loadingBehavior.Progress;
             while (progress.State != LoadingState.Loading && !token.IsCancellationRequested)
@@ -137,13 +128,7 @@ namespace MyGameDevTools.SceneLoading
 
             token.ThrowIfCancellationRequested();
 
-            if (!fromExternalOrigin)
-                sourceScene = _manager.GetActiveScene();
-
-            if (sourceScene.IsValid())
-            {
-                await UnloadCurrentScene(sourceScene, fromExternalOrigin, token);
-            }
+            await UnloadSourceSceneAsync(token);
 
             Scene[] loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, progress, token);
             progress.SetState(LoadingState.TargetSceneLoaded);
@@ -157,37 +142,26 @@ namespace MyGameDevTools.SceneLoading
             return loadedScenes;
         }
 
-        async ValueTask<Scene[]> TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, Scene sourceScene, bool fromExternalOrigin, CancellationToken token)
+        async ValueTask<Scene[]> TransitionWithIntermediateNoLoadingAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, CancellationToken token)
         {
-            if (sourceScene.IsValid())
-            {
-                await UnloadCurrentScene(sourceScene, fromExternalOrigin, token);
-            }
+            await UnloadSourceSceneAsync(token);
             Scene[] loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
             _manager.UnloadSceneAsync(intermediateSceneInfo, token).Forget(HandleFireAndForgetException);
             return loadedScenes;
         }
 
-        async ValueTask UnloadCurrentScene(Scene currentScene, bool fromExternalOrigin, CancellationToken token)
+        ValueTask<Scene> UnloadSourceSceneAsync(CancellationToken token)
         {
-            if (!currentScene.IsValid())
-                return;
+            Scene sourceScene = _manager.GetActiveScene();
+            if (!sourceScene.IsValid())
+                return default;
 
-            if (fromExternalOrigin)
-            {
-                AsyncOperation operation = SceneManager.UnloadSceneAsync(currentScene);
-                while (operation != null && !operation.isDone)
-                    await Task.Yield();
-
-                token.ThrowIfCancellationRequested();
-            }
-            else
-                await _manager.UnloadSceneAsync(new LoadSceneInfoScene(currentScene), token);
+            return _manager.UnloadSceneAsync(new LoadSceneInfoScene(sourceScene), token);
         }
 
         void HandleFireAndForgetException(Exception exception)
         {
-            Debug.LogWarningFormat("[{0}] An exception was caught during a fire and forget task. Usually this can be caused due to internal task cancellation on exiting playmode. If that's not the case, investigate for issues on the async scene operations. Exception:\n{1}", GetType().Name, exception);
+            Debug.LogWarningFormat("[SceneLoader] An exception was caught during a fire and forget task. Usually this can be caused due to internal task cancellation on exiting playmode. If that's not the case, investigate for issues on the async scene operations. Exception:\n{0}", exception);
         }
 
         public override string ToString()

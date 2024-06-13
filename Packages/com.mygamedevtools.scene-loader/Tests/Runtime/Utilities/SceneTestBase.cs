@@ -5,6 +5,7 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
+    [PrebuildSetup(typeof(SceneTestEnvironment)), PostBuildCleanup(typeof(SceneTestEnvironment))]
     public abstract class SceneTestBase
     {
         [UnityTearDown]

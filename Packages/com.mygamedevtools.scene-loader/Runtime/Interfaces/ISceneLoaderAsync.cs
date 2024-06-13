@@ -17,7 +17,7 @@ namespace MyGameDevTools.SceneLoading
     public interface ISceneLoaderAsync<TAsyncScene, TAsyncSceneArray> : ISceneLoader
     {
         /// <summary>
-        /// Async version of the <see cref="ISceneLoader.TransitionToScenes(ILoadSceneInfo[], int, ILoadSceneInfo, Scene)"/>
+        /// Async version of the <see cref="ISceneLoader.TransitionToScenes(ILoadSceneInfo[], int, ILoadSceneInfo)"/>
         /// </summary>
         /// <param name="targetScenes">
         /// A reference to all scenes that will be transitioned to.
@@ -29,16 +29,13 @@ namespace MyGameDevTools.SceneLoading
         /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        /// <param name="externalOriginScene">
-        /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
-        /// </param>
         /// <returns>
         /// The transition operation.
         /// </returns>
-        TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+        TAsyncSceneArray TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default);
 
         /// <summary>
-        /// Async version of the <see cref="ISceneLoader.TransitionToScene(ILoadSceneInfo, ILoadSceneInfo, Scene)"/>.
+        /// Async version of the <see cref="ISceneLoader.TransitionToScene(ILoadSceneInfo, ILoadSceneInfo)"/>.
         /// </summary>
         /// <param name="targetSceneReference">
         /// A reference to the scene that's going to be transitioned to.
@@ -47,13 +44,10 @@ namespace MyGameDevTools.SceneLoading
         /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        /// <param name="externalOriginScene">
-        /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
-        /// </param>
         /// <returns>
         /// The transition operation.
         /// </returns>
-        TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default, Scene externalOriginScene = default);
+        TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default);
 
         /// <summary>
         /// Async version of the <see cref="ISceneLoader.LoadScenes(ILoadSceneInfo[], int)"/>.

@@ -20,14 +20,14 @@ namespace MyGameDevTools.SceneLoading
             _sceneLoaderAsync.Dispose();
         }
 
-        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default)
+        public void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
         {
-            TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo, externalOriginScene);
+            TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneInfo);
         }
 
-        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default)
+        public void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null)
         {
-            TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo, externalOriginScene);
+            TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
         }
 
         public void UnloadScenes(ILoadSceneInfo[] sceneInfos)
@@ -50,14 +50,14 @@ namespace MyGameDevTools.SceneLoading
             LoadSceneAsync(sceneInfo, setActive);
         }
 
-        public WaitTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
+        public WaitTask<Scene[]> TransitionToScenesAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
         {
-            return new WaitTask<Scene[]>(_sceneLoaderAsync.TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneReference, externalOriginScene).AsTask());
+            return new WaitTask<Scene[]>(_sceneLoaderAsync.TransitionToScenesAsync(targetScenes, setIndexActive, intermediateSceneReference).AsTask());
         }
 
-        public WaitTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null, Scene externalOriginScene = default)
+        public WaitTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null)
         {
-            return new WaitTask<Scene>(_sceneLoaderAsync.TransitionToSceneAsync(targetSceneReference, intermediateSceneReference, externalOriginScene).AsTask());
+            return new WaitTask<Scene>(_sceneLoaderAsync.TransitionToSceneAsync(targetSceneReference, intermediateSceneReference).AsTask());
         }
 
         public WaitTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)
@@ -82,7 +82,7 @@ namespace MyGameDevTools.SceneLoading
 
         public override string ToString()
         {
-            return $"Scene Loader [Coroutine Alt] with {_sceneLoaderAsync.Manager.GetType().Name}";
+            return $"Scene Loader [Coroutine] with {_sceneLoaderAsync.Manager.GetType().Name}";
         }
     }
 }

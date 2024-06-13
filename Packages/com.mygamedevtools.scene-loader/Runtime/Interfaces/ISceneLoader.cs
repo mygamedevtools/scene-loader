@@ -19,12 +19,10 @@ namespace MyGameDevTools.SceneLoading
         /// It will transition from the current active scene (<see cref="ISceneManager.GetActiveScene()"/>)
         /// to a group of scenes (<paramref name="targetScenes"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
         /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
-        /// Also, you can provide a scene that wasn't loaded from this scene loader to transition from, as the <paramref name="externalOriginScene"/>,
-        /// instead of transitioning from the current active scene.
         /// The complete transition flow is:
         /// <br/><br/>
         /// 1. Load the intermediate scene (if provided).<br/>
-        /// 2. Unload the previous scene. <br/>
+        /// 2. Unload the source scene (if any).<br/>
         /// 3. Load all target scenes.<br/>
         /// 4. Unload the intermediate scene (if provided).<br/>
         /// </summary>
@@ -38,22 +36,17 @@ namespace MyGameDevTools.SceneLoading
         /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        /// <param name="externalOriginScene">
-        /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
-        /// </param>
-        void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default);
+        void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null);
 
         /// <summary>
         /// Triggers a scene transition.
         /// It will transition from the current active scene (<see cref="ISceneManager.GetActiveScene()"/>)
         /// to the target scene (<paramref name="targetSceneInfo"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
         /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
-        /// Also, you can provide a scene that wasn't loaded from this scene loader to transition from, as the <paramref name="externalOriginScene"/>,
-        /// instead of transitioning from the current active scene.
         /// The complete transition flow is:
         /// <br/><br/>
         /// 1. Load the intermediate scene (if provided).<br/>
-        /// 2. Unload the previous scene. <br/>
+        /// 2. Unload the source scene (if any).<br/>
         /// 3. Load the target scene.<br/>
         /// 4. Unload the intermediate scene (if provided).<br/>
         /// </summary>
@@ -64,10 +57,7 @@ namespace MyGameDevTools.SceneLoading
         /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
-        /// <param name="externalOriginScene">
-        /// A reference to a scene loaded outside of this scene loader, instead of taking the current active scene as the origin scene.
-        /// </param>
-        void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null, Scene externalOriginScene = default);
+        void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
 
         /// <summary>
         /// Unloads all the scenes from the current scene stack.

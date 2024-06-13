@@ -191,31 +191,39 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Transition_FromExternalOrigin([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
+        public IEnumerator Transition_NoSourceScene([ValueSource(nameof(_sceneLoaders))] ISceneLoader sceneLoader, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
-            yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
-            var currentScene = SceneManager.GetSceneByName(SceneBuilder.SceneNames[1]);
-
             List<Scene> loadedScenes = new();
-            int expectedScenes = loadingScene == null ? 1 : 2;
-            sceneLoader.Manager.SceneLoaded += sceneLoaded;
+            List<Scene> unloadedScenes = new();
+            int expectedLoadedScenes = loadingScene == null ? 1 : 2;
+            int expectedUnloadedScenes = loadingScene == null ? 0 : 1;
 
-            sceneLoader.TransitionToScene(targetScene, loadingScene, currentScene);
+            sceneLoader.Manager.SceneLoaded += sceneLoaded;
+            sceneLoader.Manager.SceneUnloaded += sceneUnloaded;
+
+            sceneLoader.TransitionToScene(targetScene, loadingScene);
 
             var watch = new Stopwatch();
             watch.Start();
-            yield return new WaitUntil(() => loadedScenes.Count == expectedScenes || watch.ElapsedMilliseconds > SceneTestEnvironment.DefaultTimeout);
+            yield return new WaitUntil(() => (loadedScenes.Count == expectedLoadedScenes && unloadedScenes.Count == expectedUnloadedScenes) || watch.ElapsedMilliseconds > SceneTestEnvironment.DefaultTimeout);
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
+            sceneLoader.Manager.SceneUnloaded -= sceneUnloaded;
 
-            Assert.AreEqual(loadedScenes[expectedScenes - 1], sceneLoader.Manager.GetActiveScene());
+            Assert.AreEqual(loadedScenes[expectedLoadedScenes - 1], sceneLoader.Manager.GetActiveScene());
+            Assert.AreEqual(expectedUnloadedScenes, unloadedScenes.Count);
 
             yield return new WaitUntil(() => sceneLoader.Manager.TotalSceneCount == 1);
 
             void sceneLoaded(Scene scene)
             {
                 loadedScenes.Add(scene);
+            }
+
+            void sceneUnloaded(Scene scene)
+            {
+                unloadedScenes.Add(scene);
             }
         }
 
