@@ -48,32 +48,3 @@ jobs:
           name: PlayMode
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.tests.outputs.coveragePath }}/**/*.xml
-  dev-release:
-    name: development release
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-    - name: Semantic Release
-      id: semantic
-      uses: cycjimmy/semantic-release-action@v4
-      with:
-        dry_run: true
-        branches: |
-          [
-            'main',
-            {
-              name: ${{ github.head_ref }},
-              prerelease: true
-            }
-          ]
-        extra_plugins: |
-          @semantic-release/changelog
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    - name: Output Release Version
-      run: |
-        echo "Pre-release version: ${{ steps.semantic.outputs.new_release_version }}"
