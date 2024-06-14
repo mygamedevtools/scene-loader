@@ -82,7 +82,7 @@ jobs:
               "@semantic-release/npm",
               {
                 "npmPublish": false,
-                "pkgRoot": "${PKG_ROOT}",
+                "pkgRoot": "$PKG_ROOT",
                 "tarballDir": "dist"
               }
             ],
@@ -93,7 +93,7 @@ jobs:
               }
             ],
           ],
-          "tagFormat": "\${version}"
+          "tagFormat": "${version}"
         }' > .releaserc
         cat .releaserc
       env:
