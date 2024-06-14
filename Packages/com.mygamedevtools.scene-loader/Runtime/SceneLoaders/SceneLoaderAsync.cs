@@ -94,7 +94,7 @@ namespace MyGameDevTools.SceneLoading
         {
             // If only one scene is loaded, we need to create a temporary scene for transition.
             Scene tempScene = default;
-            if (_manager.LoadedSceneCount <= 1)
+            if (SceneManager.sceneCount <= 1)
             {
                 tempScene = SceneManager.CreateScene("temp-transition-scene");
             }
