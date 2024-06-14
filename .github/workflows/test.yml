@@ -95,13 +95,12 @@ jobs:
           ],
           "tagFormat": "${version}"
         }' > .releaserc
-        cat .releaserc
       env:
         PKG_ROOT: Packages/com.mygamedevtools.scene-loader
     - name: Release
       id: semantic
       run: |
-        npm install -g @semantic-release@24 @semantic-release/git @semantic-release/changelog
+        npm install -g semantic-release@24 @semantic-release/git @semantic-release/changelog
         npx semantic-release --dry-run --debug
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
