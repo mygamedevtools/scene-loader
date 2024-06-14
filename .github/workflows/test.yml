@@ -71,6 +71,7 @@ jobs:
             "main",
             {
               "name": "${{ github.head_ref }}",
+              "channel": "pre",
               "prerelease": true
             }
           ],
