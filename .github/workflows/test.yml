@@ -82,7 +82,7 @@ jobs:
               "@semantic-release/npm",
               {
                 "npmPublish": false,
-                "pkgRoot": "$PKG_ROOT",
+                "pkgRoot": "${{ env.PKG_ROOT }}",
                 "tarballDir": "dist"
               }
             ],
@@ -101,8 +101,8 @@ jobs:
     - name: Release
       id: semantic
       run: |
-        npm install -g @semantic-release/git @semantic-release/changelog
-        npx semantic-release@24 --dry-run --debug
+        npm install -g @semantic-release@24 @semantic-release/git @semantic-release/changelog
+        npx semantic-release --dry-run --debug
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
     - name: Output Release Version
