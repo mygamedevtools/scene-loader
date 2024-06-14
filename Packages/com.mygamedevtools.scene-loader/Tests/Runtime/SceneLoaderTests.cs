@@ -196,10 +196,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             List<Scene> loadedScenes = new();
             List<Scene> unloadedScenes = new();
             int expectedLoadedScenes = loadingScene == null ? 1 : 2;
-            int expectedUnloadedScenes = loadingScene == null ? 0 : 1;
+            // If there's no loading scene, the scene loader will create a temporary scene
+            // for the transition, and will unload it after the transition is complete.
+            int expectedUnloadedScenes = 1;
 
             sceneLoader.Manager.SceneLoaded += sceneLoaded;
-            sceneLoader.Manager.SceneUnloaded += sceneUnloaded;
+            // The temporary scene unload does not go through the ISceneManager
+            SceneManager.sceneUnloaded += sceneUnloaded;
 
             sceneLoader.TransitionToScene(targetScene, loadingScene);
 
@@ -209,7 +212,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             watch.Stop();
 
             sceneLoader.Manager.SceneLoaded -= sceneLoaded;
-            sceneLoader.Manager.SceneUnloaded -= sceneUnloaded;
+            SceneManager.sceneUnloaded -= sceneUnloaded;
 
             Assert.AreEqual(loadedScenes[expectedLoadedScenes - 1], sceneLoader.Manager.GetActiveScene());
             Assert.AreEqual(expectedUnloadedScenes, unloadedScenes.Count);

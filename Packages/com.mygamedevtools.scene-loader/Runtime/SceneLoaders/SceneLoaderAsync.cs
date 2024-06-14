@@ -92,8 +92,21 @@ namespace MyGameDevTools.SceneLoading
 
         async ValueTask<Scene[]> TransitionDirectlyAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, CancellationToken token)
         {
+            // If only one scene is loaded, we need to create a temporary scene for transition.
+            Scene tempScene = default;
+            if (_manager.LoadedSceneCount <= 1)
+            {
+                tempScene = SceneManager.CreateScene("temp-transition-scene");
+            }
             await UnloadSourceSceneAsync(token);
-            return await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
+
+            Scene[] loadedScenes = await _manager.LoadScenesAsync(targetScenes, setIndexActive, token: token);
+
+            if (tempScene.IsValid())
+            {
+                _ = SceneManager.UnloadSceneAsync(tempScene);
+            }
+            return loadedScenes;
         }
 
         async ValueTask<Scene[]> TransitionWithIntermediateAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo, CancellationToken token)
