@@ -11,7 +11,7 @@ jobs:
   create-preview-release:
     uses: ./.github/workflows/release-template.yml
     with:
-      isPreviewVersion: true
+      #isPreviewVersion: true
       dryRun: true
       blockPullRequestRelease: false
       packagePath: "Packages/com.mygamedevtools.scene-loader"
