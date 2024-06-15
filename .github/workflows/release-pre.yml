@@ -17,8 +17,7 @@ jobs:
         persist-credentials: false
     - name: ⚙️ Remove @semantic-release/git
       run: |
-        sudo apt-get install -y jq
-        cat .releaserc.json | jq 'del(.plugins[] | select(.[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv r.releaserc.json.tmp .releaserc.json
+        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
     - name: 🚀 Release
       id: release
       uses: cycjimmy/semantic-release-action@v4
