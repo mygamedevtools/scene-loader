@@ -52,7 +52,7 @@ jobs:
         fetch-depth: 0
     - name: ✏️ Update package.json
       run: |
-        jq '.version = ${{ env.releaseVersion }}' ${{ env.packagePath }}/package.json > package.json.tmp && mv package.json.tmp ${{ env.packagePath }}/package.json
+        jq '.version = "${{ env.releaseVersion }}"' ${{ env.packagePath }}/package.json > package.json.tmp && mv package.json.tmp ${{ env.packagePath }}/package.json
     - name: 📦 Package UPM Branch
       id: package_upm
       run: |
@@ -69,7 +69,6 @@ jobs:
         fi
         git push -f -u origin upm
     - name: 🏷️ Create UPM Tag
-      if: steps.package_upm.outcome == 'success'
       run: |
         git tag $TAG upm
         git push origin --tags
