@@ -8,7 +8,7 @@ on:
       - '**.md'
 
 jobs:
-  pre-release:
+  create-release:
     name: 🚀 Release
     runs-on: ubuntu-latest
     steps:
@@ -19,12 +19,11 @@ jobs:
         persist-credentials: false
     - name: ⚙️ Remove @semantic-release/git
       run: |
-        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/github"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
+        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
     - name: 🚀 Create Release
       id: release
       uses: cycjimmy/semantic-release-action@v4
       with:
-        # dry_run: true
         ci: false
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -35,3 +34,27 @@ jobs:
         else
           echo "ℹ️ No release generated" | tee -a $GITHUB_STEP_SUMMARY
         fi
+    - name: 📦 Package UPM Branch
+      id: package_upm
+      if: steps.release.outputs.new_release_published == 'true'
+      run: |
+        git branch -d upm &> /dev/null || echo upm branch not found
+        git subtree split -P "${{ env.PACKAGE_PATH }}" -b upm
+        git checkout upm
+        if [[ -d "Samples" ]]; then
+          git mv Samples Samples~
+          rm -f Samples.meta
+          git config --global user.name 'github-bot'
+          git config --global user.email 'github-bot@users.noreply.github.com'
+          git commit -am "fix: Samples => Samples~"
+        fi
+        git push -f -u origin upm
+      env:
+        PACKAGE_PATH: Packages/com.mygamedevtools.scene-loader
+    - name: 🏷️ Create UPM Tag
+      if: steps.package_upm.outcome == 'success'
+      run: |
+        git tag $TAG upm
+        git push origin --tags
+      env:
+        TAG: upm/${{ steps.release.outputs.new_release_version }}

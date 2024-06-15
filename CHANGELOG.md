@@ -1,12 +1,5 @@
 # Changelog
 
-# [3.0.0-pre.2](https://github.com/mygamedevtools/scene-loader/compare/3.0.0-pre.1...3.0.0-pre.2) (2024-06-15)
-
-
-### Features
-
-* test release summary ([e3d931d](https://github.com/mygamedevtools/scene-loader/commit/e3d931dc4dbc17029a1723f002526874fca7463e))
-
 ## [2.3.2](https://github.com/mygamedevtools/scene-loader/compare/2.3.1...2.3.2) (2024-03-04)
 
 
