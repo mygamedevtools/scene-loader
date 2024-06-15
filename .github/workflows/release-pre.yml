@@ -29,7 +29,7 @@ jobs:
     - name: 📄 Summary
       run: |
         if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ]; then
-          echo "🚀 Version \`${{ steps.release.outputs.new_release_version }}\` released." | tee -a $GITHUB_STEP_SUMMARY
+          echo "🚀 Version \`${{ steps.release.outputs.new_release_version }}\` released" | tee -a $GITHUB_STEP_SUMMARY
         else
-          echo "ℹ️ No release generated." | tee -a $GITHUB_STEP_SUMMARY
+          echo "ℹ️ No release generated" | tee -a $GITHUB_STEP_SUMMARY
         fi
