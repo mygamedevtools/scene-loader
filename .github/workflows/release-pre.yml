@@ -1,12 +1,11 @@
 name: 🚀 Release (Preview)
 on:
-  workflow_dispatch:
-  # push:
-    # branches:
-    #   - 'feat/**'
-    #   - 'fix/**'
-    # paths-ignore:
-    #   - '**.md'
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+    paths-ignore:
+      - '**.md'
 
 jobs:
   create-preview-release:

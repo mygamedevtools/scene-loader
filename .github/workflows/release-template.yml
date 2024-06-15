@@ -20,7 +20,7 @@ on:
         required: true
 
 jobs:
-  release:
+  semantic-release:
     runs-on: ubuntu-latest
     outputs:
       new_release_published: ${{ steps.release.outputs.new_release_published }}
@@ -54,11 +54,11 @@ jobs:
 
   package-upm:
     runs-on: ubuntu-latest
-    needs: release
-    if: ${{ needs.release.outputs.new_release_published == 'true' && inputs.dryRun == false }}
+    needs: semantic-release
+    if: ${{ needs.semantic-release.outputs.new_release_published == 'true' && inputs.dryRun == false }}
     env:
       packagePath: ${{ inputs.packagePath }}
-      releaseVersion: ${{ needs.release.outputs.new_release_version }}
+      releaseVersion: ${{ needs.semantic-release.outputs.new_release_version }}
     steps:
     - name: 📂 Checkout
       uses: actions/checkout@v4
