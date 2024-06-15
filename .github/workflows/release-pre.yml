@@ -1,11 +1,14 @@
 name: 🚀 Release Preview Package
 on:
-  push:
+  # push:
+  #   branches:
+  #     - 'feat/**'
+  #     - 'fix/**'
+  #   paths-ignore:
+  #     - '**.md'
+  pull_request:
     branches:
-      - 'feat/**'
-      - 'fix/**'
-    paths-ignore:
-      - '**.md'
+      - main
 
 jobs:
   create-release:
@@ -27,19 +30,20 @@ jobs:
       id: release
       uses: cycjimmy/semantic-release-action@v4
       with:
+        dry_run: true
         ci: false
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
     - name: 📄 Summary
       run: |
         if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ]; then
-          echo "🚀 Version \`${{ steps.release.outputs.new_release_version }}\` released" | tee -a $GITHUB_STEP_SUMMARY
+          echo "ℹ️ Version \`${{ steps.release.outputs.new_release_version }}\` released" | tee -a $GITHUB_STEP_SUMMARY
         else
           echo "ℹ️ No release generated" | tee -a $GITHUB_STEP_SUMMARY
         fi
 
   package-upm:
-    name: 📦 Prepare branch for UPM
+    name: 📦 Export UPM branch
     runs-on: ubuntu-latest
     needs: create-release
     env:
