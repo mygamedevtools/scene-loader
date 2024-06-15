@@ -17,14 +17,14 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
-    # - name: ⚙️ Remove @semantic-release/git
-    #   run: |
-    #     cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
+    - name: ⚙️ Remove @semantic-release/git
+      run: |
+        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/github"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
     - name: 🚀 Create Release
       id: release
       uses: cycjimmy/semantic-release-action@v4
       with:
-        dry_run: true
+        # dry_run: true
         ci: false
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
