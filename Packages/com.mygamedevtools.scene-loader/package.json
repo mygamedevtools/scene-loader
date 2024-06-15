@@ -10,8 +10,9 @@
     "email": "joao.borks@gmail.com.br",
     "url": "https://github.com/mygamedevtools"
   },
-  "documentationUrl": "https://github.com/mygamedevtools/scene-loader",
   "license": "MIT",
+  "documentationUrl": "https://github.com/mygamedevtools/scene-loader",
   "licensesUrl": "https://github.com/mygamedevtools/scene-loader?tab=MIT-1-ov-file",
+  "changelogUrl": "https://github.com/mygamedevtools/scene-loader/blob/main/CHANGELOG.md",
   "hideInEditor": false
 }
