@@ -15,7 +15,9 @@ namespace MyGameDevTools.SceneLoading
             return sourceLoadSceneInfo.Type switch
             {
                 LoadSceneInfoType.BuildIndex or LoadSceneInfoType.Name => new SceneDataStandard(sourceLoadSceneInfo),
+#if ENABLE_ADDRESSABLES
                 LoadSceneInfoType.AssetReference or LoadSceneInfoType.Address => new SceneDataAddressable(sourceLoadSceneInfo),
+#endif
                 _ => throw new System.Exception($"[{nameof(SceneDataBuilder)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type."),
             };
         }
