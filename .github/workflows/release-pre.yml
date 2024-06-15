@@ -14,6 +14,7 @@ jobs:
       blockPullRequestRelease: false
       blockReleaseCommit: true
       packagePath: "Packages/com.mygamedevtools.scene-loader"
+      dryRun: true
     secrets:
       githubToken: ${{ secrets.GH_TOKEN }}
 
