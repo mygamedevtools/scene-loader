@@ -68,6 +68,7 @@ jobs:
       run: |
         echo '{
           "branches": [
+            main,
             {
               "name": "*",
               "prerelease": "pre"
