@@ -49,14 +49,3 @@ jobs:
           name: PlayMode
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.tests.outputs.coveragePath }}/**/*.xml
-    
-  release:
-    if: ${{ github.event_name == 'push' }}
-    uses: ./.github/workflows/release-template.yml
-    needs: test
-    with:
-      packagePath: "Packages/com.mygamedevtools.scene-loader"
-      dryRun: true
-    secrets:
-      githubToken: ${{ secrets.GH_TOKEN }}
-

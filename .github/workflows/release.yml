@@ -1,20 +1,16 @@
-name: 🚀 Release (Preview)
+name: 🚀 Release
 on:
   push:
     branches:
-      - 'feat/**'
-      - 'fix/**'
+      - 'main'
     paths-ignore:
       - '**.md'
 
 jobs:
-  create-preview-release:
-    name: Pre Release
+  create-release:
+    name: Release
     uses: ./.github/workflows/release-template.yml
     with:
-      blockPullRequestRelease: false
-      blockReleaseCommit: true
       packagePath: "Packages/com.mygamedevtools.scene-loader"
     secrets:
       githubToken: ${{ secrets.GH_TOKEN }}
-

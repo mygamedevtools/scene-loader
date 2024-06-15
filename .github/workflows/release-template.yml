@@ -46,7 +46,7 @@ jobs:
         GH_TOKEN: ${{ secrets.githubToken }}
     - name: 📄 Summary
       run: |
-        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ]; then
+        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' && ${{ inputs.dryRun == false }} ]; then
           echo "ℹ️ Released version \`${{ steps.release.outputs.new_release_version }}\`" | tee -a $GITHUB_STEP_SUMMARY
         else
           echo "ℹ️ No version released" | tee -a $GITHUB_STEP_SUMMARY
