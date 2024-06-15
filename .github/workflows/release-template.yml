@@ -1,0 +1,92 @@
+name: 🚀 Release Package
+on:
+  workflow_call:
+    inputs:
+      isPreviewVersion:
+        required: false
+        type: boolean
+      dryRun:
+        required: false
+        type: boolean
+      blockPullRequestRelease:
+        required: false
+        type: boolean
+        default: true
+      packagePath:
+        required: false
+        type: string
+    secrets:
+      githubToken:
+        required: true
+
+jobs:
+  create-release:
+    name: 🚀 Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      new_release_published: ${{ steps.release.outputs.new_release_published }}
+      new_release_version: ${{ steps.release.outputs.new_release_version }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    # Removes the git plugin from semantic release so it doesn't generate a new commit (not necessary for preview versions)
+    - name: ⚙️ Disable semantic release commit
+      if: ${{ inputs.isPreviewVersion == 'true' }}
+      run: |
+        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
+    - name: 🚀 Semantic Release
+      id: release
+      uses: cycjimmy/semantic-release-action@v4
+      with:
+        dry_run: ${{ inputs.dryRun }}
+        ci: ${{ inputs.blockPullRequestRelease }}
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    - name: 📄 Summary
+      run: |
+        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ]; then
+          echo "ℹ️ Version \`${{ steps.release.outputs.new_release_version }}\` released" | tee -a $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No release generated" | tee -a $GITHUB_STEP_SUMMARY
+        fi
+
+  package-upm:
+    name: 📦 Export UPM branch
+    runs-on: ubuntu-latest
+    needs: create-release
+    env:
+      packagePath: ${{ inputs.packagePath }}
+      releaseVersion: ${{ needs.create-release.outputs.new_release_version }}
+    if: needs.create-release.outputs.new_release_published == 'true'
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: ✏️ Update package.json
+      run: |
+        jq '.version = "${{ env.releaseVersion }}"' ${{ env.packagePath }}/package.json > package.json.tmp && mv package.json.tmp ${{ env.packagePath }}/package.json
+    - name: 📦 Package UPM Branch
+      id: package_upm
+      run: |
+        git config --global user.name 'semantic-release-bot'
+        git config --global user.email 'semantic-release-bot@martynus.net'
+        git commit -am "update package.json"
+        git branch -d upm &> /dev/null || echo upm branch not found
+        git subtree split -P "${{ env.packagePath }}" -b upm
+        git checkout upm
+        if [[ -d "Samples" ]]; then
+          git mv Samples Samples~
+          rm -f Samples.meta
+          git commit -am "fix: Samples => Samples~"
+        fi
+        git push -f -u origin upm
+    - name: 🏷️ Create UPM Tag
+      run: |
+        git tag $TAG upm
+        git push origin --tags
+      env:
+        TAG: upm/${{ env.releaseVersion }}
