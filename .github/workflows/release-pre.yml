@@ -2,8 +2,10 @@ name: 🚀 Release Preview Package
 on:
   push:
     branches:
-      - feat/*
-      - fix/*
+      - 'feat/**'
+      - 'fix/**'
+    paths-ignore:
+      - '**.md'
 
 jobs:
   pre-release:
@@ -15,9 +17,9 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
-    - name: ⚙️ Remove @semantic-release/git
-      run: |
-        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
+    # - name: ⚙️ Remove @semantic-release/git
+    #   run: |
+    #     cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
     - name: 🚀 Create Release
       id: release
       uses: cycjimmy/semantic-release-action@v4

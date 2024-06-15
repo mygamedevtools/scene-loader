@@ -1,11 +1,13 @@
-name: Release
+name: 🚀 Release Package
 on:
   push:
     branches:
     - main
+    paths-ignore:
+      - '**.md'
 jobs:
   release:
-    name: release
+    name: 🚀 Release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -15,11 +17,6 @@ jobs:
     - name: Semantic Release
       id: semantic
       uses: cycjimmy/semantic-release-action@v4
-      with:
-        extra_plugins: |
-          @semantic-release/changelog
-          @semantic-release/git
-        branch: main
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
     - name: Post Release Checkout
