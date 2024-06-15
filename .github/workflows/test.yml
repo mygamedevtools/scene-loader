@@ -70,7 +70,7 @@ jobs:
           "branches": [
             "main",
             {
-              "name": "${{ github.ref }}",
+              "name": "${{ github.ref_name }}",
               "prerelease": "pre"
             }
           ],
