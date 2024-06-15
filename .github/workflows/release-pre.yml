@@ -1,4 +1,4 @@
-name: 🚀 Release (Preview)
+name: 🚀 Release Preview Package
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   pre-release:
-    name: 🚀 Release (Preview)
+    name: 🚀 Release
     runs-on: ubuntu-latest
     steps:
     - name: 📂 Checkout
@@ -18,7 +18,7 @@ jobs:
     - name: ⚙️ Remove @semantic-release/git
       run: |
         cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
-    - name: 🚀 Release
+    - name: 🚀 Create Release
       id: release
       uses: cycjimmy/semantic-release-action@v4
       with:
@@ -26,3 +26,10 @@ jobs:
         ci: false
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    - id: summary
+      run: |
+        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ]; then
+          echo "🚀 Version ${{ steps.release.outputs.new_release_version }} released." | tee -a $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No release generated." | tee -a $GITHUB_STEP_SUMMARY
+        fi
