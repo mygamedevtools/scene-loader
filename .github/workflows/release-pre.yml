@@ -37,6 +37,7 @@ jobs:
         else
           echo "ℹ️ No release generated" | tee -a $GITHUB_STEP_SUMMARY
         fi
+
   package-upm:
     name: 📦 Prepare branch for UPM
     runs-on: ubuntu-latest
