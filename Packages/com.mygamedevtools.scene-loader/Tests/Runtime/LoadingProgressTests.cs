@@ -29,11 +29,10 @@ namespace MyGameDevTools.SceneLoading.Tests
             progress.Report(.5f);
             Assert.AreEqual(.5f, reportedValue);
 
-            progress = new LoadingProgress(true);
+            progress.Report(1);
+            Assert.AreEqual(1, reportedValue);
 
-            progress.Progressed += value => reportedValue = value;
-
-            progress.Report(.9f);
+            progress.Report(2);
             Assert.AreEqual(1, reportedValue);
         }
     }

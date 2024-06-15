@@ -9,9 +9,6 @@ on:
       blockReleaseCommit:
         required: false
         type: boolean
-      packagePath:
-        required: false
-        type: string
       dryRun:
         required: false
         type: boolean
@@ -20,6 +17,21 @@ on:
         required: true
 
 jobs:
+  retrieve-package-path:
+    runs-on: ubuntu-latest
+    outputs:
+      packagePath: ${{ steps.extract-path.outputs.projectPath }}
+    steps:
+      - name: 📂 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 📤 Extract Path
+        id: extract-path
+        run: |
+          PACKAGE_PATH=$(jq -r '.plugins[] | select(type == "array" and .[0] == "@semantic-release/npm") | .[1].pkgRoot' .releaserc.json)
+          echo "::set-output name=packagePath::$PACKAGE_PATH"
+
   semantic-release:
     runs-on: ubuntu-latest
     outputs:
@@ -46,7 +58,7 @@ jobs:
         GH_TOKEN: ${{ secrets.githubToken }}
     - name: 📄 Summary
       run: |
-        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' && '${{ inputs.dryRun }}' == 'false' ]; then
+        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ] && [ '${{ inputs.dryRun }}' == 'false' ]; then
           echo "ℹ️ Released version \`${{ steps.release.outputs.new_release_version }}\`" | tee -a $GITHUB_STEP_SUMMARY
         else
           echo "ℹ️ No version released" | tee -a $GITHUB_STEP_SUMMARY
@@ -54,10 +66,10 @@ jobs:
 
   package-upm:
     runs-on: ubuntu-latest
-    needs: semantic-release
+    needs: [ 'semantic-release', 'retrieve-package-path' ]
     if: ${{ needs.semantic-release.outputs.new_release_published == 'true' && inputs.dryRun == false }}
     env:
-      packagePath: ${{ inputs.packagePath }}
+      packagePath: ${{ needs.retrieve-package-path.outputs.packagePath }}
       releaseVersion: ${{ needs.semantic-release.outputs.new_release_version }}
     steps:
     - name: 📂 Checkout

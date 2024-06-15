@@ -10,7 +10,5 @@ jobs:
   create-release:
     name: Release
     uses: ./.github/workflows/release-template.yml
-    with:
-      packagePath: "Packages/com.mygamedevtools.scene-loader"
     secrets:
       githubToken: ${{ secrets.GH_TOKEN }}

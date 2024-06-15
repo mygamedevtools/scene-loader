@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -21,17 +22,12 @@ namespace MyGameDevTools.SceneLoading
         /// </summary>
         public LoadingState State { get; private set; }
 
-        readonly float _ratio;
-
         /// <summary>
         /// Creates a new instance of a <see cref="LoadingProgress"/>, optionally adjusting its loading ratio.
         /// <br/>
-        /// Standard Unity scene loading operations have a reduced loading ratio of 0.9, while addressable loading operations have a loading ratio of 1.
         /// </summary>
-        /// <param name="reducedLoadRatio">Set to true for standard unity scene loading operations, or false for addressable loading operations.</param>
-        public LoadingProgress(bool reducedLoadRatio = false)
+        public LoadingProgress()
         {
-            _ratio = reducedLoadRatio ? .9f : 1;
             State = LoadingState.WaitingToStart;
         }
 
@@ -55,7 +51,7 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="value">Scene loading progress value, ranging from 0 to 1.</param>
         public void Report(float value)
         {
-            Progressed?.Invoke(value / _ratio);
+            Progressed?.Invoke(Mathf.Clamp01(value));
         }
     }
 }
