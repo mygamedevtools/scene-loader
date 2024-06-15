@@ -68,13 +68,8 @@ jobs:
       run: |
         echo '{
           "branches": [
-            "main",
             {
-              "name": "${{ github.head_ref }}",
-              "prerelease": "pre"
-            },
-            {
-              "name": "${{ github.ref }}",
+              "name": "*",
               "prerelease": "pre"
             }
           ],
