@@ -1,0 +1,68 @@
+on:
+  push:
+    branches:
+      - feat/*
+      - fix/*
+
+jobs:
+  pre-release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Create .releaserc
+      run: |
+        echo '{
+          "branches": [
+            main,
+            {
+              "name": "feat/*",
+              "prerelease": "pre"
+            },
+            {
+              "name": "fix/*",
+              "prerelease": "pre"
+            }
+          ],
+          "plugins": [
+            "@semantic-release/commit-analyzer",
+            "@semantic-release/release-notes-generator",
+            "@semantic-release/changelog",
+            [
+              "@semantic-release/npm",
+              {
+                "npmPublish": false,
+                "pkgRoot": "${{ env.PKG_ROOT }}",
+                "tarballDir": "dist"
+              }
+            ],
+            [
+            "@semantic-release/github",
+              {
+                "assets": "dist/*.tgz"
+              }
+            ],
+          ],
+          "tagFormat": "${version}"
+        }' > .releaserc
+      env:
+        PKG_ROOT: Packages/com.mygamedevtools.scene-loader
+    - name: Release
+      id: semantic
+      run: |
+        npm install -g semantic-release@24 @semantic-release/changelog
+        npx semantic-release --no-ci --dry-run --debug
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    - name: Output Release Version
+      if: steps.semantic.outputs.new_release_published == 'true'
+      run: |
+        echo "Pre-release version: ${{ steps.semantic.outputs.new_release_version }}"
