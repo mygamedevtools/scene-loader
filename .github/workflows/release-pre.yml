@@ -1,3 +1,4 @@
+name: 🚀 Release (Preview)
 on:
   push:
     branches:
@@ -6,63 +7,78 @@ on:
 
 jobs:
   pre-release:
-    name: Release
+    name: release
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         persist-credentials: false
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Create .releaserc
-      run: |
-        echo '{
-          "branches": [
-            main,
-            {
-              "name": "feat/*",
-              "prerelease": "pre"
-            },
-            {
-              "name": "fix/*",
-              "prerelease": "pre"
-            }
-          ],
-          "plugins": [
-            "@semantic-release/commit-analyzer",
-            "@semantic-release/release-notes-generator",
-            "@semantic-release/changelog",
-            [
-              "@semantic-release/npm",
-              {
-                "npmPublish": false,
-                "pkgRoot": "${{ env.PKG_ROOT }}",
-                "tarballDir": "dist"
-              }
-            ],
-            [
-            "@semantic-release/github",
-              {
-                "assets": "dist/*.tgz"
-              }
-            ],
-          ],
-          "tagFormat": "${version}"
-        }' > .releaserc
-      env:
-        PKG_ROOT: Packages/com.mygamedevtools.scene-loader
-    - name: Release
+    - name: Semantic Release
       id: semantic
-      run: |
-        npm install -g semantic-release@24 @semantic-release/changelog
-        npx semantic-release --no-ci --dry-run --debug
+      uses: cycjimmy/semantic-release-action@v4
+      with:
+        extra_plugins: |
+          @semantic-release/changelog
+        branch: main
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    - name: Output Release Version
-      if: steps.semantic.outputs.new_release_published == 'true'
-      run: |
-        echo "Pre-release version: ${{ steps.semantic.outputs.new_release_version }}"
+  # pre-release:
+  #   name: 🚀 Release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: 📂 Checkout
+  #     uses: actions/checkout@v4
+  #     with:
+  #       fetch-depth: 0
+  #       persist-credentials: false
+  #   - name: 🟩 Setup Node
+  #     uses: actions/setup-node@v4
+  #     with:
+  #       node-version: lts/*
+  #   - name: 📝 Create .releaserc
+  #     run: |
+  #       echo '{
+  #         "branches": [
+  #           main, {
+  #             "name": "feat/*",
+  #             "prerelease": "pre"
+  #           },
+  #           {
+  #             "name": "fix/*",
+  #             "prerelease": "pre"
+  #           }
+  #         ],
+  #         "plugins": [
+  #           "@semantic-release/commit-analyzer",
+  #           "@semantic-release/release-notes-generator",
+  #           [
+  #             "@semantic-release/changelog",
+  #             {
+  #               "changelogTitle": "# Changelog"
+  #             }
+  #           ],
+  #           [
+  #             "@semantic-release/npm",
+  #             {
+  #               "npmPublish": false,
+  #               "pkgRoot": "${{ vars.PACKAGE_PATH }}",
+  #               "tarballDir": "dist"
+  #             }
+  #           ],
+  #           [
+  #           "@semantic-release/github",
+  #             {
+  #               "assets": "dist/*.tgz"
+  #             }
+  #           ],
+  #         ],
+  #         "tagFormat": "${version}"
+  #       }' > .releaserc
+  #   - name: 🚀 Release
+  #     id: release
+  #     run: |
+  #       npm install -g semantic-release@24 @semantic-release/changelog
+  #       npx semantic-release --no-ci --dry-run
+  #     env:
+  #       GH_TOKEN: ${{ secrets.GH_TOKEN }}
