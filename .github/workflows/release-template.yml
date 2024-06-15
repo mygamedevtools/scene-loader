@@ -44,7 +44,7 @@ jobs:
         dry_run: ${{ inputs.dryRun }}
         ci: ${{ inputs.blockPullRequestRelease }}
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.githubToken }}
     - name: 📄 Summary
       run: |
         if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ]; then
