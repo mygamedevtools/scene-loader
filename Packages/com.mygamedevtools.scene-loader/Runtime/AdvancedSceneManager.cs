@@ -56,6 +56,10 @@ namespace MyGameDevTools.SceneLoading
                     _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
                 }
             }
+            if (loadedSceneCount > 0 && SceneDataUtilities.TryGetSceneDataByLoadedScene(SceneManager.GetActiveScene(), _loadedScenes, out ISceneData sceneData))
+            {
+                _activeScene = sceneData;
+            }
         }
         /// <summary>
         /// Creates a new <see cref="AdvancedSceneManager"/> with the option to add a list of loaded scenes to its management.
@@ -77,6 +81,10 @@ namespace MyGameDevTools.SceneLoading
                 {
                     _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
                 }
+            }
+            if (loadedSceneCount > 0)
+            {
+                _activeScene = _loadedScenes[0];
             }
         }
 
