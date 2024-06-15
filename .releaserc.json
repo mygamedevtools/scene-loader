@@ -29,7 +29,7 @@
       "@semantic-release/npm",
       {
         "npmPublish": false,
-        "pkgRoot": "Packages/mygamedevtools-scene-loader",
+        "pkgRoot": "Packages/com.mygamedevtools.scene-loader",
         "tarballDir": "dist"
       }
     ],
