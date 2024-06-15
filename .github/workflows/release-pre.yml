@@ -38,6 +38,7 @@ jobs:
       id: package_upm
       if: steps.release.outputs.new_release_published == 'true'
       run: |
+        git commit -am "update package.json"
         git branch -d upm &> /dev/null || echo upm branch not found
         git subtree split -P "${{ env.PACKAGE_PATH }}" -b upm
         git checkout upm
