@@ -21,34 +21,7 @@ Advanced Scene Manager
 Enhance your scene loading experience
 </i></p>
 
-<details>
-<summary><b><font size="+3">Table of Contents</font></b> (click to expand)</summary>
-
-* [Overview](#overview)
-* [Installation](#installation)
-  * [OpenUPM](#openupm)
-  * [Installing from Git](#installing-from-git)
-  * [Installing from tarball](#installing-from-tarball)
-* [Dependencies](#dependencies)
-* [Description](#description)
-* [Usage](#usage)
-  * [The Scene Manager](#the-scene-manager)
-  * [Load Scene Info](#load-scene-info)
-  * [The Scene Loaders](#the-scene-loaders)
-  * [Disposable and CancellationTokens](#disposable-and-cancellationtokens)
-* [Practical examples](#practical-examples)
-  * [Creating your scene loader](#creating-your-scene-loader)
-  * [Loading scenes with load scene info](#loading-scenes-with-load-scene-info)
-* [Creating Loading Screens](#creating-loading-screens)
-  * [The Loading Behavior](#the-loading-behavior)
-  * [The Loading States](#the-loading-states)
-  * [The Loading Feedbacks](#the-loading-feedbacks)
-  * [Loading Screen Example](#loading-screen-example)
-* [Why so many interfaces?](#why-so-many-interfaces)
-* [Tests](#tests)
-</details>
-
-# Overview
+## Overview
 
 This is a Unity package to **simplify** scene operations: **load**, **unload** and **transition**. In a quick example:
 
@@ -71,17 +44,43 @@ You can also take advantage of these features:
 - **Modular** implementation with interfaces.
 - Load, unload or transition to **multiple scenes**.
 
-# Installation
+## Summary
 
-## OpenUPM
+* [Installation](#installation)
+  * [OpenUPM](#openupm)
+  * [Installing from Git](#installing-from-git)
+  * [Installing from tarball](#installing-from-tarball)
+* [Dependencies](#dependencies)
+* [Description](#description)
+* [Usage](#usage)
+  * [The Scene Manager](#the-scene-manager)
+  * [Load Scene Info](#load-scene-info)
+  * [The Scene Loaders](#the-scene-loaders)
+  * [Disposable and CancellationTokens](#disposable-and-cancellationtokens)
+* [Practical examples](#practical-examples)
+  * [Creating your scene loader](#creating-your-scene-loader)
+  * [Loading scenes with load scene info](#loading-scenes-with-load-scene-info)
+* [Creating Loading Screens](#creating-loading-screens)
+  * [The Loading Behavior](#the-loading-behavior)
+  * [The Loading States](#the-loading-states)
+  * [The Loading Feedback](#the-loading-feedback)
+  * [Loading Screen Example](#loading-screen-example)
+* [Why so many interfaces?](#why-so-many-interfaces)
+* [Tests](#tests)
 
+## Installation
+
+<details>
+<summary><h3>Open UPM</h3></summary>
 This package is available on the [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader) registry. Add the package via the [openupm-cli](https://github.com/openupm/openupm-cli):
 
 ```
 openupm add com.mygamedevtools.scene-loader
 ```
+</details>
 
-## [Installing](https://docs.unity3d.com/Manual/upm-ui-giturl.html) from Git
+<details>
+<summary><h3>Installing from Git</h3></summary>
 
 > [!NOTE]
 > Requires [Git](https://git-scm.com/) installed and added to the PATH
@@ -91,16 +90,19 @@ openupm add com.mygamedevtools.scene-loader
 3. Select `Install package from git URL...`.
 4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
 5. Click `Add`.
+</details>
 
-## [Installing](https://docs.unity3d.com/Manual/upm-ui-tarball.html) from tarball
+<details>
+<summary><h3>Installing from tarball</h3></summary>
 
 1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
 2. Open `Window/Package Manager`.
 3. Click <kbd>+</kbd>.
 4. Select `Install package from tarball...`.
 5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
+</details>
 
-# Dependencies
+## Dependencies
 
 The package has **no dependencies** but supports integration with some packages.
 If you wish to use it with `Addressables`, `UniTask`, or `TextMeshPro`, make sure you install the packages:
@@ -111,9 +113,9 @@ If you wish to use it with `Addressables`, `UniTask`, or `TextMeshPro`, make sur
 
 _*Installed via UPM or OpenUPM. Check the [package documentation](https://github.com/Cysharp/UniTask) for more details._
 
-[_[back to top]_](#overview)
+[_[back to top]_](#advanced-scene-manager)
 
-# Description
+## Description
 
 Loading scenes in Unity is very simple, mostly, but when you start to deal with other systems such as [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html), it can get messy. Also, there are some common scene load scenarios that you'd usually reimplement in every project, like scene transitions.
 
@@ -121,9 +123,9 @@ In this package, you'll have the possibility to standardize the scene loading pr
 
 Aside from the ordinary **Load** and **Unload** actions, the Scene Loading tools introduce the **Transition** as a new standard to control transitions between scenes with an optional intermediate "loading scene" in between. Also, starting from version `2.2` you can **Load**, **Unload**, and **Transition** to **multiple scenes** in parallel!
 
-[_[back to top]_](#overview)
+[_[back to top]_](#advanced-scene-manager)
 
-# Usage
+## Usage
 
 Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
 
@@ -144,7 +146,7 @@ flowchart BT
 
 These structures are meant to be used together. If you do not plan to use scene transitions or to have custom _awaitable_ types, you don't need to use the `ISceneLoader`.
 
-## The Scene Manager
+### The Scene Manager
 
 The `ISceneManager` interface exposes a few methods and events to standardize the scene load operations:
 
@@ -216,7 +218,9 @@ new AdvancedSceneManager();
 new AdvancedSceneManager(initializationScenes: new Scene[]);
 ```
 
-## Load Scene Info
+[_[back to top]_](#advanced-scene-manager)
+
+### Load Scene Info
 
 As its name states, it holds a reference to a scene to be loaded (or unloaded) and validates whether they _can_ reference a loaded scene.
 
@@ -280,7 +284,9 @@ Except from `ILoadSceneInfoScene`, you **cannot** unload a scene with a differen
 > [!IMPORTANT]
 > When unloading addressable scenes, their resources will be released by calling `Addressables.UnloadSceneAsync` internally.
 
-## The Scene Loaders
+[_[back to top]_](#advanced-scene-manager)
+
+### The Scene Loaders
 
 The scene loader is an interface that you will use to load scenes in your game, as it works like a wrapper layer to the scene manager, but adds the **Scene Transition** operations.
 There are two base interfaces for scene loaders: one with a reference to the `ISceneManager` that will be used, and an `async` interface to be able to `await` the load operations.
@@ -365,7 +371,9 @@ In this case, you would:
 That's four operations now.
 The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provide where you want to go from the currently active scene and if you want an intermediary scene (loading scene for example).
 
-## Disposable and CancellationTokens
+[_[back to top]_](#advanced-scene-manager)
+
+### Disposable and CancellationTokens
 
 Both the `ISceneManager` and the `ISceneLoader` interfaces implement `IDisposable`, meaning that the Scene Managers and Loaders should implement the `Dispose()` method.
 This is used with the `CancellationToken` parameters in `ISceneManager` methods to ensure that it will clear its internal data and stop async code execution during disposal.
@@ -381,15 +389,15 @@ If you are going to manually dispose of your scene loaders or managers, prefer t
 > It's **not recommended** to manually cancel the `ISceneManager` operations via its `CancellationToken` parameters.
 > It may result in unexpected issues such as unwanted scenes being loaded/unloaded after cancellation.
 
-[_[back to top]_](#overview)
+[_[back to top]_](#advanced-scene-manager)
 
-# Practical Examples
+## Practical Examples
 
 When creating your scene loader, you must first create your scene manager.
 Ideally, you will not need to store the scene manager anywhere as it will be accessible through the `ISceneLoader` interface.
 Also, you will need to build your scene info objects to hold references to scenes.
 
-## Creating your scene loader
+### Creating your scene loader
 
 For the first example, let's build a scene manager and a Coroutine scene loader:
 
@@ -414,7 +422,7 @@ ISceneLoaderUniTask unitaskSceneLoader = new SceneLoaderUniTask(sceneManager);
 > [!NOTE]
 > It is recommended that you store these object references as its interfaces to reduce coupling in your code.
 
-## Loading scenes with load scene info
+### Loading scenes with load scene info
 
 You'll use the load scene info objects to reference scenes. You can use these objects to define both addressable and non-addressable scenes.
 
@@ -521,15 +529,15 @@ await sceneLoader.UnloadScenes(sceneInfoGroup);
 await sceneLoader.TransitionToScenes(sceneInfoGroup, 0);
 ```
 
-[_[back to top]_](#overview)
+[_[back to top]_](#advanced-scene-manager)
 
-# Creating Loading Screens
+## Creating Loading Screens
 
 During scene transitions, you have the option to provide an intermediate scene that can be used as loading screen.
 This could be an animated splash screen or a loading progress bar, for example.
 This package provides implementations to help you build your loading screens faster.
 
-## The Loading Behavior
+### The Loading Behavior
 
 The Loading Behavior is a [MonoBehaviour] component, which you can attach to Unity [GameObjects], that receives the progress value from the scene manager.
 You **need** to add a `LoadingBehavior` component to a [GameObject] in your loading scene to be able to display scene loading feedback.
@@ -553,7 +561,7 @@ Back to the `LoadingBehavior`, it has a few options you can set on the Unity [In
 * **Wait For Scripted Start**: enable if the loading screen will have a **transition in** effect, such as a fade in.
 * **Wait For Scripted End**: enable if the loading screen will have a **transition out** effect, such as a fade out.
 
-## The Loading States
+### The Loading States
 
 The loading scene transition can be customized to delay some parts of the operation to deliver a smooth visual experience for the user.
 That means we can fade in/out or use other transition effects and wait for them to complete to continue the scene loading operations.
@@ -577,7 +585,7 @@ They mean:
 * `TargetSceneLoaded`: the target scene has been loaded, but the loading screen is still displaying. You can use this state to transition the loading screen out, such as a fade out or a similar effect.
 * `TransitionComplete`: the target scene has been loaded and the loading screen is already out of the way. Shortly after this state, the loading scene will be unloaded.
 
-## The Loading Feedback
+### The Loading Feedback
 
 At this point, you should already have your loading scene with a `LoadingBehavior` attached to one of your [GameObjects].
 Now you can also add some other components to display the loading progress feedback.
@@ -597,7 +605,7 @@ You can also set the fade time and customize the fade in/out animation curves to
 
 To use the `LoadingFader` effectively, you must **enable** both `WaitForScriptedStart` and `WaitForScriptedEnd` toggles in your `LoadingBehavior` component.
 
-## Loading Screen Example
+### Loading Screen Example
 
 Take the following loading screen scene hierarchy as an example:
 
@@ -614,21 +622,21 @@ Also, if you're not using an addressable scene manager, enable the `ReducedLoadR
 
 You can test this scene by passing its `ILoadSceneInfo` reference as the `intermediateSceneInfo` in an `ISceneLoader.TransitionToScene` method.
 
-[_[back to top]_](#overview)
+[_[back to top]_](#advanced-scene-manager)
 
-# Why so many interfaces?
+## Why so many interfaces?
 
 The idea behind the interfaces is first to decouple things and second to allow you to build your custom implementations if you require something very different from the included content.
 Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best for you.
 
 I am always open to suggestions, so please if you have any, don't hesitate to share!
 
-# Tests
+## Tests
 
 This package includes tests to assert most use cases of the Scene Managers and Scene Loaders.
 The tests do not have any effect on a runtime build of the game, they only mean to work in a development environment.
 
-[_[back to top]_](#overview)
+[_[back to top]_](#advanced-scene-manager)
 
 ---
 
