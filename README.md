@@ -70,17 +70,15 @@ You can also take advantage of these features:
 
 ## Installation
 
-<details>
-<summary><h3>Open UPM</h3></summary>
+### Open UPM
+
 This package is available on the [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader) registry. Add the package via the [openupm-cli](https://github.com/openupm/openupm-cli):
 
 ```
 openupm add com.mygamedevtools.scene-loader
 ```
-</details>
 
-<details>
-<summary><h3>Installing from Git</h3></summary>
+### [Installing](https://docs.unity3d.com/Manual/upm-ui-giturl.html) from Git
 
 > [!NOTE]
 > Requires [Git](https://git-scm.com/) installed and added to the PATH
@@ -90,17 +88,14 @@ openupm add com.mygamedevtools.scene-loader
 3. Select `Install package from git URL...`.
 4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
 5. Click `Add`.
-</details>
 
-<details>
-<summary><h3>Installing from tarball</h3></summary>
+### [Installing](https://docs.unity3d.com/Manual/upm-ui-tarball.html) from tarball
 
 1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
 2. Open `Window/Package Manager`.
 3. Click <kbd>+</kbd>.
 4. Select `Install package from tarball...`.
 5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
-</details>
 
 ## Dependencies
 
@@ -628,8 +623,6 @@ You can test this scene by passing its `ILoadSceneInfo` reference as the `interm
 
 The idea behind the interfaces is first to decouple things and second to allow you to build your custom implementations if you require something very different from the included content.
 Sometimes projects require very specific implementations, and instead of making the system extremely complex and detailed, I'd rather have it broken into many different pieces that you can replace to fit with whatever works best for you.
-
-I am always open to suggestions, so please if you have any, don't hesitate to share!
 
 ## Tests
 
