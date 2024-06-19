@@ -44,6 +44,10 @@ You can also take advantage of these features:
 - **Modular** implementation with interfaces.
 - Load, unload or transition to **multiple scenes**.
 
+## Migrating to `3.x`
+
+Refer to the [Migration Guide](https://github.com/mygamedevtools/scene-loader/wiki/Migration-Guide-3.x) at the wiki for instructions.
+
 ## Summary
 
 * [Installation](#installation)

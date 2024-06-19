@@ -11,10 +11,13 @@ namespace MyGameDevTools.SceneLoading
 
         readonly ISceneLoaderAsync _sceneLoaderAsync;
 
-        public SceneLoaderUniTask(ISceneManager sceneManager) : this(new SceneLoaderAsync(sceneManager)) { }
-        public SceneLoaderUniTask(ISceneLoaderAsync baseSceneLoader)
+        public SceneLoaderUniTask(ISceneManager sceneManager)
         {
-            _sceneLoaderAsync = baseSceneLoader ?? throw new ArgumentNullException($"Cannot create a {nameof(SceneLoaderUniTask)} with a null {nameof(ISceneLoaderAsync)}.", nameof(baseSceneLoader));
+            if (sceneManager == null)
+            {
+                throw new ArgumentNullException($"Cannot create a {nameof(SceneLoaderUniTask)} with a null {nameof(ISceneManager)}.", nameof(sceneManager));
+            }
+            _sceneLoaderAsync = new SceneLoaderAsync(sceneManager);
         }
 
         public void Dispose()

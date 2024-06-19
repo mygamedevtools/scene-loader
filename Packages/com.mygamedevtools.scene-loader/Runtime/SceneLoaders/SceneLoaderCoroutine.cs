@@ -9,10 +9,13 @@ namespace MyGameDevTools.SceneLoading
 
         readonly ISceneLoaderAsync _sceneLoaderAsync;
 
-        public SceneLoaderCoroutine(ISceneManager sceneManager) : this(new SceneLoaderAsync(sceneManager)) { }
-        public SceneLoaderCoroutine(ISceneLoaderAsync baseSceneLoader)
+        public SceneLoaderCoroutine(ISceneManager sceneManager)
         {
-            _sceneLoaderAsync = baseSceneLoader ?? throw new ArgumentNullException($"Cannot create a {nameof(SceneLoaderCoroutine)} with a null {nameof(ISceneLoaderAsync)}.", nameof(baseSceneLoader));
+            if (sceneManager == null)
+            {
+                throw new ArgumentNullException($"Cannot create a {nameof(SceneLoaderCoroutine)} with a null {nameof(ISceneManager)}.", nameof(sceneManager));
+            }
+            _sceneLoaderAsync = new SceneLoaderAsync(sceneManager);
         }
 
         public void Dispose()
