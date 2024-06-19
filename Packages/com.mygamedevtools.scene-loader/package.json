@@ -1,0 +1,18 @@
+{
+  "name": "com.mygamedevtools.scene-loader",
+  "version": "3.0.0-pre.8",
+  "displayName": "Advanced Scene Manager",
+  "description": "This package simplifies scene operations: load, unload and transition. In a quick example:\n\n\u2590 // Unity Manager scene transition\n\u2590 yield return SceneManager.LoadSceneAsync(\"my-loading-scene\",\n\u2590        LoadSceneMode.Additive);\n\u2590 yield return SceneManager.LoadSceneAsync(\"my-target-scene\",\n\u2590        LoadSceneMode.Additive);\n\u2590\n\u2590 SceneManager.SetActiveScene(\n\u2590        SceneManager.GetSceneByName(\"my-target-scene\"));\n\u2590\n\u2590 SceneManager.UnloadSceneAsync(\"my-loading-scene\");\n\u2590 SceneManager.UnloadSceneAsync(\"my-previous-scene\");\n\u2590\n\u2590 // Advanced Scene Management scene transition\n\u2590 sceneLoader.TransitionToScene(\n\u2590        new LoadSceneInfoName(\"my-target-scene\"),\n\u2590        new LoadSceneInfoName(\"my-loading-scene\"));\n\nYou can also take advantage of these features:\n\n\u25AA Unified API for addressable and non-addressable scenes.\n\u25AA Awaitable scene operations.\n\u25AA Modular implementation with interfaces.\n\u25AA Load, unload or transition to multiple scenes.",
+  "unity": "2021.3",
+  "keywords": [],
+  "author": {
+    "name": "My GameDev Tools",
+    "email": "joao.borks@gmail.com.br",
+    "url": "https://github.com/mygamedevtools"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/mygamedevtools/scene-loader",
+  "licensesUrl": "https://github.com/mygamedevtools/scene-loader?tab=MIT-1-ov-file",
+  "changelogUrl": "https://github.com/mygamedevtools/scene-loader/blob/main/CHANGELOG.md",
+  "hideInEditor": false
+}

@@ -1,0 +1,19 @@
+name: 🚀 Release (Preview)
+on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  create-preview-release:
+    name: Pre Release
+    uses: ./.github/workflows/release-template.yml
+    with:
+      blockPullRequestRelease: false
+      blockReleaseCommit: true
+    secrets:
+      githubToken: ${{ secrets.GH_TOKEN }}
+

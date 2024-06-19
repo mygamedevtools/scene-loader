@@ -1,5 +1,13 @@
 # Changelog
 
+# [3.0.0-pre.8](https://github.com/mygamedevtools/scene-loader/compare/3.0.0-pre.7...3.0.0-pre.8) (2024-06-15)
+
+
+### Bug Fixes
+
+* add addressable preprocessor to scenedatabuilder ([7720e1e](https://github.com/mygamedevtools/scene-loader/commit/7720e1e3f3c97c2f93ab9cf83f314f79b77f0e9f))
+* test reusable workflow ([575af28](https://github.com/mygamedevtools/scene-loader/commit/575af284a41ae4a654a7a0d591661911d0a5e1bb))
+
 ## [2.3.2](https://github.com/mygamedevtools/scene-loader/compare/2.3.1...2.3.2) (2024-03-04)
 
 

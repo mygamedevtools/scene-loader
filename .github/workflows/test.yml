@@ -1,12 +1,15 @@
-name: Test
-
+name: 🧪 Tests
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
 
 jobs:
   test:
@@ -15,18 +18,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project-path:
-          - ./
         testMode:
           - playmode
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
-          path: ${{ matrix.project-path }}/Library
-          key: Library-${{ matrix.project-path }}
+          path: Library
+          key: Library
           restore-keys: |
             Library-
       - uses: game-ci/unity-test-runner@v4
@@ -36,14 +37,14 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: ${{ matrix.project-path }}
+          projectPath: ./
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
           coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading'
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           name: PlayMode
           token: ${{ secrets.CODECOV_TOKEN }}
