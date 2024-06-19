@@ -1,5 +1,17 @@
 # Changelog
 
+# [3.0.0](https://github.com/mygamedevtools/scene-loader/compare/2.3.2...3.0.0) (2024-06-19)
+
+
+### Features
+
+* unify addressable and non-addressable workflows ([#37](https://github.com/mygamedevtools/scene-loader/issues/37)) ([68e93f3](https://github.com/mygamedevtools/scene-loader/commit/68e93f3e36efdf5cc3e12adb92490cbc3e75f77f))
+
+
+### BREAKING CHANGES
+
+* The ISceneManager, ISceneLoader and ILoadSceneInfo interfaces have been changed to accomodate the unification of addressable and non-addressable workflows. Refer to the migration guide at https://github.com/mygamedevtools/scene-loader/wiki/Migration-Guide-3.x for more details
+
 # [3.0.0-pre.8](https://github.com/mygamedevtools/scene-loader/compare/3.0.0-pre.7...3.0.0-pre.8) (2024-06-15)
 
 
