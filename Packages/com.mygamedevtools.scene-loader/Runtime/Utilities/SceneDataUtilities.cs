@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
@@ -69,7 +70,7 @@ namespace MyGameDevTools.SceneLoading
 
             if (unmatchedSceneDatas.Count > 0)
             {
-                Debug.LogError($"Unable to link all scene datas to loaded scenes. Linked {sceneDataCount - unmatchedSceneDatas.Count}/{sceneDataCount}.");
+                throw new Exception($"Unable to link all scene datas to loaded scenes. Linked {sceneDataCount - unmatchedSceneDatas.Count}/{sceneDataCount}.");
             }
         }
 
