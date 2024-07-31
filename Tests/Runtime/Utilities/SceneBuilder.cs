@@ -11,6 +11,13 @@ namespace MyGameDevTools.SceneLoading.Tests
     public static class SceneBuilder
     {
         public static readonly string[] SceneNames = new string[] { "loading", "sceneA", "sceneB", "sceneC" };
+        public static readonly string[] ScenePaths = new string[]
+        {
+            SceneTestEnvironment.ScenePathBase + "/" + SceneNames[0] + ".unity",
+            SceneTestEnvironment.ScenePathBase + "/" + SceneNames[1] + ".unity",
+            SceneTestEnvironment.ScenePathBase + "/" + SceneNames[2] + ".unity",
+            SceneTestEnvironment.ScenePathBase + "/" + SceneNames[3] + ".unity",
+        };
 
 #if UNITY_EDITOR
         static readonly string _scenePathFormat = "/{0}.unity";

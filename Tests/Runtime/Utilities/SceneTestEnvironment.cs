@@ -19,6 +19,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public class SceneTestEnvironment : IPrebuildSetup, IPostBuildCleanup
     {
+        public const string ScenePathBase = "Assets/_test";
         public const int DefaultTimeout = 3000;
 
         public static readonly ILoadSceneInfo[][] MultipleLoadSceneInfoList = new ILoadSceneInfo[][]
@@ -31,6 +32,7 @@ namespace MyGameDevTools.SceneLoading.Tests
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
                 new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
 #endif
+                new LoadSceneInfoName(SceneBuilder.ScenePaths[3])
             },
             // This list of scenes expects two load scene infos that point to the same source scene,
             // and validates whether that causes any issues when linking to the target loaded scene.
@@ -38,6 +40,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             {
                 new LoadSceneInfoIndex(1),
                 new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+                new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
 #if ENABLE_ADDRESSABLES
                 // Since we can't test statically with AssetReference, we should at least validate
                 // that two AsyncOperations with the same addressable source do not cause issues.
@@ -50,6 +53,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public static readonly ILoadSceneInfo[] SingleLoadSceneInfoList = new ILoadSceneInfo[]
         {
             new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+            new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
             new LoadSceneInfoIndex(1),
 #if ENABLE_ADDRESSABLES
             new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
@@ -62,7 +66,6 @@ namespace MyGameDevTools.SceneLoading.Tests
         };
 
 #if UNITY_EDITOR
-        const string _scenePathBase = "Assets/_test";
 #if ENABLE_ADDRESSABLES
         const string _addressableScenePathBase = "Assets/_addressables-test";
         const string _sceneReferencePath = _addressableScenePathBase + "/sceneReference.asset";
@@ -75,7 +78,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             int sceneCount = SceneBuilder.SceneNames.Length;
             List<EditorBuildSettingsScene> buildScenes = new(sceneCount);
 
-            if (!SceneBuilder.TryBuildScenes(_scenePathBase, (i, s, p) => buildScenes.Add(new EditorBuildSettingsScene(p, true))))
+            if (!SceneBuilder.TryBuildScenes(ScenePathBase, (i, s, p) => buildScenes.Add(new EditorBuildSettingsScene(p, true))))
                 return;
 
             Debug.Log("Adding test scenes to build settings:\n" + string.Join("\n", buildScenes.Select(scene => scene.path)));
@@ -104,12 +107,12 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void Cleanup()
         {
 #if UNITY_EDITOR
-            EditorBuildSettings.scenes = EditorBuildSettings.scenes.Where(scene => !scene.path.StartsWith(_scenePathBase)).ToArray();
+            EditorBuildSettings.scenes = EditorBuildSettings.scenes.Where(scene => !scene.path.StartsWith(ScenePathBase)).ToArray();
 
-            if (!Directory.Exists(_scenePathBase))
+            if (!Directory.Exists(ScenePathBase))
                 return;
 
-            AssetDatabase.DeleteAsset(_scenePathBase);
+            AssetDatabase.DeleteAsset(ScenePathBase);
             AssetDatabase.Refresh();
 
 #if ENABLE_ADDRESSABLES
