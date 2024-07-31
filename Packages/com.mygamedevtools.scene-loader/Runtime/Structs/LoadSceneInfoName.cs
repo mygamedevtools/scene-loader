@@ -30,7 +30,7 @@ namespace MyGameDevTools.SceneLoading
 
         public override string ToString()
         {
-            return $"Scene with name '{_sceneNameOrPath}'";
+            return $"Scene with name/path '{_sceneNameOrPath}'";
         }
 
         public bool Equals(ILoadSceneInfo other)
