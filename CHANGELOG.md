@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/mygamedevtools/scene-loader/compare/3.0.0...3.0.1) (2024-07-31)
+
+
+### Bug Fixes
+
+* scene linking for scenes loaded by path ([#41](https://github.com/mygamedevtools/scene-loader/issues/41)) ([7dc5641](https://github.com/mygamedevtools/scene-loader/commit/7dc5641dfbb2cfae70ba7fe9268f4052183c0d73))
+
 # [3.0.0](https://github.com/mygamedevtools/scene-loader/compare/2.3.2...3.0.0) (2024-06-19)
 
 
