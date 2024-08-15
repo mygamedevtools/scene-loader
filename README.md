@@ -71,6 +71,9 @@ Refer to the [Migration Guide](https://github.com/mygamedevtools/scene-loader/wi
   * [Loading Screen Example](#loading-screen-example)
 * [Why so many interfaces?](#why-so-many-interfaces)
 * [Tests](#tests)
+* [Troubleshooting](#troubleshooting)
+  * [Error when creating an AdvancedSceneManager](#error-when-creating-an-advancedscenemanager)
+  * [Cannot unload a scene with a different ILoadSceneInfo](#cannot-unload-a-scene-with-a-different-iloadsceneinfo)
 
 ## Installation
 
@@ -208,6 +211,7 @@ You can create an `AdvancedSceneManager` using three constructors:
 
 ```cs
 // Creates an advanced scene manager including all currently loaded scenes. Useful for most cases.
+// Should not be called on `Awake()`, since it runs before the scene is loaded.
 new AdvancedSceneManager(addLoadedScenes: true);
 
 // Creates an empty advanced scene manager. Useful if you are doing this before any scene loads or in a bootstrap scene.
@@ -523,9 +527,9 @@ sceneLoader.UnloadScenes(sceneInfoGroup);
 sceneLoader.TransitionToScenes(sceneInfoGroup, 0);
 
 // Awaitable alternatives
-await sceneLoader.LoadScenes(sceneInfoGroup);
-await sceneLoader.UnloadScenes(sceneInfoGroup);
-await sceneLoader.TransitionToScenes(sceneInfoGroup, 0);
+await sceneLoader.LoadScenesAsync(sceneInfoGroup);
+await sceneLoader.UnloadScenesAsync(sceneInfoGroup);
+await sceneLoader.TransitionToScenesAsync(sceneInfoGroup, 0);
 ```
 
 [_[back to top]_](#advanced-scene-manager)
@@ -632,6 +636,57 @@ Sometimes projects require very specific implementations, and instead of making 
 
 This package includes tests to assert most use cases of the Scene Managers and Scene Loaders.
 The tests do not have any effect on a runtime build of the game, they only mean to work in a development environment.
+
+[_[back to top]_](#advanced-scene-manager)
+
+## Troubleshooting
+
+### Error when creating an `AdvancedSceneManager`
+
+When creating an `AdvancedSceneManager` passing a `true` value to its constructor, as `new AdvancedSceneManager(true)`, it attempts to add all loaded scenes to its list of tracked scenes.
+However, if you called that during `Awake()`, you might see the error:
+
+```
+ArgumentException: Attempted to get an {nameof(ISceneData)} through an invalid or unloaded scene.
+```
+
+This error is thrown because during `Awake()` the scene is not fully loaded and cannot be added to the list of tracked scenes.
+
+
+Move your call to `Start()` instead.
+
+### Cannot unload a scene with a different `ILoadSceneInfo`
+
+In a case where you have loaded a scene via one type of `ILoadSceneInfo`, you can only unload it by using the same type or explicitly a `LoadSceneInfoScene`. For example:
+
+```cs
+ILoadSceneInfo nameInfo = new LoadSceneInfoName("MyScene");
+ILoadSceneInfo indexInfo = new LoadSceneInfoIndex(3);
+
+sceneManager.LoadSceneAsync(nameInfo);
+
+// You **cannot** do this:
+sceneManager.UnloadSceneAsync(indexInfo);
+
+// But you can do this:
+sceneManager.UnoadSceneAsync(nameInfo);
+
+// Or, build a `LoadSceneInfoScene`.
+// Alternatives: GetLoadedSceneByName(name), GetLoadedSceneAt(index), GetLastLoadedScene() or GetActiveScene()
+ILoadSceneInfo sceneInfo = sceneManager.GetLoadedSceneByName("MyScene");
+sceneManager.UnloadSceneAsync(sceneInfo);
+```
+
+Sometimes this issue can also be avoided by performing a scene transition. If you're trying to unload the active scene to transition between scenes, you can execute the transition through the scene manager and let it handle the internal complexity. For example:
+
+```cs
+// Instead of unloading the source scene directly:
+sceneManager.LoadSceneAsync(targetSceneInfo)
+sceneManager.UnloadSceneAsync(sourceSceneInfo);
+
+// Perform a scene transition:
+sceneManager.TransitionToScene(targetSceneInfo);
+```
 
 [_[back to top]_](#advanced-scene-manager)
 

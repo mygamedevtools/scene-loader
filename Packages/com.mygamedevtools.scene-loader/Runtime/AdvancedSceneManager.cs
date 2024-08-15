@@ -56,9 +56,14 @@ namespace MyGameDevTools.SceneLoading
                     _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
                 }
             }
+
             if (loadedSceneCount > 0 && SceneDataUtilities.TryGetSceneDataByLoadedScene(SceneManager.GetActiveScene(), _loadedScenes, out ISceneData sceneData))
             {
                 _activeScene = sceneData;
+            }
+            else if (loadedSceneCount == 0)
+            {
+                Debug.LogWarning("Tried to create an `AdvancedSceneManager` with all loaded scenes, but encoutered none. Did you create the scene manager on `Awake()`? If so, try moving the call to `Start()` instead.");
             }
         }
         /// <summary>
