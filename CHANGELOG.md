@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.2](https://github.com/mygamedevtools/scene-loader/compare/3.0.1...3.0.2) (2024-08-16)
+
+
+### Bug Fixes
+
+* add warning and documentation regarding Awake() ([#43](https://github.com/mygamedevtools/scene-loader/issues/43)) ([e24423d](https://github.com/mygamedevtools/scene-loader/commit/e24423ddd568e3cce856f9ce6b14c49ec3061d48))
+
 ## [3.0.1](https://github.com/mygamedevtools/scene-loader/compare/3.0.0...3.0.1) (2024-07-31)
 
 
