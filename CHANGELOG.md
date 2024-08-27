@@ -1,5 +1,12 @@
 # Changelog
 
+# [3.1.0](https://github.com/mygamedevtools/scene-loader/compare/3.0.2...3.1.0) (2024-08-27)
+
+
+### Features
+
+* add new scene transition methods ([#46](https://github.com/mygamedevtools/scene-loader/issues/46)) ([de9ccb7](https://github.com/mygamedevtools/scene-loader/commit/de9ccb777ae0919391b446e9264d48766b65ef2d))
+
 ## [3.0.2](https://github.com/mygamedevtools/scene-loader/compare/3.0.1...3.0.2) (2024-08-16)
 
 
