@@ -50,6 +50,78 @@ namespace MyGameDevTools.SceneLoading
         TAsyncScene TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default);
 
         /// <summary>
+        /// Async version of the <see cref="ISceneLoader.TransitionToScenesFromScenes(ILoadSceneInfo[], ILoadSceneInfo[], int, ILoadSceneInfo)"/>
+        /// </summary>
+        /// <param name="targetScenes">
+        /// A reference to all scenes that will be transitioned to.
+        /// </param>
+        /// <param name="fromScenes">
+        /// A reference to all scenes that will be unloaded in the transition.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// Index of the scene in the <paramref name="targetScenes"/> to be set as the active scene.
+        /// </param>
+        /// <param name="intermediateSceneReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <returns>
+        /// The transition operation.
+        /// </returns>
+        TAsyncSceneArray TransitionToScenesFromScenesAsync(ILoadSceneInfo[] targetScenes, ILoadSceneInfo[] fromScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default);
+
+        /// <summary>
+        /// Async version of the <see cref="ISceneLoader.TransitionToSceneFromScenes(ILoadSceneInfo, ILoadSceneInfo[], ILoadSceneInfo)"/>
+        /// </summary>
+        /// <param name="targetSceneReference">
+        /// A reference to the scene that's going to be transitioned to.
+        /// </param>
+        /// <param name="fromScenes">
+        /// A reference to all scenes that will be unloaded in the transition.
+        /// </param>
+        /// <param name="intermediateSceneReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <returns>
+        /// The transition operation.
+        /// </returns>
+        TAsyncScene TransitionToSceneFromScenesAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo[] fromScenes, ILoadSceneInfo intermediateSceneReference = default);
+
+        /// <summary>
+        /// Async version of the <see cref="ISceneLoader.TransitionToScenesFromAll(ILoadSceneInfo[], int, ILoadSceneInfo)"/>
+        /// </summary>
+        /// <param name="targetScenes">
+        /// A reference to all scenes that will be transitioned to.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// Index of the scene in the <paramref name="targetScenes"/> to be set as the active scene.
+        /// </param>
+        /// <param name="intermediateSceneReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <returns>
+        /// The transition operation.
+        /// </returns>
+        TAsyncSceneArray TransitionToScenesFromAllAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = default);
+
+        /// <summary>
+        /// Async version of the <see cref="ISceneLoader.TransitionToSceneFromAll(ILoadSceneInfo, ILoadSceneInfo)"/>
+        /// </summary>
+        /// <param name="targetSceneReference">
+        /// A reference to the scene that's going to be transitioned to.
+        /// </param>
+        /// <param name="intermediateSceneReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <returns>
+        /// The transition operation.
+        /// </returns>
+        TAsyncScene TransitionToSceneFromAllAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = default);
+
+        /// <summary>
         /// Async version of the <see cref="ISceneLoader.LoadScenes(ILoadSceneInfo[], int)"/>.
         /// </summary>
         /// <param name="sceneInfos">

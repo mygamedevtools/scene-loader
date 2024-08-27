@@ -33,6 +33,26 @@ namespace MyGameDevTools.SceneLoading
             TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
         }
 
+        public void TransitionToScenesFromScenes(ILoadSceneInfo[] targetScenes, ILoadSceneInfo[] fromScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToScenesFromScenesAsync(targetScenes, fromScenes, setIndexActive, intermediateSceneInfo);
+        }
+
+        public void TransitionToSceneFromScenes(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo[] fromScenes, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToSceneFromScenesAsync(targetSceneInfo, fromScenes, intermediateSceneInfo);
+        }
+
+        public void TransitionToScenesFromAll(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToScenesFromAllAsync(targetScenes, setIndexActive, intermediateSceneInfo);
+        }
+
+        public void TransitionToSceneFromAll(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToSceneFromAllAsync(targetSceneInfo, intermediateSceneInfo);
+        }
+
         public void UnloadScenes(ILoadSceneInfo[] sceneInfos)
         {
             UnloadScenesAsync(sceneInfos);
@@ -61,6 +81,26 @@ namespace MyGameDevTools.SceneLoading
         public WaitTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null)
         {
             return new WaitTask<Scene>(_sceneLoaderAsync.TransitionToSceneAsync(targetSceneReference, intermediateSceneReference).AsTask());
+        }
+
+        public WaitTask<Scene[]> TransitionToScenesFromScenesAsync(ILoadSceneInfo[] targetScenes, ILoadSceneInfo[] fromScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return new WaitTask<Scene[]>(_sceneLoaderAsync.TransitionToScenesFromScenesAsync(targetScenes, fromScenes, setIndexActive, intermediateSceneReference).AsTask());
+        }
+
+        public WaitTask<Scene> TransitionToSceneFromScenesAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo[] fromScenes, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return new WaitTask<Scene>(_sceneLoaderAsync.TransitionToSceneFromScenesAsync(targetSceneReference, fromScenes, intermediateSceneReference).AsTask());
+        }
+
+        public WaitTask<Scene[]> TransitionToScenesFromAllAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return new WaitTask<Scene[]>(_sceneLoaderAsync.TransitionToScenesFromAllAsync(targetScenes, setIndexActive, intermediateSceneReference).AsTask());
+        }
+
+        public WaitTask<Scene> TransitionToSceneFromAllAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return new WaitTask<Scene>(_sceneLoaderAsync.TransitionToSceneFromAllAsync(targetSceneReference, intermediateSceneReference).AsTask());
         }
 
         public WaitTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)

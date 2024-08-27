@@ -35,6 +35,26 @@ namespace MyGameDevTools.SceneLoading
             TransitionToSceneAsync(targetSceneInfo, intermediateSceneInfo);
         }
 
+        public void TransitionToScenesFromScenes(ILoadSceneInfo[] targetScenes, ILoadSceneInfo[] fromScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToScenesFromScenesAsync(targetScenes, fromScenes, setIndexActive, intermediateSceneInfo);
+        }
+
+        public void TransitionToSceneFromScenes(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo[] fromScenes, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToSceneFromScenesAsync(targetSceneInfo, fromScenes, intermediateSceneInfo);
+        }
+
+        public void TransitionToScenesFromAll(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToScenesFromAllAsync(targetScenes, setIndexActive, intermediateSceneInfo);
+        }
+
+        public void TransitionToSceneFromAll(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null)
+        {
+            TransitionToSceneFromAllAsync(targetSceneInfo, intermediateSceneInfo);
+        }
+
         public void UnloadScenes(ILoadSceneInfo[] sceneInfos)
         {
             UnloadScenesAsync(sceneInfos);
@@ -63,6 +83,26 @@ namespace MyGameDevTools.SceneLoading
         public UniTask<Scene> TransitionToSceneAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null)
         {
             return _sceneLoaderAsync.TransitionToSceneAsync(targetSceneReference, intermediateSceneReference).AsTask().AsUniTask();
+        }
+
+        public UniTask<Scene[]> TransitionToScenesFromScenesAsync(ILoadSceneInfo[] targetScenes, ILoadSceneInfo[] fromScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return _sceneLoaderAsync.TransitionToScenesFromScenesAsync(targetScenes, fromScenes, setIndexActive, intermediateSceneReference).AsTask().AsUniTask();
+        }
+
+        public UniTask<Scene> TransitionToSceneFromScenesAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo[] fromScenes, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return _sceneLoaderAsync.TransitionToSceneFromScenesAsync(targetSceneReference, fromScenes, intermediateSceneReference).AsTask().AsUniTask();
+        }
+
+        public UniTask<Scene[]> TransitionToScenesFromAllAsync(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return _sceneLoaderAsync.TransitionToScenesFromAllAsync(targetScenes, setIndexActive, intermediateSceneReference).AsTask().AsUniTask();
+        }
+
+        public UniTask<Scene> TransitionToSceneFromAllAsync(ILoadSceneInfo targetSceneReference, ILoadSceneInfo intermediateSceneReference = null)
+        {
+            return _sceneLoaderAsync.TransitionToSceneFromAllAsync(targetSceneReference, intermediateSceneReference).AsTask().AsUniTask();
         }
 
         public UniTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneReferences)

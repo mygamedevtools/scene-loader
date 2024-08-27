@@ -15,7 +15,7 @@ namespace MyGameDevTools.SceneLoading
         ISceneManager Manager { get; }
 
         /// <summary>
-        /// Triggers a transition to a group of scens.
+        /// Triggers a transition to a group of scenes from the active scene.
         /// It will transition from the current active scene (<see cref="ISceneManager.GetActiveScene()"/>)
         /// to a group of scenes (<paramref name="targetScenes"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
         /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
@@ -39,7 +39,7 @@ namespace MyGameDevTools.SceneLoading
         void TransitionToScenes(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null);
 
         /// <summary>
-        /// Triggers a scene transition.
+        /// Triggers a transition to the target scene from the active scene.
         /// It will transition from the current active scene (<see cref="ISceneManager.GetActiveScene()"/>)
         /// to the target scene (<paramref name="targetSceneInfo"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
         /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
@@ -58,6 +58,105 @@ namespace MyGameDevTools.SceneLoading
         /// If null, the transition will not have an intermediate loading scene.
         /// </param>
         void TransitionToScene(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
+
+        /// <summary>
+        /// Triggers a transition to a group of scenes from another group of scenes.
+        /// It will transition from the provided group of scenes (<paramref name="fromScenes"/>)
+        /// to a group of scenes (<paramref name="targetScenes"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
+        /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload all provided scenes.<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetScenes">
+        /// A reference to all scenes that will be transitioned to.
+        /// </param>
+        /// <param name="fromScenes">
+        /// A reference to all scenes that will be unloaded in the transition.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// Index of the scene in the <paramref name="targetScenes"/> to be set as the active scene.
+        /// </param>
+        /// <param name="intermediateSceneInfo">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        void TransitionToScenesFromScenes(ILoadSceneInfo[] targetScenes, ILoadSceneInfo[] fromScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null);
+
+        /// <summary>
+        /// Triggers a transition to the target scene from a group of scens.
+        /// It will transition from the provided group of scenes (<paramref name="fromScenes"/>)
+        /// to the target scene (<paramref name="targetSceneInfo"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
+        /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload all provided scenes.<br/>
+        /// 3. Load the target scene.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetSceneInfo">
+        /// A reference to the scene that's going to be transitioned to.
+        /// </param>
+        /// <param name="fromScenes">
+        /// A reference to all scenes that will be unloaded in the transition.
+        /// </param>
+        /// <param name="intermediateSceneInfo">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        void TransitionToSceneFromScenes(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo[] fromScenes, ILoadSceneInfo intermediateSceneInfo = null);
+
+        /// <summary>
+        /// Triggers a transition to a group of scenes from all loaded scenes.
+        /// It will transition from all loaded scenes
+        /// to a group of scenes (<paramref name="targetScenes"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
+        /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload all loaded scenes.<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetScenes">
+        /// A reference to all scenes that will be transitioned to.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// Index of the scene in the <paramref name="targetScenes"/> to be set as the active scene.
+        /// </param>
+        /// <param name="intermediateSceneInfo">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        void TransitionToScenesFromAll(ILoadSceneInfo[] targetScenes, int setIndexActive, ILoadSceneInfo intermediateSceneInfo = null);
+
+        /// <summary>
+        /// Triggers a transition to the target scene from all loaded scenes.
+        /// It will transition from the provided group of scenes (<paramref name="fromScenes"/>)
+        /// to the target scene (<paramref name="targetSceneInfo"/>), with an optional intermediate loading scene (<paramref name="intermediateSceneInfo"/>).
+        /// If the <paramref name="intermediateSceneInfo"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload all provided scenes.<br/>
+        /// 3. Load the target scene.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetSceneInfo">
+        /// A reference to the scene that's going to be transitioned to.
+        /// </param>
+        /// <param name="fromScenes">
+        /// A reference to all scenes that will be unloaded in the transition.
+        /// </param>
+        /// <param name="intermediateSceneInfo">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        void TransitionToSceneFromAll(ILoadSceneInfo targetSceneInfo, ILoadSceneInfo intermediateSceneInfo = null);
 
         /// <summary>
         /// Unloads all the scenes from the current scene stack.
