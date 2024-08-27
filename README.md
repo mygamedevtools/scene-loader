@@ -60,6 +60,7 @@ Refer to the [Migration Guide](https://github.com/mygamedevtools/scene-loader/wi
   * [The Scene Manager](#the-scene-manager)
   * [Load Scene Info](#load-scene-info)
   * [The Scene Loaders](#the-scene-loaders)
+  * [Scene Transitions](#scene-transitions)
   * [Disposable and CancellationTokens](#disposable-and-cancellationtokens)
 * [Practical examples](#practical-examples)
   * [Creating your scene loader](#creating-your-scene-loader)
@@ -357,6 +358,10 @@ Both `LoadSceneAsync` and `UnloadSceneAsync` methods will simply call the `IScen
 It's important to understand that `LoadScene`, `UnloadScene`, and `TransitionToScene` will still invoke asynchronous operations, instead of blocking the execution until they are done.
 You can use the `ISceneManager` events to react to the completion of those methods.
 
+[_[back to top]_](#advanced-scene-manager)
+
+### Scene Transitions
+
 The **Transition** is a combination of load and unload operations to effectively perform scene transitions, with or without an intermediate scene. For example, usually, if you'd want to go from scene A to scene B you would:
 
 1. Load the scene B.
@@ -372,7 +377,14 @@ In this case, you would:
 3. Unload the loading scene.
 
 That's four operations now.
-The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provide where you want to go from the currently active scene and if you want an intermediary scene (loading scene for example).
+The `TransitionToScene` and `TransitionToSceneAsync` methods let you only provide where you want to go from the **current active scene** and if you want an intermediary scene (loading scene for example).
+
+Also, aside from transitioning from the current active scene, you can also use the `TransitionToSceneFromScenes` and `TransitionToSceneFromAll` alternatives:
+
+- `TransitionToSceneFromScenes` - unloads a given group of scenes during transition.
+- `TransitionToSceneFromAll` - unloads all loaded scenes during transition.
+
+Just like the regular `Transition` methods, its variants also have single/multiple scene options as well as async options.
 
 [_[back to top]_](#advanced-scene-manager)
 
