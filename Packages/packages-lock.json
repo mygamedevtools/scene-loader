@@ -1,24 +1,10 @@
 {
   "dependencies": {
-    "com.cysharp.unitask": {
-      "version": "2.5.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
-    },
     "com.mygamedevtools.scene-loader": {
       "version": "file:com.mygamedevtools.scene-loader",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
-    },
-    "com.mygamedevtools.script-template": {
-      "version": "3.4.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
     },
     "com.unity.addressables": {
       "version": "2.2.2",
