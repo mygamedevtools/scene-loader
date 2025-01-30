@@ -330,7 +330,11 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             yield return new WaitTask<SceneResult>(task);
 
+#if UNITY_EDITOR
             task = manager.UnloadAsync(1);
+#else
+            task = manager.UnloadAsync(2);
+#endif
 
             yield return new WaitTask<SceneResult>(task);
 

@@ -10,7 +10,7 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
 {
     public partial class SceneManager_Api_Tests
     {
-        int[] _buildIndexes = new[] { 0, 1, 2, 3 };
+        int[] _buildIndexes = new[] { 1, 2, 3 };
 
         AssetReference[] _assetReferences;
 
@@ -87,13 +87,13 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
         [UnityTest]
         public IEnumerator Transition_Extension_ByIndex()
         {
-            yield return Transition_Template(() => AdvancedSceneManager.TransitionAsync(1, 0), 1, 0);
+            yield return Transition_Template(() => AdvancedSceneManager.TransitionAsync(1, 1), 1, 0);
         }
 
         [UnityTest]
         public IEnumerator Transition_Extension_ByIndex_Multiple()
         {
-            yield return Transition_Template(() => AdvancedSceneManager.TransitionAsync(_buildIndexes, 0), _buildIndexes.Length, 0);
+            yield return Transition_Template(() => AdvancedSceneManager.TransitionAsync(_buildIndexes, 1), _buildIndexes.Length, 0);
         }
 
         [UnityTest]

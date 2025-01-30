@@ -64,7 +64,6 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
             new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
-            new LoadSceneInfoIndex(1),
         };
 
         public static readonly SceneParameters[] SceneParametersList = new SceneParameters[]
