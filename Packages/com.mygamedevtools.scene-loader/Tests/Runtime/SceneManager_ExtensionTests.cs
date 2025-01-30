@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
@@ -139,6 +140,22 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             yield return Unload_Template(manager, () => manager.LoadAsync(SceneBuilder.SceneNames, 0), () => manager.UnloadAsync(SceneBuilder.SceneNames), SceneBuilder.SceneNames.Length);
         }
+
+        [UnityTest]
+        public IEnumerator Unload_Extension_ByScene_Multiple([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        {
+            Task<SceneResult> loadTask = Task.FromResult<SceneResult>(default);
+            yield return Unload_Template(manager, () =>
+            {
+                loadTask = manager.LoadAsync(SceneBuilder.SceneNames, 0);
+                return loadTask;
+            }, () =>
+            {
+                SceneResult result = loadTask.GetAwaiter().GetResult();
+                return manager.UnloadAsync(result.GetScenes());
+            }, SceneBuilder.SceneNames.Length);
+        }
+
 
 #if ENABLE_ADDRESSABLES
         [UnityTest]
