@@ -42,7 +42,7 @@ jobs:
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.testMode }} Test Results
-          coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading,+MyGameDevTools.SceneLoading.API'
+          coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading'
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

@@ -1,311 +1,667 @@
+#if !DISABLE_STATIC_SCENE_MANAGER
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+#if ENABLE_ADDRESSABLES
+using UnityEngine.AddressableAssets;
+#endif
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    /// <summary>
-    /// The <see cref="AdvancedSceneManager"/> is capable of managing both addressable and non-addressable scene operations.
-    /// </summary>
-    public class AdvancedSceneManager : ISceneManager
+    public static class AdvancedSceneManager
     {
-        public event Action<Scene, Scene> ActiveSceneChanged;
-        public event Action<Scene> SceneUnloaded;
-        public event Action<Scene> SceneLoaded;
-
-        public int LoadedSceneCount => _loadedScenes.Count;
-        public int TotalSceneCount => _loadedScenes.Count + _unloadingScenes.Count;
-
-        readonly List<ISceneData> _unloadingScenes = new();
-        readonly List<ISceneData> _loadedScenes = new();
-        readonly CancellationTokenSource _lifetimeTokenSource = new();
-
-        ISceneData _activeScene;
-
-        /// <summary>
-        /// Creates an <see cref="AdvancedSceneManager"/> with no initial scene references.
-        /// </summary>
-        public AdvancedSceneManager() : this(false) { }
-        /// <summary>
-        /// Creates a new <see cref="AdvancedSceneManager"/> with the option to add all loaded scenes to its management.
-        /// The advantage is that you can manage those scenes through this <see cref="ISceneManager"/> instead of having to
-        /// use the Unity <see cref="SceneManager"/>.
-        /// </summary>
-        public AdvancedSceneManager(bool addLoadedScenes)
+        internal static ISceneDirector Instance
         {
-            if (!addLoadedScenes)
+            get
             {
-                return;
+                if (_instance == null)
+                    throw new NullReferenceException("[AdvancedSceneManager] The static Scene Director instance is not available before the first scene is fully loaded. Try moving the call to `Start()`.");
+                return _instance;
             }
+        }
 
-            int loadedSceneCount = SceneManager.sceneCount;
-            for (int i = 0; i < loadedSceneCount; i++)
-            {
-                Scene scene = SceneManager.GetSceneAt(i);
-                if (scene.IsValid() && scene.isLoaded)
-                {
-                    _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
-                }
-            }
+        static ISceneDirector _instance;
 
-            if (loadedSceneCount > 0 && SceneDataUtilities.TryGetSceneDataByLoadedScene(SceneManager.GetActiveScene(), _loadedScenes, out ISceneData sceneData))
-            {
-                _activeScene = sceneData;
-            }
-            else if (loadedSceneCount == 0)
-            {
-                Debug.LogWarning("Tried to create an `AdvancedSceneManager` with all loaded scenes, but encoutered none. Did you create the scene manager on `Awake()`? If so, try moving the call to `Start()` instead.");
-            }
+        [RuntimeInitializeOnLoadMethod]
+        internal static void Initialize()
+        {
+            _instance = new SceneDirector(true);
+        }
+
+        #region ISceneDirector
+        /// <summary>
+        /// Reports that the active scene has changed, passing the <b>previous</b> and <b>current</b> active scene as parameters.
+        /// <br/>
+        /// In some scenarios, the previous or the current scene might be invalid <i>(you can check it through <see cref="Scene.IsValid()"/>)</i>, but never both at the same time.
+        /// <br/>
+        /// This can occur when the first active scene is being set (there was no previous active scene) or when the last scene gets unloaded (leaving no other scene to be activated).
+        /// </summary>
+        public static event Action<Scene, Scene> ActiveSceneChanged
+        {
+            add => Instance.ActiveSceneChanged += value;
+            remove => Instance.ActiveSceneChanged -= value;
         }
         /// <summary>
-        /// Creates a new <see cref="AdvancedSceneManager"/> with the option to add a list of loaded scenes to its management.
-        /// The advantage is that you can manage those scenes through this <see cref="ISceneManager"/> instead of having to
-        /// use the Unity <see cref="SceneManager"/>.
+        /// Reports when a scene gets unloaded.
         /// </summary>
-        public AdvancedSceneManager(Scene[] initializationScenes)
+        public static event Action<Scene> SceneUnloaded
         {
-            if (initializationScenes == null || initializationScenes.Length == 0)
-            {
-                throw new ArgumentException($"Trying to create an {nameof(AdvancedSceneManager)} with a null or empty array of initialization scenes. If you want to create it without any scenes, use the empty constructor instead.", nameof(initializationScenes));
-            }
-
-            int loadedSceneCount = initializationScenes.Length;
-            for (int i = 0; i < loadedSceneCount; i++)
-            {
-                Scene scene = initializationScenes[i];
-                if (scene.IsValid() && scene.isLoaded)
-                {
-                    _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
-                }
-            }
-            if (loadedSceneCount > 0)
-            {
-                _activeScene = _loadedScenes[0];
-            }
+            add => Instance.SceneUnloaded += value;
+            remove => Instance.SceneUnloaded -= value;
+        }
+        /// <summary>
+        /// Reports when a scene gets loaded.
+        /// </summary>
+        public static event Action<Scene> SceneLoaded
+        {
+            add => Instance.SceneLoaded += value;
+            remove => Instance.SceneLoaded -= value;
         }
 
-        public void Dispose()
-        {
-            _lifetimeTokenSource.Cancel();
-            _lifetimeTokenSource.Dispose();
+        /// <summary>
+        /// The amount of scenes loaded.
+        /// </summary>
+        public static int LoadedSceneCount => Instance.LoadedSceneCount;
+        /// <summary>
+        /// The amount of scenes managed by the internal <see cref="ISceneDirector"/>.
+        /// This includes scenes that are being unloaded.
+        /// </summary>
+        public static int TotalSceneCount => Instance.TotalSceneCount;
 
-            _unloadingScenes.Clear();
-            _loadedScenes.Clear();
-        }
+        /// <summary>
+        /// Sets the target <paramref name="scene"/> as the active scene.
+        /// Internally calls <see cref="SceneManager.SetActiveScene(Scene)"/>.
+        /// </summary>
+        /// <param name="scene">Scene to be enabled as the active scene.</param>
+        public static void SetActiveScene(Scene scene) => Instance.SetActiveScene(scene);
 
-        public void SetActiveScene(Scene scene)
-        {
-            ISceneData sceneData = null;
-            bool isTargetSceneValid = scene.IsValid();
-            if (isTargetSceneValid && !SceneDataUtilities.TryGetSceneDataByLoadedScene(scene, _loadedScenes, out sceneData))
-                throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+        /// <summary>
+        /// Triggers a transition to a group of scenes.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to the target scene or a group of scenes via a <see cref="SceneParameters"/> struct, with an optional <paramref name="intermediateSceneReference"/>.
+        /// If the <paramref name="intermediateSceneReference"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="sceneParameters">
+        /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
+        /// </param>
+        /// <param name="intermediateSceneInfo">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default) => Instance.TransitionAsync(sceneParameters, intermediateSceneReference, token);
 
-            ISceneData previousScene = _activeScene;
-            _activeScene = sceneData;
-            if (isTargetSceneValid)
-                SceneManager.SetActiveScene(scene);
+        /// <summary>
+        /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="sceneParameters">
+        /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAsync(sceneParameters, progress, token);
 
-            ActiveSceneChanged?.Invoke(previousScene != null ? previousScene.SceneReference : default, scene);
-        }
+        /// <summary>
+        /// Unloads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
+        /// </summary>
+        /// <param name="sceneParameters">
+        /// A <see cref="SceneParameters"/> struct that may hold one or more scenes.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default) => Instance.UnloadAsync(sceneParameters, token);
 
-        public Scene GetActiveScene() => _activeScene != null ? _activeScene.SceneReference : default;
+        /// <summary>
+        /// Gets the current active scene.
+        /// This should point to the same scene you get via <see cref="SceneManager.GetActiveScene()"/>.
+        /// </summary>
+        /// <returns>The current active scene, or an invalid scene if none of the loaded scenes are enabled as the active scene.</returns>
+        public static Scene GetActiveScene() => Instance.GetActiveScene();
 
-        public Scene GetLastLoadedScene()
-        {
-            if (LoadedSceneCount == 0)
-                return default;
+        /// <summary>
+        /// Gets the loaded scene at the <paramref name="index"/> of the loaded scenes list.
+        /// </summary>
+        /// <param name="index">Index of the target scene in the loaded scenes list.</param>
+        /// <returns>The loaded scene at the <paramref name="index"/> of the loaded scenes list.</returns>
+        public static Scene GetLoadedSceneAt(int index) => Instance.GetLoadedSceneAt(index);
 
-            for (int i = LoadedSceneCount - 1; i >= 0; i--)
-                if (!_unloadingScenes.Contains(_loadedScenes[i]) && _loadedScenes[i].SceneReference.isLoaded)
-                    return _loadedScenes[i].SceneReference;
+        /// <summary>
+        /// Gets the last loaded scene of this <see cref="ISceneDirector"/>.
+        /// </summary>
+        /// <returns>The last loaded scene, or an invalid scene if there are no loaded scenes in this <see cref="ISceneDirector"/>.</returns>
+        public static Scene GetLastLoadedScene() => Instance.GetLastLoadedScene();
 
-            return default;
-        }
+        /// <summary>
+        /// Gets a loaded scene by its <paramref name="name"/>.
+        /// </summary>
+        /// <param name="name">Name of the loaded scene to be found.</param>
+        /// <returns>A loaded scene with the given <paramref name="name"/>.</returns>
+        public static Scene GetLoadedSceneByName(string name) => Instance.GetLoadedSceneByName(name);
+        #endregion
 
-        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index].SceneReference;
+        #region Extensions
+        /// <summary>
+        /// Loads the target scenes.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="sceneNames">
+        /// The target scenes' names.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be set active, or -1 if none.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAsync(string[] sceneNames, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAsync(sceneNames, setIndexActive, progress, token);
 
-        public Scene GetLoadedSceneByName(string name)
-        {
-            foreach (ISceneData sceneData in _loadedScenes)
-                if (sceneData.SceneReference.name == name)
-                    return sceneData.SceneReference;
-            throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
-        }
+        /// <summary>
+        /// Loads the target scenes.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="buildIndices">
+        /// The target scenes' build indexes.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be set active, or -1 if none.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAsync(int[] buildIndices, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAsync(buildIndices, setIndexActive, progress, token);
 
-        public Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = null, CancellationToken token = default)
-        {
-            if (!sceneParameters.ShouldSetActive())
-                throw new ArgumentException($"[{GetType().Name}] You need to provide a SceneParameters object with a valid 'setIndexActive' value to perform scene transitions.", nameof(sceneParameters));
+        /// <summary>
+        /// Loads the target scene.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="sceneName">
+        /// The target scene's name.
+        /// </param>
+        /// <param name="setActive">
+        /// If the scene should be activated after load.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAsync(string sceneName, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAsync(sceneName, setActive, progress, token);
 
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return intermediateSceneReference == null
-                ? TransitionDirectlyAsync(sceneParameters, linkedSource.Token).RunAndDisposeToken(linkedSource)
-                : TransitionWithIntermediateAsync(sceneParameters, intermediateSceneReference, linkedSource.Token).RunAndDisposeToken(linkedSource);
-        }
+        /// <summary>
+        /// Loads the target scene.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="buildIndex">
+        /// The target scene's build index.
+        /// </param>
+        /// <param name="setActive">
+        /// If the scene should be activated after load.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAsync(int buildIndex, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAsync(buildIndex, setActive, progress, token);
 
-        public Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default)
-        {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return LoadScenesAsync_Internal(sceneParameters, progress, linkedSource.Token).RunAndDisposeToken(linkedSource);
-        }
+#if ENABLE_ADDRESSABLES
+        /// <summary>
+        /// Loads the target scenes.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="assetReferences">
+        /// The target scenes' <see cref="AssetReference">.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be set active, or -1 if none.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAddressableAsync(AssetReference[] assetReferences, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAddressableAsync(assetReferences, setIndexActive, progress, token);
 
-        public Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default)
-        {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return UnloadScenesAsync_Internal(sceneParameters.GetLoadSceneInfos(), linkedSource.Token).RunAndDisposeToken(linkedSource);
-        }
+        /// <summary>
+        /// Loads the target scenes.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="addresses">
+        /// The target scenes' addressable address.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be set active, or -1 if none.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAddressableAsync(string[] addresses, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAddressableAsync(addresses, setIndexActive, progress, token);
 
-        async Task<SceneResult> LoadScenesAsync_Internal(SceneParameters sceneParameters, IProgress<float> progress, CancellationToken token)
-        {
-            ILoadSceneInfo[] sceneInfos = sceneParameters.GetLoadSceneInfos();
-            int setIndexActive = sceneParameters.GetIndexToActivate();
-            int scenesToLoad = sceneInfos.Length;
+        /// <summary>
+        /// Loads the target scene.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="assetReference">
+        /// The target scene's <see cref="AssetReference">.
+        /// </param>
+        /// <param name="setActive">
+        /// If the scene should be activated after load.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAddressableAsync(AssetReference assetReference, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAddressableAsync(assetReference, setActive, progress, token);
 
-            ISceneData[] sceneDataArray = new ISceneData[scenesToLoad];
-            int i;
-            for (i = 0; i < scenesToLoad; i++)
-            {
-                sceneDataArray[i] = SceneDataBuilder.BuildFromLoadSceneInfo(sceneInfos[i]);
-                sceneDataArray[i].LoadSceneAsync();
-            }
+        /// <summary>
+        /// Loads the target scene.
+        /// You may also provide the desired index to set as the active scene.
+        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// </summary>
+        /// <param name="address">
+        /// The target scene's addressable address.
+        /// </param>
+        /// <param name="setActive">
+        /// If the scene should be activated after load.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> LoadAddressableAsync(string address, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default) => Instance.LoadAddressableAsync(address, setActive, progress, token);
+#endif
 
-            await PollProgressAsync(sceneDataArray, progress, token);
+        /// <summary>
+        /// Triggers a transition to a group of scenes.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to a group of scenes, with an optional <paramref name="loadingSceneName"/>.
+        /// If the <paramref name="loadingSceneName"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetSceneNames">
+        /// An array of scenes by their names to transition to.
+        /// </param>
+        /// <param name="loadingSceneName">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be activated as the active scene. It must be greater than or equal 0.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAsync(string[] targetSceneNames, string loadingSceneName = null, int setIndexActive = 0, CancellationToken token = default) => Instance.TransitionAsync(targetSceneNames, loadingSceneName, setIndexActive, token);
 
-            token.ThrowIfCancellationRequested();
+        /// <summary>
+        /// Triggers a transition to a group of scenes.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to a group of scenes, with an optional <paramref name="loadingBuildIndex"/>.
+        /// If the <paramref name="loadingBuildIndex"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetBuildIndices">
+        /// An array of scenes by their build index to transition to.
+        /// </param>
+        /// <param name="loadingBuildIndex">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be activated as the active scene. It must be greater than or equal 0.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAsync(int[] targetBuildIndices, int loadingBuildIndex = -1, int setIndexActive = 0, CancellationToken token = default) => Instance.TransitionAsync(targetBuildIndices, loadingBuildIndex, setIndexActive, token);
 
-            SceneDataUtilities.LinkLoadedScenesWithSceneDataArray(sceneDataArray, _loadedScenes);
+        /// <summary>
+        /// Triggers a transition to the target scene.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to the target scene, with an optional <paramref name="loadingSceneName"/>.
+        /// If the <paramref name="loadingSceneName"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetSceneName">
+        /// The target scene name to be transitioned to.
+        /// </param>
+        /// <param name="loadingSceneName">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAsync(string targetSceneName, string loadingSceneName = null, CancellationToken token = default) => Instance.TransitionAsync(targetSceneName, loadingSceneName, token);
 
-            _loadedScenes.AddRange(sceneDataArray);
-            for (i = 0; i < scenesToLoad; i++)
-            {
-                SceneLoaded?.Invoke(sceneDataArray[i].SceneReference);
-            }
+        /// <summary>
+        /// Triggers a transition to the target scene.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to the target scene, with an optional <paramref name="loadingBuildIndex"/>.
+        /// If the <paramref name="loadingSceneName"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetBuildIndex">
+        /// The target scene build index to be transitioned to.
+        /// </param>
+        /// <param name="loadingBuildIndex">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If -1, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAsync(int targetBuildIndex, int loadingBuildIndex = -1, CancellationToken token = default) => Instance.TransitionAsync(targetBuildIndex, loadingBuildIndex, token);
 
-            if (setIndexActive >= 0)
-                SetActiveScene(sceneDataArray[setIndexActive].SceneReference);
+#if ENABLE_ADDRESSABLES
+        /// <summary>
+        /// Triggers a transition to a group of scenes.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to a group of scenes, with an optional <paramref name="loadingAssetReference"/>.
+        /// If the <paramref name="loadingAssetReference"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetAssetReferences">
+        /// An array of scenes by their <see cref="AssetReference"/> to transition to.
+        /// </param>
+        /// <param name="loadingAssetReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be activated as the active scene. It must be greater than or equal 0.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAddressableAsync(AssetReference[] targetAssetReferences, AssetReference loadingAssetReference = null, int setIndexActive = 0, CancellationToken token = default) => Instance.TransitionAddressableAsync(targetAssetReferences, loadingAssetReference, setIndexActive, token);
 
-            return new SceneResult(SceneDataUtilities.GetScenesFromSceneDataArray(sceneDataArray));
-        }
+        /// <summary>
+        /// Triggers a transition to a group of scenes.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to a group of scenes, with an optional <paramref name="loadingAddress"/>.
+        /// If the <paramref name="loadingAddress"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetAddresses">
+        /// An array of scenes by their addressable addresses to transition to.
+        /// </param>
+        /// <param name="loadingAddress">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="setIndexActive">
+        /// The index of the scene to be activated as the active scene. It must be greater than or equal 0.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAddressableAsync(string[] targetAddresses, string loadingAddress = null, int setIndexActive = 0, CancellationToken token = default) => Instance.TransitionAddressableAsync(targetAddresses, loadingAddress, setIndexActive, token);
 
-        async Task<SceneResult> UnloadScenesAsync_Internal(ILoadSceneInfo[] sceneInfos, CancellationToken token)
-        {
-            if (sceneInfos == null || sceneInfos.Length == 0)
-                throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneInfos));
+        /// <summary>
+        /// Triggers a transition to the target scene.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to the target scene, with an optional <paramref name="loadingAssetReference"/>.
+        /// If the <paramref name="loadingAssetReference"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetAssetReference">
+        /// The target scene <see cref="AssetReference"/> to be transitioned to.
+        /// </param>
+        /// <param name="loadingAssetReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAddressableAsync(AssetReference targetAssetReference, AssetReference loadingAssetReference = null, CancellationToken token = default) => Instance.TransitionAddressableAsync(targetAssetReference, loadingAssetReference, token);
 
-            int sceneCount = sceneInfos.Length;
-            ISceneData[] sceneDataArray = SceneDataUtilities.GetLoadedSceneDatasWithLoadSceneInfos(sceneInfos, _loadedScenes);
-            Task[] loadTasks = new Task[sceneCount];
+        /// <summary>
+        /// Triggers a transition to the target scene.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to the target scene, with an optional <paramref name="loadingAddress"/>.
+        /// If the <paramref name="loadingAddress"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="targetAddress">
+        /// The target scene addressable address to be transitioned to.
+        /// </param>
+        /// <param name="loadingAddress">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        public static Task<SceneResult> TransitionAddressableAsync(string targetAddress, string loadingAddress = null, CancellationToken token = default) => Instance.TransitionAddressableAsync(targetAddress, loadingAddress, token);
+#endif
 
-            ISceneData tempSceneData;
-            int i;
-            for (i = 0; i < sceneCount; i++)
-            {
-                tempSceneData = sceneDataArray[i];
-                _loadedScenes.Remove(tempSceneData);
-                _unloadingScenes.Add(tempSceneData);
-                loadTasks[i] = UnityTaskUtilities.FromAsyncOperation(sceneDataArray[i].UnloadSceneAsync(), token);
-            }
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="sceneNames">
+        /// An array of scenes by their names to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(string[] sceneNames, CancellationToken token = default) => Instance.UnloadAsync(sceneNames, token);
 
-            try
-            {
-                await Task.WhenAll(loadTasks);
-            }
-            catch (OperationCanceledException exception)
-            {
-                for (i = 0; i < sceneCount; i++)
-                {
-                    _unloadingScenes.Remove(sceneDataArray[i]);
-                }
-                throw exception;
-            }
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="buildIndices">
+        /// An array of scenes by their build index to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(int[] buildIndices, CancellationToken token = default) => Instance.UnloadAsync(buildIndices, token);
 
-            for (i = 0; i < sceneCount; i++)
-            {
-                tempSceneData = sceneDataArray[i];
-                _unloadingScenes.Remove(tempSceneData);
-                SceneUnloaded?.Invoke(tempSceneData.SceneReference);
-                if (_activeScene == tempSceneData)
-                    SetActiveScene(GetLastLoadedScene());
-            }
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="scenes">
+        /// An array of scenes to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(Scene[] scenes, CancellationToken token = default) => Instance.UnloadAsync(scenes, token);
 
-            return new SceneResult(SceneDataUtilities.GetScenesFromSceneDataArray(sceneDataArray));
-        }
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="sceneName">
+        /// The target scene's name to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(string sceneName, CancellationToken token = default) => Instance.UnloadAsync(sceneName, token);
 
-        async Task<SceneResult> TransitionDirectlyAsync(SceneParameters sceneParameters, CancellationToken token)
-        {
-            // If only one scene is loaded, create a temporary scene for transition.
-            Scene tempScene = default;
-            if (LoadedSceneCount <= 1)
-            {
-                tempScene = SceneManager.CreateScene("temp-transition-scene");
-            }
-            await UnloadSourceSceneAsync(token);
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="buildIndex">
+        /// The target scene's build index to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(int buildIndex, CancellationToken token = default) => Instance.UnloadAsync(buildIndex, token);
 
-            Scene[] loadedScenes = await LoadAsync(sceneParameters, token: token);
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="scene">
+        /// The target scene to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAsync(Scene scene, CancellationToken token = default) => Instance.UnloadAsync(scene, token);
 
-            if (tempScene.IsValid())
-            {
-                IAsyncSceneOperation unloadOperation = new AsyncSceneOperationStandard(SceneManager.UnloadSceneAsync(tempScene));
-                await UnityTaskUtilities.FromAsyncOperation(unloadOperation, token);
-            }
-            return new SceneResult(loadedScenes);
-        }
+#if ENABLE_ADDRESSABLES
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="assetReferences">
+        /// An array of scenes to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAddressableAsync(AssetReference[] assetReferences, CancellationToken token = default) => Instance.UnloadAddressableAsync(assetReferences, token);
 
-        async Task<SceneResult> TransitionWithIntermediateAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneInfo, CancellationToken token)
-        {
-            Scene loadingScene = await LoadAsync(new SceneParameters(intermediateSceneInfo, false), token: token);
-            intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="addresses">
+        /// An array of scenes to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAddressableAsync(string[] addresses, CancellationToken token = default) => Instance.UnloadAddressableAsync(addresses, token);
 
-            LoadingBehavior loadingBehavior = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
-            return loadingBehavior
-                ? await TransitionWithIntermediateLoadingAsync(sceneParameters, intermediateSceneInfo, loadingBehavior, token)
-                : await TransitionWithIntermediateNoLoadingAsync(sceneParameters, intermediateSceneInfo, token);
-        }
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="assetReference">
+        /// The target scene's <see cref="AssetReference"/> to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAddressableAsync(AssetReference assetReference, CancellationToken token = default) => Instance.UnloadAddressableAsync(assetReference, token);
 
-        async Task<SceneResult> TransitionWithIntermediateLoadingAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneInfo, LoadingBehavior loadingBehavior, CancellationToken token)
-        {
-            LoadingProgress progress = loadingBehavior.Progress;
-            await progress.TransitionInTask.Task;
-            await UnloadSourceSceneAsync(token);
-
-            Scene[] loadedScenes = await LoadAsync(sceneParameters, progress, token);
-            progress.SetLoadingCompleted();
-
-            await progress.TransitionOutTask.Task;
-            await UnloadAsync(new SceneParameters(intermediateSceneInfo), token);
-            return new SceneResult(loadedScenes);
-        }
-
-        async Task<SceneResult> TransitionWithIntermediateNoLoadingAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneInfo, CancellationToken token)
-        {
-            await UnloadSourceSceneAsync(token);
-            Scene[] loadedScenes = await LoadAsync(sceneParameters, token: token);
-            await UnloadAsync(new SceneParameters(intermediateSceneInfo), token);
-            return new SceneResult(loadedScenes);
-        }
-
-        async Task PollProgressAsync(ISceneData[] sceneDataArray, IProgress<float> progress, CancellationToken token = default)
-        {
-            bool isDone = false;
-            while (!isDone && !token.IsCancellationRequested)
-            {
-                await Task.Yield();
-                isDone = SceneDataUtilities.HasCompletedAllSceneLoadOperations(sceneDataArray);
-                progress?.Report(SceneDataUtilities.GetAverageSceneLoadOperationProgress(sceneDataArray));
-            }
-        }
-
-        Task<SceneResult> UnloadSourceSceneAsync(CancellationToken token)
-        {
-            Scene sourceScene = GetActiveScene();
-            if (!sourceScene.IsValid())
-                return Task.FromResult<SceneResult>(default);
-
-            return UnloadAsync(new SceneParameters(new LoadSceneInfoScene(sourceScene)), token);
-        }
+        /// <summary>
+        /// Unloads the target scene or group of scenes.
+        /// </summary>
+        /// <param name="address">
+        /// The target scene's addressable address to be unloaded.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// <br/>
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// </returns>
+        public static Task<SceneResult> UnloadAddressableAsync(string address, CancellationToken token = default) => Instance.UnloadAddressableAsync(address, token);
+#endif
+        #endregion
     }
 }
+#endif

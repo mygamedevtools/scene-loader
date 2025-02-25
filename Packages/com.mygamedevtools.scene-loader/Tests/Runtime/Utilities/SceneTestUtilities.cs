@@ -6,17 +6,17 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public static class SceneTestUtilities
     {
-        public static IEnumerator UnloadManagerScenes(ISceneManager sceneManager)
+        public static IEnumerator UnloadDirectorScenes(ISceneDirector sceneDirector)
         {
-            var lastScene = sceneManager.GetLastLoadedScene();
-            while (sceneManager.LoadedSceneCount > 0 && lastScene.IsValid())
+            var lastScene = sceneDirector.GetLastLoadedScene();
+            while (sceneDirector.LoadedSceneCount > 0 && lastScene.IsValid())
             {
-                yield return new WaitTask<SceneResult>(sceneManager.UnloadAsync(lastScene));
-                lastScene = sceneManager.GetLastLoadedScene();
+                yield return new WaitTask<SceneResult>(sceneDirector.UnloadAsync(lastScene));
+                lastScene = sceneDirector.GetLastLoadedScene();
             }
 
-            Assert.Zero(sceneManager.LoadedSceneCount);
-            Assert.False(sceneManager.GetActiveScene().IsValid());
+            Assert.Zero(sceneDirector.LoadedSceneCount);
+            Assert.False(sceneDirector.GetActiveScene().IsValid());
         }
 
         public static IEnumerator UnloadRemainingScenes()
@@ -33,9 +33,9 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         public static IEnumerator UnloadAllScenes()
         {
-            ISceneManager[] sceneManagers = SceneTestEnvironment.SceneManagers;
-            for (int i = 0; i < sceneManagers.Length; i++)
-                yield return UnloadManagerScenes(sceneManagers[i]);
+            ISceneDirector[] sceneDirectors = SceneTestEnvironment.SceneDirectors;
+            for (int i = 0; i < sceneDirectors.Length; i++)
+                yield return UnloadDirectorScenes(sceneDirectors[i]);
 
             yield return UnloadRemainingScenes();
         }

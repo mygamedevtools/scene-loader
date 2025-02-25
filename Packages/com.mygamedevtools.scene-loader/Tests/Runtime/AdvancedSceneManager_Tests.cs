@@ -3,23 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MyGameDevTools.SceneLoading.Tests;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
-namespace MyGameDevTools.SceneLoading.Api.Tests
+namespace MyGameDevTools.SceneLoading.Tests
 {
-    public partial class SceneManager_Api_Tests : IPrebuildSetup, IPostBuildCleanup
+    [PrebuildSetup(typeof(SceneTestEnvironment)), PostBuildCleanup(typeof(SceneTestEnvironment))]
+    public partial class AdvancedSceneManager_Tests
     {
         int _scenesActivated;
         int _scenesUnloaded;
         int _scenesLoaded;
-
-        public void Setup() => new SceneTestEnvironment().Setup();
-
-        public void Cleanup() => new SceneTestEnvironment().Cleanup();
 
         [OneTimeSetUp]
         public void OneTimeSetup()

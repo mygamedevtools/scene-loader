@@ -10,7 +10,7 @@ namespace MyGameDevTools.SceneLoading.Tests
     // Note: AssetReference load scene infos cannot be created statically, since the
     // scenes are generated in IPrebuildSetup and don't have deterministic guids between
     // Unity Editor sessions. So, we must test AssetReference load scene infos "manually".
-    public partial class SceneManagerTests
+    public partial class SceneDirectorTests
     {
         AssetReference[] _assetReferences;
         ILoadSceneInfo[] _assetReferenceLoadSceneInfos;
@@ -36,15 +36,15 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Load_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(_setIndexActiveParameterValues))] int setIndexActive)
+        public IEnumerator Load_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(nameof(_setIndexActiveParameterValues))] int setIndexActive)
         {
-            yield return Load(manager, new SceneParameters(_assetReferenceLoadSceneInfos, setIndexActive));
+            yield return Load(director, new SceneParameters(_assetReferenceLoadSceneInfos, setIndexActive));
         }
 
         [UnityTest]
-        public IEnumerator Unload_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        public IEnumerator Unload_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
         {
-            yield return Unload(manager, new SceneParameters(_assetReferenceLoadSceneInfos));
+            yield return Unload(director, new SceneParameters(_assetReferenceLoadSceneInfos));
         }
     }
 }

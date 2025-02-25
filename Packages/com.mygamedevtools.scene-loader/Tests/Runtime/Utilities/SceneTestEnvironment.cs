@@ -95,9 +95,9 @@ namespace MyGameDevTools.SceneLoading.Tests
             new(_multipleLoadSceneInfoList[1], 1),
         };
 
-        public static readonly ISceneManager[] SceneManagers = new ISceneManager[]
+        public static readonly ISceneDirector[] SceneDirectors = new ISceneDirector[]
         {
-            new AdvancedSceneManager(),
+            new SceneDirector(),
         };
 
 #if UNITY_EDITOR

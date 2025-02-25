@@ -25,7 +25,7 @@ namespace MyGameDevTools.SceneLoading
         /// Manually updates the scene reference with a given scene.
         /// Useful for linking scenes that have not been loaded through addressable operations (that can directly link the loaded scene).
         /// <br/>
-        /// Should not be called outside of an <see cref="ISceneManager"/>.
+        /// Should not be called outside of an <see cref="ISceneDirector"/>.
         /// </summary>
         void SetSceneReferenceManually(Scene scene);
 
@@ -33,7 +33,7 @@ namespace MyGameDevTools.SceneLoading
         /// Updates the <see cref="SceneReference"/> value based on the <see cref="AsyncOperation"/> result.
         /// Cannot be used for non-addressable contexts, since they are not able to directly link the loaded scene.
         /// <br/>
-        /// Should not be called outside of an <see cref="ISceneManager"/>.
+        /// Should not be called outside of an <see cref="ISceneDirector"/>.
         /// </summary>
         void UpdateSceneReference();
 

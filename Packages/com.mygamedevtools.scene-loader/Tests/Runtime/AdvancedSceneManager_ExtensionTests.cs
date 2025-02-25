@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Threading.Tasks;
-using MyGameDevTools.SceneLoading.Tests;
 using NUnit.Framework;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.TestTools;
 
-namespace MyGameDevTools.SceneLoading.Api.Tests
+namespace MyGameDevTools.SceneLoading.Tests
 {
-    public partial class SceneManager_Api_Tests
+    public partial class AdvancedSceneManager_Tests
     {
         int[] _buildIndexes = new[] { 1, 2, 3 };
 
