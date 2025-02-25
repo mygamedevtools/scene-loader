@@ -25,7 +25,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator Dispose_DuringLoad([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             ISceneManager manager = managerCreateFunc();
-            WaitTask<SceneResult> waitTask = new(manager.LoadAsync(sceneParameters));
+            WaitTask<SceneResult> waitTask = manager.LoadAsync(sceneParameters).ToWaitTask();
             manager.Dispose();
             yield return waitTask;
             Assert.True(waitTask.Task.IsCanceled);
@@ -35,7 +35,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator Dipose_DuringUnload([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             ISceneManager manager = managerCreateFunc();
-            WaitTask<SceneResult> waitTask = new(manager.LoadAsync(sceneParameters));
+            WaitTask<SceneResult> waitTask = manager.LoadAsync(sceneParameters).ToWaitTask();
             yield return waitTask;
 
             waitTask = new(manager.UnloadAsync(sceneParameters));

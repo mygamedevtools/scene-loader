@@ -100,7 +100,7 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
 
             Assert.AreEqual(0, progress.Value);
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             AdvancedSceneManager.SceneLoaded -= reportSceneLoaded;
             Scene[] loadedScenes = task.Result;
@@ -123,7 +123,7 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
             yield return LoadFirstScene();
 
             var task = transitionTask();
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Scene[] loadedScenes = task.Result;
             Assert.AreEqual(sceneCount, loadedScenes.Length);
@@ -135,14 +135,14 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
         public IEnumerator Unload_Template(Func<Task<SceneResult>> loadTask, Func<Task<SceneResult>> unloadTask, int sceneCount)
         {
             var load = loadTask();
-            yield return new WaitTask<SceneResult>(load);
+            yield return load.ToWaitTask();
             var loadedSceneHandles = load.Result.GetScenes().Select(s => s.handle).ToArray();
 
             var reportedScenes = new List<Scene>(sceneCount);
             AdvancedSceneManager.SceneUnloaded += reportSceneUnloaded;
 
             var unload = unloadTask();
-            yield return new WaitTask<SceneResult>(unload);
+            yield return unload.ToWaitTask();
 
             AdvancedSceneManager.SceneUnloaded -= reportSceneUnloaded;
             Scene[] unloadedScenes = unload.Result;
@@ -173,7 +173,7 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
         /// <summary>
         /// Required to test some transition scenarios.
         /// </summary>
-        public static WaitTask<SceneResult> LoadFirstScene() => new(AdvancedSceneManager.LoadAsync(SceneBuilder.SceneNames[1], true));
+        public static WaitTask<SceneResult> LoadFirstScene() => AdvancedSceneManager.LoadAsync(SceneBuilder.SceneNames[1], true).ToWaitTask();
 
         public static IEnumerator UnloadManagerScenes()
         {
@@ -181,7 +181,7 @@ namespace MyGameDevTools.SceneLoading.Api.Tests
             // The AdvancedSceneManager registers the init scene as one of its managed scenes
             while (AdvancedSceneManager.LoadedSceneCount > 1 && lastScene.IsValid())
             {
-                yield return new WaitTask<SceneResult>(AdvancedSceneManager.UnloadAsync(lastScene));
+                yield return AdvancedSceneManager.UnloadAsync(lastScene).ToWaitTask();
                 lastScene = AdvancedSceneManager.GetLastLoadedScene();
             }
 

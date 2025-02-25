@@ -95,7 +95,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             ISceneManager sceneManager = new AdvancedSceneManager(new Scene[] { loadedScene });
 
             WaitTask<SceneResult> waitTask = default;
-            Assert.DoesNotThrow(() => waitTask = new(sceneManager.UnloadAsync(new SceneParameters(new LoadSceneInfoScene(loadedScene)))));
+            Assert.DoesNotThrow(() => waitTask = sceneManager.UnloadAsync(new SceneParameters(new LoadSceneInfoScene(loadedScene))).ToWaitTask());
 
             yield return waitTask;
         }
@@ -131,7 +131,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var loadTask = manager.LoadAsync(new SceneParameters(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), true));
 
-            yield return new WaitTask<SceneResult>(loadTask);
+            yield return loadTask.ToWaitTask();
 
             Scene loadedScene = loadTask.Result;
             var managerActiveScene = manager.GetActiveScene();
@@ -150,7 +150,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator GetLoadedSceneByName_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            yield return new WaitTask<SceneResult>(manager.LoadAsync(new SceneParameters(new LoadSceneInfoName(SceneBuilder.SceneNames[1]))));
+            yield return manager.LoadAsync(new SceneParameters(new LoadSceneInfoName(SceneBuilder.SceneNames[1]))).ToWaitTask();
 
             Assert.True(manager.GetLoadedSceneByName(SceneBuilder.SceneNames[1]).IsValid());
         }
@@ -181,7 +181,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var progress = new SimpleProgress();
             Assert.AreEqual(0, progress.Value);
-            yield return new WaitTask<SceneResult>(manager.LoadAsync(sceneParameters, progress));
+            yield return manager.LoadAsync(sceneParameters, progress).ToWaitTask();
             Assert.AreEqual(1, progress.Value);
         }
 
@@ -197,7 +197,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             for (int i = 0; i < length; i++)
             {
                 var loadTask = manager.LoadAsync(new SceneParameters(sceneInfos[i], setActive));
-                yield return new WaitTask<SceneResult>(loadTask);
+                yield return loadTask.ToWaitTask();
                 loadedScenes[i] = loadTask.Result;
             }
 
@@ -219,7 +219,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var sceneName = "not-a-real-scene";
             if (manager is SceneManager || manager is AdvancedSceneManager)
                 LogAssert.Expect(LogType.Error, new Regex("'not-a-real-scene' couldn't be loaded"));
-            var wait = new WaitTask<SceneResult>(manager.LoadAsync(sceneName));
+            var wait = manager.LoadAsync(sceneName).ToWaitTask();
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
@@ -235,7 +235,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var sceneName = "not-a-real-scene";
             if (manager is not AdvancedSceneManager)
                 LogAssert.Expect(LogType.Warning, new Regex("Some of the scenes could not be found loaded"));
-            var wait = new WaitTask<SceneResult>(manager.UnloadAsync(sceneName));
+            var wait = manager.UnloadAsync(sceneName).ToWaitTask();
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
@@ -261,7 +261,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             var task = manager.TransitionAsync(new SceneParameters(targetScene, true), loadingScene);
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Scene loadedScene = task.Result;
 
@@ -284,13 +284,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var task = manager.LoadAsync(new SceneParameters(sceneInfo));
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Scene scene = task.Result;
 
             task = manager.UnloadAsync(scene);
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Assert.Zero(manager.LoadedSceneCount);
         }
@@ -300,11 +300,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var task = manager.LoadAsync(new SceneParameters(sceneInfo));
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             task = manager.UnloadAsync(SceneBuilder.SceneNames[1]);
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Assert.Zero(manager.LoadedSceneCount);
         }
@@ -314,11 +314,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var task = manager.LoadAsync(new SceneParameters(sceneInfo));
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             task = manager.UnloadAsync(SceneBuilder.ScenePaths[1]);
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Assert.Zero(manager.LoadedSceneCount);
         }
@@ -328,7 +328,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var task = manager.LoadAsync(new SceneParameters(sceneInfo));
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
 #if UNITY_EDITOR
             task = manager.UnloadAsync(1);
@@ -336,7 +336,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             task = manager.UnloadAsync(2);
 #endif
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Assert.Zero(manager.LoadedSceneCount);
         }
@@ -350,7 +350,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.AreEqual(0, progress.Value);
 
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             manager.SceneLoaded -= reportSceneLoaded;
             Scene[] loadedScenes = task.Result;
@@ -373,7 +373,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return LoadFirstScene(manager);
 
             var task = transitionTask();
-            yield return new WaitTask<SceneResult>(task);
+            yield return task.ToWaitTask();
 
             Scene[] loadedScenes = task.Result;
             Assert.AreEqual(sceneCount, loadedScenes.Length);
@@ -385,14 +385,14 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator Unload_Template(ISceneManager manager, Func<Task<SceneResult>> loadTask, Func<Task<SceneResult>> unloadTask, int sceneCount)
         {
             var load = loadTask();
-            yield return new WaitTask<SceneResult>(load);
+            yield return load.ToWaitTask();
             var loadedSceneHandles = load.Result.GetScenes().Select(s => s.handle).ToArray();
 
             var reportedScenes = new List<Scene>(sceneCount);
             manager.SceneUnloaded += reportSceneUnloaded;
 
             var unload = unloadTask();
-            yield return new WaitTask<SceneResult>(unload);
+            yield return unload.ToWaitTask();
 
             manager.SceneUnloaded -= reportSceneUnloaded;
             Scene[] unloadedScenes = unload.Result;
@@ -423,7 +423,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         /// <summary>
         /// Required to test some transition scenarios.
         /// </summary>
-        public static WaitTask<SceneResult> LoadFirstScene(ISceneManager sceneManager) => new(sceneManager.LoadAsync(SceneBuilder.SceneNames[1], true));
+        public static WaitTask<SceneResult> LoadFirstScene(ISceneManager sceneManager) => sceneManager.LoadAsync(SceneBuilder.SceneNames[1], true).ToWaitTask();
 
         void ReportSceneActivation(Scene previousScene, Scene newScene)
         {

@@ -16,5 +16,10 @@ namespace MyGameDevTools.SceneLoading
                 tokenSource.Dispose();
             }
         }
+
+        public static WaitTask<T> ToWaitTask<T>(this Task<T> task)
+        {
+            return new WaitTask<T>(task);
+        }
     }
 }
