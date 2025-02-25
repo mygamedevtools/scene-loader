@@ -27,7 +27,7 @@ namespace MyGameDevTools.SceneLoading
         ISceneData _activeScene;
 
         /// <summary>
-        /// Creates an <see cref="SceneDirector"/> with no initial scene references.
+        /// Creates a <see cref="SceneDirector"/> with no initial scene references.
         /// </summary>
         public SceneDirector() : this(false) { }
         /// <summary>
