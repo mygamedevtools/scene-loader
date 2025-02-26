@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -21,13 +20,13 @@ namespace MyGameDevTools.SceneLoading
         public static void LinkLoadedScenesWithSceneDataArray(ISceneData[] sceneDataArray, IList<ISceneData> sceneDatasToExclude)
         {
             // Fill this list with all loaded scenes from the Unity Scene Manager;
-            int totalSceneCount = UnitySceneManager.sceneCount;
+            int totalSceneCount = SceneManager.sceneCount;
             List<Scene> unmatchedScenes = new(totalSceneCount);
 
             int i;
             for (i = 0; i < totalSceneCount; i++)
             {
-                Scene scene = UnitySceneManager.GetSceneAt(i);
+                Scene scene = SceneManager.GetSceneAt(i);
                 if (scene.isLoaded)
                     unmatchedScenes.Add(scene);
             }
