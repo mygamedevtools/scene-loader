@@ -12,25 +12,25 @@ namespace MyGameDevTools.SceneLoading
 {
     public static class AdvancedSceneManager
     {
-        internal static ISceneDirector Instance
+        internal static ISceneManager Instance
         {
             get
             {
                 if (_instance == null)
-                    throw new NullReferenceException("[AdvancedSceneManager] The static Scene Director instance is not available before the first scene is fully loaded. Try moving the call to `Start()`.");
+                    throw new NullReferenceException("[AdvancedSceneManager] The static Scene Manager instance is not available before the first scene is fully loaded. Try moving the call to `Start()`.");
                 return _instance;
             }
         }
 
-        static ISceneDirector _instance;
+        static ISceneManager _instance;
 
         [RuntimeInitializeOnLoadMethod]
         internal static void Initialize()
         {
-            _instance = new SceneDirector(true);
+            _instance = new CoreSceneManager(true);
         }
 
-        #region ISceneDirector
+        #region ISceneManager
         /// <summary>
         /// Reports that the active scene has changed, passing the <b>previous</b> and <b>current</b> active scene as parameters.
         /// <br/>
@@ -65,7 +65,7 @@ namespace MyGameDevTools.SceneLoading
         /// </summary>
         public static int LoadedSceneCount => Instance.LoadedSceneCount;
         /// <summary>
-        /// The amount of scenes managed by the internal <see cref="ISceneDirector"/>.
+        /// The amount of scenes managed by the internal <see cref="ISceneManager"/>.
         /// This includes scenes that are being unloaded.
         /// </summary>
         public static int TotalSceneCount => Instance.TotalSceneCount;
@@ -146,9 +146,9 @@ namespace MyGameDevTools.SceneLoading
         public static Scene GetLoadedSceneAt(int index) => Instance.GetLoadedSceneAt(index);
 
         /// <summary>
-        /// Gets the last loaded scene of this <see cref="ISceneDirector"/>.
+        /// Gets the last loaded scene of this <see cref="ISceneManager"/>.
         /// </summary>
-        /// <returns>The last loaded scene, or an invalid scene if there are no loaded scenes in this <see cref="ISceneDirector"/>.</returns>
+        /// <returns>The last loaded scene, or an invalid scene if there are no loaded scenes in this <see cref="ISceneManager"/>.</returns>
         public static Scene GetLastLoadedScene() => Instance.GetLastLoadedScene();
 
         /// <summary>

@@ -9,9 +9,9 @@ using UnityEngine.SceneManagement;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// The <see cref="SceneDirector"/> is capable of managing both addressable and non-addressable scene operations.
+    /// The <see cref="CoreSceneManager"/> is capable of managing both addressable and non-addressable scene operations.
     /// </summary>
-    public class SceneDirector : ISceneDirector
+    public class CoreSceneManager : ISceneManager
     {
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
@@ -27,15 +27,15 @@ namespace MyGameDevTools.SceneLoading
         ISceneData _activeScene;
 
         /// <summary>
-        /// Creates a <see cref="SceneDirector"/> with no initial scene references.
+        /// Creates a <see cref="CoreSceneManager"/> with no initial scene references.
         /// </summary>
-        public SceneDirector() : this(false) { }
+        public CoreSceneManager() : this(false) { }
         /// <summary>
-        /// Creates a new <see cref="SceneDirector"/> with the option to add all loaded scenes to its management.
-        /// The advantage is that you can manage those scenes through this <see cref="ISceneDirector"/> instead of having to
+        /// Creates a new <see cref="CoreSceneManager"/> with the option to add all loaded scenes to its management.
+        /// The advantage is that you can manage those scenes through this <see cref="ISceneManager"/> instead of having to
         /// use the Unity <see cref="SceneManager"/>.
         /// </summary>
-        public SceneDirector(bool addLoadedScenes)
+        public CoreSceneManager(bool addLoadedScenes)
         {
             if (!addLoadedScenes)
             {
@@ -58,19 +58,19 @@ namespace MyGameDevTools.SceneLoading
             }
             else if (loadedSceneCount == 0)
             {
-                Debug.LogWarning("Tried to create a `SceneDirector` with all loaded scenes, but encoutered none. Did you create the Scene Director on `Awake()`? If so, try moving the call to `Start()` instead.");
+                Debug.LogWarning("Tried to create a Scene Manager with all loaded scenes, but encoutered none. Did you create the Scene Manager on `Awake()`? If so, try moving the call to `Start()` instead.");
             }
         }
         /// <summary>
-        /// Creates a new <see cref="SceneDirector"/> with the option to add a list of loaded scenes to its management.
-        /// The advantage is that you can manage those scenes through this <see cref="ISceneDirector"/> instead of having to
+        /// Creates a new <see cref="CoreSceneManager"/> with the option to add a list of loaded scenes to its management.
+        /// The advantage is that you can manage those scenes through this <see cref="ISceneManager"/> instead of having to
         /// use the Unity <see cref="SceneManager"/>.
         /// </summary>
-        public SceneDirector(Scene[] initializationScenes)
+        public CoreSceneManager(Scene[] initializationScenes)
         {
             if (initializationScenes == null || initializationScenes.Length == 0)
             {
-                throw new ArgumentException($"Trying to create an {nameof(SceneDirector)} with a null or empty array of initialization scenes. If you want to create it without any scenes, use the empty constructor instead.", nameof(initializationScenes));
+                throw new ArgumentException($"Trying to create an {nameof(CoreSceneManager)} with a null or empty array of initialization scenes. If you want to create it without any scenes, use the empty constructor instead.", nameof(initializationScenes));
             }
 
             int loadedSceneCount = initializationScenes.Length;

@@ -11,7 +11,7 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    public partial class SceneDirectorTests : SceneTestBase
+    public partial class SceneManagerTests : SceneTestBase
     {
         public static readonly ILoadSceneInfo[] LoadingSceneInfos = new ILoadSceneInfo[]
         {
@@ -32,10 +32,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             SceneTestEnvironment.ValidateSceneEnvironment();
 
-            ISceneDirector[] sceneDirectors = SceneTestEnvironment.SceneDirectors;
-            for (int i = 0; i < sceneDirectors.Length; i++)
+            ISceneManager[] sceneManagers = SceneTestEnvironment.SceneManagers;
+            for (int i = 0; i < sceneManagers.Length; i++)
             {
-                var director = sceneDirectors[i];
+                var director = sceneManagers[i];
                 director.ActiveSceneChanged += ReportSceneActivation;
                 director.SceneUnloaded += ReportSceneUnloaded;
                 director.SceneLoaded += ReportSceneLoaded;
@@ -45,10 +45,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         [OneTimeTearDown]
         public void OneTimeTeardown()
         {
-            ISceneDirector[] sceneDirectors = SceneTestEnvironment.SceneDirectors;
-            for (int i = 0; i < sceneDirectors.Length; i++)
+            ISceneManager[] sceneManagers = SceneTestEnvironment.SceneManagers;
+            for (int i = 0; i < sceneManagers.Length; i++)
             {
-                var director = sceneDirectors[i];
+                var director = sceneManagers[i];
                 director.ActiveSceneChanged -= ReportSceneActivation;
                 director.SceneUnloaded -= ReportSceneUnloaded;
                 director.SceneLoaded -= ReportSceneLoaded;
@@ -68,10 +68,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
 
-            ISceneDirector sceneDirector = new SceneDirector(true);
+            ISceneManager sceneManager = new CoreSceneManager(true);
 
-            Assert.AreEqual(2, sceneDirector.LoadedSceneCount);
-            Assert.AreEqual(sceneDirector.TotalSceneCount, sceneDirector.LoadedSceneCount);
+            Assert.AreEqual(2, sceneManager.LoadedSceneCount);
+            Assert.AreEqual(sceneManager.TotalSceneCount, sceneManager.LoadedSceneCount);
         }
 
         [UnityTest]
@@ -80,10 +80,10 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
             Scene loadedScene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
 
-            ISceneDirector sceneDirector = new SceneDirector(new Scene[] { loadedScene });
+            ISceneManager sceneManager = new CoreSceneManager(new Scene[] { loadedScene });
 
-            Assert.AreEqual(1, sceneDirector.LoadedSceneCount);
-            Assert.AreEqual(sceneDirector.TotalSceneCount, sceneDirector.LoadedSceneCount);
+            Assert.AreEqual(1, sceneManager.LoadedSceneCount);
+            Assert.AreEqual(sceneManager.TotalSceneCount, sceneManager.LoadedSceneCount);
         }
 
         [UnityTest]
@@ -92,16 +92,16 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
             Scene loadedScene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
 
-            ISceneDirector sceneDirector = new SceneDirector(new Scene[] { loadedScene });
+            ISceneManager sceneManager = new CoreSceneManager(new Scene[] { loadedScene });
 
             WaitTask<SceneResult> waitTask = default;
-            Assert.DoesNotThrow(() => waitTask = sceneDirector.UnloadAsync(new SceneParameters(new LoadSceneInfoScene(loadedScene))).ToWaitTask());
+            Assert.DoesNotThrow(() => waitTask = sceneManager.UnloadAsync(new SceneParameters(new LoadSceneInfoScene(loadedScene))).ToWaitTask());
 
             yield return waitTask;
         }
 
         [UnityTest]
-        public IEnumerator SetActive_NotThroughDirector([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public IEnumerator SetActive_NotThroughDirector([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             Scene loadedScene = default;
             SceneManager.sceneLoaded += assignLoadedScene;
@@ -121,13 +121,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
-        public void GetActiveScene_Empty([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public void GetActiveScene_Empty([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             Assert.False(director.GetActiveScene().IsValid());
         }
 
         [UnityTest]
-        public IEnumerator GetActiveScene_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public IEnumerator GetActiveScene_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             var loadTask = director.LoadAsync(new SceneParameters(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), true));
 
@@ -142,13 +142,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
-        public void GetLoadedSceneByName_Invalid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public void GetLoadedSceneByName_Invalid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             Assert.Throws<ArgumentException>(() => director.GetLoadedSceneByName("not-a-real-scene"));
         }
 
         [UnityTest]
-        public IEnumerator GetLoadedSceneByName_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public IEnumerator GetLoadedSceneByName_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             yield return director.LoadAsync(new SceneParameters(new LoadSceneInfoName(SceneBuilder.SceneNames[1]))).ToWaitTask();
 
@@ -156,28 +156,28 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
-        public void EmptyState([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public void EmptyState([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             Assert.False(director.GetLastLoadedScene().IsValid());
             Assert.False(director.GetActiveScene().IsValid());
         }
 
         [Test]
-        public void GetLoadedSceneAt_IndexError([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public void GetLoadedSceneAt_IndexError([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => director.GetLoadedSceneAt(-1));
             Assert.Throws<ArgumentOutOfRangeException>(() => director.GetLoadedSceneAt(1));
         }
 
         [UnityTest]
-        public IEnumerator Load([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
+        public IEnumerator Load([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             var progress = new SimpleProgress();
             return Load_Template(director, () => director.LoadAsync(sceneParameters, progress), progress, sceneParameters.Length, sceneParameters.GetIndexToActivate());
         }
 
         [UnityTest]
-        public IEnumerator Load_Progress([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
+        public IEnumerator Load_Progress([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             var progress = new SimpleProgress();
             Assert.AreEqual(0, progress.Value);
@@ -186,7 +186,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Load_Stress([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
+        public IEnumerator Load_Stress([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             ILoadSceneInfo[] sceneInfos = sceneParameters.GetLoadSceneInfos();
             int length = sceneInfos.Length;
@@ -214,7 +214,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
-        public void Load_NotInBuild([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public void Load_NotInBuild([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             var sceneName = "not-a-real-scene";
             LogAssert.Expect(LogType.Error, new Regex("'not-a-real-scene' couldn't be loaded"));
@@ -223,30 +223,30 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Unload([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
+        public IEnumerator Unload([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             yield return Unload_Template(director, () => director.LoadAsync(sceneParameters), () => director.UnloadAsync(sceneParameters), sceneParameters.Length);
         }
 
         [Test]
-        public void Unload_NotLoaded([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director)
+        public void Unload_NotLoaded([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director)
         {
             var sceneName = "not-a-real-scene";
-            if (director is not SceneDirector)
+            if (director is not SceneManager)
                 LogAssert.Expect(LogType.Warning, new Regex("Some of the scenes could not be found loaded"));
             var wait = director.UnloadAsync(sceneName).ToWaitTask();
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
 
         [UnityTest]
-        public IEnumerator Transition([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.
+        public IEnumerator Transition([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.
         TransitionSceneParametersList))] SceneParameters sceneParameters, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             yield return Transition_Template(director, () => director.TransitionAsync(sceneParameters, loadingScene), sceneParameters.Length, sceneParameters.GetIndexToActivate());
         }
 
         [UnityTest]
-        public IEnumerator Transition_NoSourceScene([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
+        public IEnumerator Transition_NoSourceScene([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo targetScene, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
             int expectedLoadedScenes = loadingScene == null ? 1 : 2;
             // If there's no loading scene, the scene manager will create a temporary scene
@@ -279,7 +279,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Load_ByInfo_UnloadByScene([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo sceneInfo)
+        public IEnumerator Load_ByInfo_UnloadByScene([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo sceneInfo)
         {
             var task = director.LoadAsync(new SceneParameters(sceneInfo));
 
@@ -295,7 +295,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Load_ByInfo_UnloadByName([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList_NoAddressable))] ILoadSceneInfo sceneInfo)
+        public IEnumerator Load_ByInfo_UnloadByName([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList_NoAddressable))] ILoadSceneInfo sceneInfo)
         {
             var task = director.LoadAsync(new SceneParameters(sceneInfo));
 
@@ -309,7 +309,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Load_ByInfo_UnloadByPath([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList_NoAddressable))] ILoadSceneInfo sceneInfo)
+        public IEnumerator Load_ByInfo_UnloadByPath([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList_NoAddressable))] ILoadSceneInfo sceneInfo)
         {
             var task = director.LoadAsync(new SceneParameters(sceneInfo));
 
@@ -323,7 +323,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Load_ByInfo_UnloadByIndex([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneDirectors))] ISceneDirector director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList_NoAddressable))] ILoadSceneInfo sceneInfo)
+        public IEnumerator Load_ByInfo_UnloadByIndex([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager director, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList_NoAddressable))] ILoadSceneInfo sceneInfo)
         {
             var task = director.LoadAsync(new SceneParameters(sceneInfo));
 
@@ -340,7 +340,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Zero(director.LoadedSceneCount);
         }
 
-        public IEnumerator Load_Template(ISceneDirector director, Func<Task<SceneResult>> loadTask, SimpleProgress progress, int sceneCount, int setIndexActive)
+        public IEnumerator Load_Template(ISceneManager director, Func<Task<SceneResult>> loadTask, SimpleProgress progress, int sceneCount, int setIndexActive)
         {
             var reportedScenes = new List<Scene>(sceneCount);
             director.SceneLoaded += reportSceneLoaded;
@@ -367,7 +367,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             void reportSceneLoaded(Scene loadedScene) => reportedScenes.Add(loadedScene);
         }
 
-        public IEnumerator Transition_Template(ISceneDirector director, Func<Task<SceneResult>> transitionTask, int sceneCount, int setIndexActive)
+        public IEnumerator Transition_Template(ISceneManager director, Func<Task<SceneResult>> transitionTask, int sceneCount, int setIndexActive)
         {
             yield return LoadFirstScene(director);
 
@@ -381,7 +381,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return new WaitUntil(() => director.TotalSceneCount == sceneCount);
         }
 
-        public IEnumerator Unload_Template(ISceneDirector director, Func<Task<SceneResult>> loadTask, Func<Task<SceneResult>> unloadTask, int sceneCount)
+        public IEnumerator Unload_Template(ISceneManager director, Func<Task<SceneResult>> loadTask, Func<Task<SceneResult>> unloadTask, int sceneCount)
         {
             var load = loadTask();
             yield return load.ToWaitTask();
@@ -422,7 +422,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         /// <summary>
         /// Required to test some transition scenarios.
         /// </summary>
-        public static WaitTask<SceneResult> LoadFirstScene(ISceneDirector sceneDirector) => sceneDirector.LoadAsync(SceneBuilder.SceneNames[1], true).ToWaitTask();
+        public static WaitTask<SceneResult> LoadFirstScene(ISceneManager sceneManager) => sceneManager.LoadAsync(SceneBuilder.SceneNames[1], true).ToWaitTask();
 
         void ReportSceneActivation(Scene previousScene, Scene newScene)
         {
