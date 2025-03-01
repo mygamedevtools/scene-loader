@@ -1,0 +1,51 @@
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.comparisonTable {
+  margin-top: var(--ifm-spacing-vertical);
+}
+
+.comparisonTable th,
+.comparisonTable td {
+  width: auto;
+}
+
+.comparisonTable thead,
+.comparisonTable tbody,
+.comparisonTable tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.comparisonTable th:first-child,
+.comparisonTable td:first-child {
+  font-weight: bold;
+  text-align: left;
+  overflow-x: auto;
+  width: auto;
+  white-space: nowrap;
+}
+
+.comparisonTable thead {
+  background-color: var(--ifm-table-head-color);
+}
+
+.comparisonTable th,
+.comparisonTable td,
+.comparisonTable thead tr {
+  border-width: 0;
+}
+
+.checkmark {
+  color: var(--ifm-color-primary);
+}
+
+.crossmark {
+  color: var(--ifm-color-danger);
+}
+
+.exclamation {
+  color: var(--ifm-color-warning);
+}

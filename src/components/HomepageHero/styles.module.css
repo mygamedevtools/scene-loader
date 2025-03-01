@@ -1,0 +1,157 @@
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  padding: 8rem 0;
+}
+
+.heroBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.heroVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  color: var(--ifm-color-white);
+  padding: 2rem;
+}
+
+.heroTitle {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.indexCta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.buttonCta {
+  background-color: #0054a3;
+  color: var(--ifm-color-white);
+  padding: 0.75rem 2rem;
+  font-size: 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.buttonCta:hover {
+  background-color: #004c93;
+}
+
+.indexCtaGitHubButtonWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.indexCtaGitHubButton {
+  overflow: hidden;
+  border: none;
+}
+
+@media only screen and (max-width: 768px) {
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.25rem;
+  }
+
+  .indexCtaGitHubButton {
+    display: none;
+  }
+}
+
+/* .hero {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-image: url("@site/static/img/hero.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  padding: 8rem 0;
+}
+
+.hero h1,
+.hero p {
+  position: relative;
+  z-index: 1;
+  color: var(--ifm-color-white);
+}
+
+.heroOverlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indexCta {
+  --ifm-button-size-multiplier: 1.6;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  gap: 1rem;
+}
+
+.indexCtaGitHubButtonWrapper {
+  display: flex;
+  z-index: 1;
+}
+
+.indexCtaGitHubButton {
+  overflow: hidden;
+}
+
+.buttonCta {
+  background-color: #0054a3;
+  color: var(--ifm-color-white);
+  z-index: 1;
+}
+
+.buttonCta:hover {
+  background-color: #004c93;
+  color: var(--ifm-color-white);
+}
+
+@media only screen and (max-width: 768px) {
+  .indexCtaGitHubButton {
+    display: none;
+  }
+} */

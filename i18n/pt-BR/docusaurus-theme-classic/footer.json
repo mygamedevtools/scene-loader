@@ -1,0 +1,50 @@
+{
+  "link.title.Docs": {
+    "message": "Docs",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "copyright": {
+    "message": "Copyright © 2025 My GameDev Tools. Feito com Docusaurus.",
+    "description": "The footer copyright"
+  },
+  "link.title.Upgrade": {
+    "message": "Atualizando",
+    "description": "The title of the footer links column with title=Upgrade in the footer"
+  },
+  "link.title.Support": {
+    "message": "Suporte",
+    "description": "The title of the footer links column with title=Support in the footer"
+  },
+  "link.item.label.Welcome": {
+    "message": "Boas Vindas",
+    "description": "The label of footer link with label=Welcome linking to /docs/intro"
+  },
+  "link.item.label.Installation": {
+    "message": "Instalação",
+    "description": "The label of footer link with label=Installation linking to /docs/getting-started/installation"
+  },
+  "link.item.label.Basic Usage": {
+    "message": "Guia Básico",
+    "description": "The label of footer link with label=Basic Usage linking to /docs/getting-started/basic-usage"
+  },
+  "link.item.label.From 2.x to 3.x": {
+    "message": "De 2.x para 3.x",
+    "description": "The label of footer link with label=From 2.x to 3.x linking to docs/upgrades/from-2-to-3"
+  },
+  "link.item.label.From 3.x to 4.x": {
+    "message": "De 3.x para 4.x",
+    "description": "The label of footer link with label=From 3.x to 4.x linking to docs/upgrades/from-3-to-4"
+  },
+  "link.item.label.Troubleshooting": {
+    "message": "Soluções de Problemas",
+    "description": "The label of footer link with label=Troubleshooting linking to /docs/troubleshooting"
+  },
+  "link.item.label.Report an Issue": {
+    "message": "Reportar um Problema",
+    "description": "The label of footer link with label=Report an Issue linking to https://github.com/mygamedevtools/scene-loader/issues/new"
+  },
+  "logo.alt": {
+    "message": "My GameDev Tools Logo",
+    "description": "The alt text of footer logo"
+  }
+}

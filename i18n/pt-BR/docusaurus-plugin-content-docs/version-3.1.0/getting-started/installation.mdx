@@ -1,0 +1,79 @@
+---
+sidebar_position: 1
+description: Como instalar o pacote Advanced Scene Manager.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Instalação
+
+Você pode instalar o pacote via **OpenUPM**, **Git** ou **Tarball**:
+
+<Tabs defaultValue={(() => {
+          if (typeof window !== "undefined") {
+              const hash = window.location.hash.replace("#", "").toLowerCase();
+              return ["openupm", "git", "tarball"].includes(hash) ? hash : "openupm";
+          }
+          return "openupm";
+      })()}>
+<TabItem value="openupm" label="OpenUPM" default>
+Esse pacote está disponível no registro [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader).
+Você pode instalar um pacote **OpenUPM** tanto pelo [openupm-cli](https://github.com/openupm/openupm-cli) ou manualmente pelo **Package Manager**.
+
+<Tabs>
+<TabItem value="openupm-cli" label="openupm-cli" default>
+
+:::info[Necessário]
+Requer [openupm-cli](https://github.com/openupm/openupm-cli) e [nodejs 18 ou mais recente](https://nodejs.org/en/download/).
+:::
+
+Na pasta do seu projeto Unity, abra o terminal e digite:
+
+```sh
+openupm add com.mygamedevtools.scene-loader
+```
+
+Isso irá atualizar automaticamente o **Scoped Registries** e instalar o pacote no seu projeto.
+</TabItem>
+
+<TabItem value="manually" label="Package Manager">
+* Abra `Edit/Project Settings/Package Manager`.
+* Adicione um novo **Scoped Registry** (ou edite o registro _OpenUPM_ existente):
+    ```
+    Name: Open UPM
+    URL: https://package.openupm.com
+    Scope(s): com.mygamedevtools
+    ```
+* Clique `Apply`.
+* Abra `Window/Package Manager`.
+* Na coluna da esquerda, selecione `Open UPM` dentro de `My Registries`.
+* Selecione `Advanced Scene Manager` dentro de `My GameDev Tools`.
+* Clique `Install`.
+</TabItem>
+</Tabs>
+
+</TabItem>
+
+<TabItem value="git" label="Git">
+
+:::info[Necessário]
+Requer [Git](https://git-scm.com/) instalado e disponível em PATH
+:::
+
+1. Abra `Window/Package Manager`.
+2. Clique <kbd>+</kbd>.
+3. Selecione `Install package from git URL...`.
+4. Copie `https://github.com/mygamedevtools/scene-loader.git#upm` no url.
+5. Clique `Add`.
+</TabItem>
+
+<TabItem value="tarball" label="Tarball">
+
+1. Escolha a [versão](https://github.com/mygamedevtools/scene-loader/releases) que deseja instalar e baixe o pacote `com.mygamedevtools.scene-loader-<release>.tgz`.
+2. Abra `Window/Package Manager`.
+3. Clique <kbd>+</kbd>.
+4. Selecione `Install package from tarball...`.
+5. Selecione o arquivo `com.mygamedevtools.scene-loader-<release>.tgz` que você baixou.
+</TabItem>
+</Tabs>

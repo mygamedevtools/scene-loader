@@ -1,0 +1,18 @@
+{
+  "version.label": {
+    "message": "3.1.0",
+    "description": "The label for version current"
+  },
+  "sidebar.documentationSidebar.category.Getting Started": {
+    "message": "Começando",
+    "description": "The label for category Getting Started in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Core Concepts": {
+    "message": "Conceitos Chave",
+    "description": "The label for category Core Concepts in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Upgrade Guides": {
+    "message": "Guias de Atualização",
+    "description": "The label for category Upgrade Guides in sidebar documentationSidebar"
+  }
+}

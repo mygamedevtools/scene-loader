@@ -1,0 +1,39 @@
+.installationButtons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.installationButtons a {
+    width: 12rem;
+}
+
+.buttonOpenUpm {
+    background-color: #4668e1;
+    color: var(--ifm-color-white);
+}
+
+.buttonOpenUpm:hover {
+    background-color: #375adb;
+    color: var(--ifm-color-white);
+}
+
+.buttonGit {
+    background-color: #dd5e32;
+    color: var(--ifm-color-white);
+}
+
+.buttonGit:hover {
+    background-color: #d74f27;
+    color: var(--ifm-color-white);
+}
+
+.buttonTarball {
+    background-color: var(--ifm-color-primary);
+    color: var(--ifm-color-white);
+}
+
+.buttonTarball:hover {
+    background-color: var(--ifm-color-primary-dark);
+    color: var(--ifm-color-white);
+}

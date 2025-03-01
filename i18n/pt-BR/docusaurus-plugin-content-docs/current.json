@@ -1,0 +1,18 @@
+{
+  "version.label": {
+    "message": "4.0.0 🚧",
+    "description": "The label for version current"
+  },
+  "sidebar.documentationSidebar.category.Getting Started": {
+    "message": "Começando",
+    "description": "The label for category Getting Started in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Advanced Usage": {
+    "message": "Guia Avançado",
+    "description": "The label for category Advanced Usage in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Upgrade Guides": {
+    "message": "Guias de Atualização",
+    "description": "The label for category Upgrade Guides in sidebar documentationSidebar"
+  }
+}
