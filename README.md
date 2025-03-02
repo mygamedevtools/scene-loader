@@ -1,7 +1,3 @@
-<h1 align=center style="display:none">
-Advanced Scene Manager
-</h1>
-
 <p align="center">
   <img src="./docs/img/banner.jpg" alt="Advanced Scene Manager" width="100%" />
 </p>
@@ -72,7 +68,7 @@ Add this to your Packages/manifest.json:
 
 ## 📚 Documentation
 
-The full API reference, examples, and tutorials are available in the [official documentation](https://mygamedevtools.github.io/scene-loader/).
+The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://mygamedevtools.github.io/scene-loader/).
 
 ## 🤝 Contributing
 
