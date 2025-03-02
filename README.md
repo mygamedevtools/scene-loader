@@ -19,7 +19,7 @@
 
 ## ⚡ Overview
 
-This is a Unity package to **simplify** scene operations: **load**, **unload** and **transition**. In a quick example:
+The **Advanced Scene Manager** is a Unity package to **simplify** scene operations: **load**, **unload** and **transition**. In a quick example:
 
 ```cs
 AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
