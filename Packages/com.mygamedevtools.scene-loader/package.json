@@ -14,5 +14,12 @@
   "documentationUrl": "https://github.com/mygamedevtools/scene-loader",
   "licensesUrl": "https://github.com/mygamedevtools/scene-loader?tab=MIT-1-ov-file",
   "changelogUrl": "https://github.com/mygamedevtools/scene-loader/blob/main/CHANGELOG.md",
-  "hideInEditor": false
+  "hideInEditor": false,
+  "samples": [
+    {
+      "displayName": "Loading Scene Examples",
+      "description": "Experiment with different loading scenes for Scene Transitions. Use the sample scenes as a starting point to build your own loading scenes.",
+      "path": "Samples~/LoadingSceneExamples"
+    }
+  ]
 }
