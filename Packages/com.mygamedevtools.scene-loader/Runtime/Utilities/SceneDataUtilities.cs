@@ -171,7 +171,7 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            Debug.LogWarning($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}.");
+            Debug.LogWarning($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}. Is the scene loaded?");
             sceneData = default;
             return false;
         }
