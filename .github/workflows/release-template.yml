@@ -73,14 +73,14 @@ jobs:
       run: |
         git config --global user.name 'semantic-release-bot'
         git config --global user.email 'semantic-release-bot@martynus.net'
-        git commit -am "update package.json"
+        git commit --amend -a --no-edit
         git branch -d upm &> /dev/null || echo upm branch not found
         git subtree split -P "$PACKAGE_PATH" -b upm
         git checkout upm
         if [[ -d "Samples" ]]; then
           git mv Samples Samples~
           rm -f Samples.meta
-          git commit -am "fix: Samples => Samples~"
+          git commit --amend -a --no-edit
         fi
         git push -f -u origin upm
     - name: 🏷️ Create UPM Tag
