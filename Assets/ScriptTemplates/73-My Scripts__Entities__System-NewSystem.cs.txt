@@ -1,6 +1,0 @@
-#SIGNATURE#using Unity.Entities;
-
-#NAMESPACE#public partial struct #SCRIPTNAME# : ISystem
-{
-
-}

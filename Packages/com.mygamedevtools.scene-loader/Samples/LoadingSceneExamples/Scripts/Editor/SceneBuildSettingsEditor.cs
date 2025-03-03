@@ -22,6 +22,7 @@ public static class SceneBuildSettingsEditor
     static SceneBuildSettingsEditor()
     {
         EditorApplication.delayCall += CheckScenesInBuildSettings;
+        EditorApplication.delayCall += MaterialPipelineConverter.ConvertMaterials;
     }
 
     static void CheckScenesInBuildSettings()
@@ -40,7 +41,7 @@ public static class SceneBuildSettingsEditor
         string[] missingScenes = _requiredSceneNames
             .Where(name => !buildScenes.Contains(name))
             .Select(name => allScenePaths.FirstOrDefault(path => Path.GetFileNameWithoutExtension(path) == name))
-            .Where(path => !string.IsNullOrEmpty(path))
+            .Where(path => !string.IsNullOrEmpty(path) && !path.Contains("Packages/com.mygamedevtools.scene-loader"))
             .ToArray();
 
         if (missingScenes.Length > 0)

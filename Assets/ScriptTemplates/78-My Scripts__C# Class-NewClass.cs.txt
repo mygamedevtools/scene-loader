@@ -1,6 +1,0 @@
-#SIGNATURE#using System;
-
-#NAMESPACE#public class #SCRIPTNAME#
-{
-
-}
