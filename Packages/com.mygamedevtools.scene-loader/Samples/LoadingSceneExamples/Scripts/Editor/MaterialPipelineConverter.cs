@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System.Linq;
 #if CONVERT_MATERIALS
 using UnityEditor.Rendering;
 using UnityEngine.Rendering;
@@ -14,53 +15,66 @@ using UnityEditor.Rendering.HighDefinition;
 #endif
 #endif
 
+[InitializeOnLoad]
 public static class MaterialPipelineConverter
 {
-    const string _partialPath = "LoadingSceneExamples/Materials";
+    const string _partialPath = "Loading Scene Examples/Materials";
+
+    static MaterialPipelineConverter()
+    {
+        EditorApplication.delayCall += ConvertMaterials;
+    }
 
     public static void ConvertMaterials()
     {
-#if CONVERT_MATERIALS
-        string fullPath = FindFolderByPartialPath(_partialPath);
-        if (string.IsNullOrEmpty(fullPath))
+        RenderPipelineAsset renderPipeline = GraphicsSettings.currentRenderPipeline;
+        if (!renderPipeline)
             return;
 
-        List<MaterialUpgrader> upgraders = GetMaterialUpgraders();
-        if (upgraders.Count > 0)
+#if CONVERT_MATERIALS
+        string[] materialPaths = AssetDatabase.FindAssets("t:Material")
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .Where(path => path.Contains(_partialPath))
+            .ToArray();
+
+        if (materialPaths.Length == 0)
+            return;
+
+        Material[] materials = materialPaths
+            .Select(path => AssetDatabase.LoadAssetAtPath<Material>(path))
+            .Where(material => material != null && material.shader.name == "Standard")
+            .ToArray();
+
+        if (materials.Length == 0)
+            return;
+
+        List<MaterialUpgrader> upgraders = GetMaterialUpgraders(renderPipeline);
+        if (upgraders.Count > 0 && EditorUtility.DisplayDialog("Sample Material Upgrader", "The sample materials have to be upgraded to match your render pipeline. Would you like to upgrade them now?", "Upgrade", "Ignore"))
         {
-            MaterialUpgrader.UpgradeProjectFolder(GetMaterialUpgraders(), fullPath);
+            foreach (Material material in materials)
+            {
+                MaterialUpgrader.Upgrade(material, upgraders, MaterialUpgrader.UpgradeFlags.None);
+            }
             AssetDatabase.Refresh();
         }
 #endif
     }
 
 #if CONVERT_MATERIALS
-    static List<MaterialUpgrader> GetMaterialUpgraders()
+    static List<MaterialUpgrader> GetMaterialUpgraders(RenderPipelineAsset renderPipeline)
     {
-        RenderPipelineAsset renderPipeline = GraphicsSettings.currentRenderPipeline;
         List<MaterialUpgrader> upgraders = new();
-#if CONVERT_HDRP
-        if (renderPipeline is HDRenderPipelineAsset)
-            upgraders.Add(new StandardsToHDLitMaterialUpgrader("Standard", "HDRP/Lit"));
-#endif
 #if CONVERT_URP
         if (renderPipeline is UniversalRenderPipelineAsset)
             upgraders.Add(new StandardUpgrader("Standard"));
 #endif
+#if CONVERT_HDRP
+        if (renderPipeline is HDRenderPipelineAsset)
+            upgraders.Add(new StandardsToHDLitMaterialUpgrader("Standard", "HDRP/Lit"));
+#endif
         return upgraders;
     }
 #endif
-
-    static string FindFolderByPartialPath(string partialPath)
-    {
-        string[] allFolders = AssetDatabase.GetAllAssetPaths();
-        foreach (string folder in allFolders)
-        {
-            if (folder.EndsWith(partialPath))
-                return folder;
-        }
-        return null;
-    }
 }
 
 #if CONVERT_HDRP

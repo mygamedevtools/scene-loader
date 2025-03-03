@@ -22,7 +22,6 @@ public static class SceneBuildSettingsEditor
     static SceneBuildSettingsEditor()
     {
         EditorApplication.delayCall += CheckScenesInBuildSettings;
-        EditorApplication.delayCall += MaterialPipelineConverter.ConvertMaterials;
     }
 
     static void CheckScenesInBuildSettings()
