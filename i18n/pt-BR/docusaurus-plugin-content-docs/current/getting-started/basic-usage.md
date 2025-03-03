@@ -102,6 +102,8 @@ AdvancedSceneManager.TransitionAddressableAsync(new AssetReference[] { scene1, s
 O tipo de referência precisa ser o mesmo para a cena alvo e para a cena intermediária.
 :::
 
+Confira o Exemplo '[Loading Scene Examples](../samples/loading-scene-examples.md)' para testar diferentes tipos de cenas de carregamento durante **Transições de Cena**.
+
 ## Programação Async
 
 Todas as operações de cena são _awaitable_ e podem ser usadas em coroutines também. Por exemplo:

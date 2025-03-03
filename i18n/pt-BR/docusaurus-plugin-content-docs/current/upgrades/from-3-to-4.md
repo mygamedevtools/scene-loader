@@ -20,6 +20,7 @@ Ela remove completamente as implementações de `ISceneLoader` e adiciona a clas
 * Todos os tipos de retorno foram convertidos para `Task<SceneResult>`, que pode retornar uma ou várias cenas, ser aguardado com _await_ e usado em coroutines com `WaitTask`. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
 * Removidas todas as referências ao [UniTask], mas a compatibilidade foi mantida.
 * Melhorada a correspondência de cenas ao descarregá-las. ([#44](https://github.com/mygamedevtools/scene-loader/issues/44))([#48](https://github.com/mygamedevtools/scene-loader/issues/48))
+* Adicionado o Exemplo '[Loading Scene Examples](../samples/loading-scene-examples.md)'. ([#36](https://github.com/mygamedevtools/scene-loader/issues/36))
 
 ## Atualizações de código
 

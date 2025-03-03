@@ -72,6 +72,10 @@ You can also set the fade time and customize the fade in/out animation curves to
 
 To use the `LoadingFader` effectively, you must **enable** both `WaitForScriptedStart` and `WaitForScriptedEnd` toggles in your `LoadingBehavior` component.
 
+## Loading Scene Sample
+
+You can try multiple loading scenes in the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample.
+
 [MonoBehaviour]: https://docs.unity3d.com/Manual/class-MonoBehaviour.html
 [MonoBehaviours]: https://docs.unity3d.com/Manual/class-MonoBehaviour.html
 [ScriptableObject]: https://docs.unity3d.com/Manual/class-ScriptableObject.html

@@ -33,7 +33,7 @@ O método `TransitionAsync` permite que você providencie a cena (ou cenas) para
 
 ## Cena de Carregamento Intermediária
 
-Para criar uma Cena de Carregamento, você precisa usar os [Componentes de Carregamento](../getting-started/loading-screens.md#loading-components).
+Para criar uma Cena de Carregamento, você precisa usar os [Componentes de Carregamento](../getting-started/loading-screens.md#componentes-de-carregamento).
 Ao realizar uma **Transição de Cena**, o `CoreSceneManager` procura por um componente `LoadingBehavior` na cena intermediária e, se existir, ele será notificado com o progresso do carregamento.
 
 Os campos `WaitForScriptedStart` e `WaitForScriptedEnd` no `LoadingBehavior` controlam se a cena de carregamento terá uma animação para iniciar e/ou finalizar a transição.

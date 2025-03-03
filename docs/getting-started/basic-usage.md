@@ -101,6 +101,8 @@ AdvancedSceneManager.TransitionAddressableAsync(new AssetReference[] { scene1, s
 The reference type must be the same for the target scene and the intermediate scene.
 :::
 
+Check the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample to try different loading scenes when performing **Scene Transitions**.
+
 ## Async Programming
 
 All scene operations are awaitable and can be used in coroutines as well. For example:

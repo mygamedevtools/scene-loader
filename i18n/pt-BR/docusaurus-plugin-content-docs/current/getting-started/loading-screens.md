@@ -71,6 +71,9 @@ Você também pode controlar o tempo de fade e parametrizar as curvas de animaç
 
 Para usar efetivamente o `LoadingFader`, você deve **habilitar** os toggles `WaitForScriptedStart` e `WaitForScriptedEnd` no seu componente `LoadingBehavior`.
 
+## Exemplo de Telas de Carregamento
+
+Você pode testar várias telas de carregamento no Exemplo '[Loading Scene Examples](../samples/loading-scene-examples.md)'.
 
 [MonoBehaviour]: https://docs.unity3d.com/Manual/class-MonoBehaviour.html
 [MonoBehaviours]: https://docs.unity3d.com/Manual/class-MonoBehaviour.html

@@ -20,6 +20,7 @@ It completely removes the `ISceneLoader` implementations and adds a static `Adva
 * Merged all return types to `Task<SceneResult>`, which can return a single or multiple scenes, be awaited and be used in coroutines with `WaitTask`. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
 * Removed all [UniTask] references, but it's still compatible.
 * Improved scene match when unloading scenes. ([#44](https://github.com/mygamedevtools/scene-loader/issues/44))([#48](https://github.com/mygamedevtools/scene-loader/issues/48))
+* Added the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample. ([#36](https://github.com/mygamedevtools/scene-loader/issues/36))
 
 ## Code Updates
 
