@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
+#if ENABLE_ADDRESSABLES
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+#endif
 using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
@@ -11,6 +13,7 @@ namespace MyGameDevTools.SceneLoading.Tests
     {
         int[] _buildIndexes = new[] { 1, 2, 3 };
 
+#if ENABLE_ADDRESSABLES
         AssetReference[] _assetReferences;
 
         [OneTimeSetUp]
@@ -24,6 +27,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Addressables.Release(operationHandle);
         }
+#endif
 
         [UnityTest]
         public IEnumerator Load_Extension_ByIndex()
