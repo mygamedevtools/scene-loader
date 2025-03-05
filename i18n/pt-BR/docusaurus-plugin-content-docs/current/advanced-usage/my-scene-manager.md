@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Advanced Scene Manager
+# My Scene Manager
 
 O `AdvancedSceneManager` é uma classe estática que engloba a classe `CoreSceneManager`, que existe para simplificar a experiência de uso das **Operações de Cena**.
 Ele gerencia uma referêncai interna ao Core Scene Manager que é criado durante o _callback_ `RuntimeInitializeOnLoadMethod`, que é executado depois que a primeira cena é carregada e depois do primeiro ciclo de `Awake()`.

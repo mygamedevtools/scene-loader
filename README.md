@@ -1,6 +1,6 @@
-# Advanced Scene Manager Documentation
+# My Scene Manager Documentation
 
-This repository contains the documentation for **Advanced Scene Manager**, a Unity package designed to streamline scene transitions, async operations, and addressable scene management.
+This repository contains the documentation for **My Scene Manager**, a Unity package designed to streamline scene transitions, async operations, and addressable scene management.
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
 ## Prerequisites

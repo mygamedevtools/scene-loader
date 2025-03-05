@@ -1,20 +1,20 @@
 ---
 sidebar_position: 1
-description: An introduction to the advanced usage of the Advanced Scene Manager.
+description: An introduction to the advanced usage of My Scene Manager.
 ---
 
 # Core Concepts
 
-There are some key structures that need to be understood in order to dive deep into the logic of the Advanced Scene Manager.
+There are some key structures that need to be understood in order to dive deep into the logic of the My Scene Manager.
 
 ## Architecture
 
-This is an overview of the Advanced Scene Manager architecture. We will dive into each individual component in the next pages.
+This is an overview of the My Scene Manager architecture. We will dive into each individual component in the next pages.
 Consider this flowchart:
 
 ```mermaid
 flowchart TB
-  asm(Advanced Scene Manager)
+  asm(My Scene Manager)
   sd(Core Scene Manager)
   isd([ISceneManager])
   so{{Load, Unload or Transition}}
@@ -42,7 +42,7 @@ flowchart TB
   sr === so
 ```
 
-- The `AdvancedSceneManager` is a static implementation of a `CoreSceneManager`, which contains all the logic to perform **Scene Operations**.
+- The `MySceneManager` is a static implementation of a `CoreSceneManager`, which contains all the logic to perform **Scene Operations**.
 - The `CoreSceneManager` is an implementation of the `ISceneManager` interface, that by itself only defines "low-level" **Scene Operations** methods that receive `SceneParameter` arguments.
 - The `SceneParameter` struct is an abstraction to handle a single `ILoadSceneInfo` or multiple (`ILoadSceneInfo[]`).
 - The `ILoadSceneInfo` interface is an abstraction of a reference to a scene. It has the following implementations:

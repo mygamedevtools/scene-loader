@@ -40,4 +40,4 @@ The `WaitForScriptedStart` and `WaitForScriptedEnd` fields in the `LoadingBehavi
 Effectively, this **delays** the start or the end of the **Scene Transition** operation to display a visual feedback such as a fade in/out.
 
 When the `TransitionAsync` method is _awaited_, it will wait until the entire transition has been completed **and** the loading scene has been unloaded.
-If you wish to execute an action exactly when the target scene is loaded, you can either rely on that scene's `Awake()` calls or subscribe to the `SceneLoaded` event from the `CoreSceneManager` or `AdvancedSceneManager`.
+If you wish to execute an action exactly when the target scene is loaded, you can either rely on that scene's `Awake()` calls or subscribe to the `SceneLoaded` event from the `CoreSceneManager` or `MySceneManager`.

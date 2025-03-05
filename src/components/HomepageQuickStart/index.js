@@ -9,7 +9,7 @@ export default function QuickStart() {
         <h2 className="text--center">⚡ <Translate id="homepage.example.title">Quick Example</Translate></h2>
         <p className="text--center"><Translate id="homepage.example.text1">Perform scene transitions like this:</Translate></p>
         <CodeBlock language="cs">
-          {`AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");`}
+          {`MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");`}
         </CodeBlock>
         <p className="text--center"><Translate id="homepage.example.text2">Instead of:</Translate></p>
         <CodeBlock language="cs">

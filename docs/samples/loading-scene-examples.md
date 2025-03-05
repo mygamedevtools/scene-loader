@@ -12,11 +12,11 @@ This sample showcases different loading scenes and how to use **Scene Transition
 Import the sample through the **Package Manager**.
 
 1. Open `Window/Package Manager`.
-2. Select `Advanced Scene Manager` from the `In Project` list.
+2. Select `My Scene Manager` from the `In Project` list.
 3. In the right panel, select the **Samples** tab.
 4. Click on the `Import` button on the `Loading Scene Examples` item.
 
-The sample assets will be installed to `Samples/Advanced Scene Manager/<version>/Loading Scene Examples`.
+The sample assets will be installed to `Samples/My Scene Manager/<version>/Loading Scene Examples`.
 
 ## Scriptable Render Pipeline Compatibility
 
@@ -29,7 +29,7 @@ After importing the sample, a dialog will appear asking to automatically add the
 This is required to be able to perform **Scene Transitions** with the sample scenes.
 If you ignore this prompt, you'll need to manually add the scenes to the **Build Settings** if you want to play the sample.
 
-You can easily remove the scenes added to the **Build Settings** via the menu item at `Tools/Advanced Scene Manager/Remove 'Loading Scene Examples' from Build Settings`.
+You can easily remove the scenes added to the **Build Settings** via the menu item at `Tools/My Scene Manager/Remove 'Loading Scene Examples' from Build Settings`.
 
 ## Playing the Sample
 
@@ -69,12 +69,12 @@ public class SceneTransitionTrigger : MonoBehaviour
 
     public void TransitionWithLoading(string loadingScene)
     {
-        AdvancedSceneManager.TransitionAsync(_targetScene, loadingScene);
+        MySceneManager.TransitionAsync(_targetScene, loadingScene);
     }
 
     public void Transition()
     {
-        AdvancedSceneManager.TransitionAsync(_targetScene);
+        MySceneManager.TransitionAsync(_targetScene);
     }
 }
 ```

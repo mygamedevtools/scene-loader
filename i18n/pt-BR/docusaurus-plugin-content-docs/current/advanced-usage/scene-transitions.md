@@ -40,4 +40,4 @@ Os campos `WaitForScriptedStart` e `WaitForScriptedEnd` no `LoadingBehavior` con
 Isso efetivamente **atrasará** o início ou o fim da operação de **Transição de Cena** para exibir um feedback visual, como um efeito de fade in/out.
 
 Quando o método `TransitionAsync` é _awaited_, ele aguardará até que toda a transição tenha sido concluída **e** a cena de carregamento tenha sido descarregada.
-Se você deseja executar uma ação exatamente quando a cena alvo for carregada, pode confiar nas chamadas `Awake()` dessa cena ou assinar o evento `SceneLoaded` do `CoreSceneManager` ou `AdvancedSceneManager`.
+Se você deseja executar uma ação exatamente quando a cena alvo for carregada, pode confiar nas chamadas `Awake()` dessa cena ou assinar o evento `SceneLoaded` do `CoreSceneManager` ou `MySceneManager`.

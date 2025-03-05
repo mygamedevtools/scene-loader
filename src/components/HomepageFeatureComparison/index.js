@@ -28,7 +28,7 @@ export default function FeatureComparison() {
             <thead>
               <tr>
                 <th></th>
-                <th className="text--center">Advanced Scene Manager</th>
+                <th className="text--center">My Scene Manager</th>
                 <th className="text--center">Unity Scene Manager</th>
               </tr>
             </thead>

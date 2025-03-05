@@ -7,12 +7,13 @@ description: Atualize da versão 3.x para 4.x
 # Atualizando da versão 3.x para 4.x
 
 A atualização `4.x` consolida as mudanças da versão `3.x` e simplifica ainda mais a experiência de uso.
-Ela remove completamente as implementações de `ISceneLoader` e adiciona a classe estática `AdvancedSceneManager`, eliminando a necessidade de controlar manualmente seu ciclo de vida.
+Ela remove completamente as implementações de `ISceneLoader` e adiciona a classe estática `MySceneManager`, eliminando a necessidade de controlar manualmente seu ciclo de vida.
 
 ## Principais mudanças
 
-* Alterada a `AdvancedSceneManager` para ser uma classe estática que gerencia automaticamente seu ciclo de vida. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
-* A antiga `AdvancedSceneManager` foi convertida em uma nova classe `CoreSceneManager`, usada internamente pela nova `AdvancedSceneManager` estática. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
+* Renomeado o pacote para `MySceneManager` de `AdvancedSceneManager` devido a existência de um produto existente na Unity Asset Store com o nome Advanced Scene Manager.
+* Adicionada a classe estática `MySceneManager` para gerencia automaticamente o ciclo de vida de um scene manager. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
+* A antiga `AdvancedSceneManager` foi convertida em uma nova classe `CoreSceneManager`, usada internamente pela nova `MySceneManager` estática. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
 * Adicionados métodos de extensão para evitar a criação manual de instâncias de `ILoadSceneInfo`. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
 * Removida a interface `ISceneLoader` e todas as suas implementações: `SceneLoaderAsync`, `SceneLoaderCoroutine` e `SceneLoaderUniTask`. ([#39](https://github.com/mygamedevtools/scene-loader/issues/39))
 * A lógica de `Transition` foi movida para a interface `ISceneManager` diretamente.
@@ -24,7 +25,7 @@ Ela remove completamente as implementações de `ISceneLoader` e adiciona a clas
 
 ## Atualizações de código
 
-Com a classe estática `AdvancedSceneManager`, não há mais necessidade de gerenciar o ciclo de vida de um `ISceneManager`.
+Com a classe estática `MySceneManager`, não há mais necessidade de gerenciar o ciclo de vida de um `ISceneManager`.
 Além disso, não é mais necessário criar instâncias de `ILoadSceneInfo` manualmente, graças aos métodos de extensão.
 Considere este código da versão `3.x`:
 
@@ -38,7 +39,7 @@ loader.TransitionToSceneAsync(new LoadSceneInfo("my-target-scene"), new LoadScen
 Ele pode ser convertido para este código da versão `4.x`:
 
 ```cs
-AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 ```
 
 ## Fim do `ISceneLoader`
@@ -110,9 +111,9 @@ Você pode obter as cenas chamando `SceneResult.GetScenes()`.
 
 ## Mudanças no Advanced Scene Manager
 
-A antiga `AdvancedSceneManager`, que implementava `ISceneManager`, foi renomeada para `CoreSceneManager`, enquanto a nova `AdvancedSceneManager` agora é uma classe estática que gerencia internamente uma instância de `CoreSceneManager`.
+A antiga `AdvancedSceneManager`, que implementava `ISceneManager`, foi renomeada para `CoreSceneManager`, enquanto a nova `MySceneManager` é uma classe estática que gerencia internamente uma instância de `CoreSceneManager`.
 
-Na prática, a `AdvancedSceneManager` engloba uma instância de `CoreSceneManager` estaticamente.
+Na prática, a `MySceneManager` engloba uma instância de `CoreSceneManager` estaticamente.
 
 A implementação de **Transição de Cena** que estava no antigo `SceneLoaderAsync` foi migrada para a `CoreSceneManager`, com algumas melhorias.
 
@@ -121,10 +122,10 @@ A implementação de **Transição de Cena** que estava no antigo `SceneLoaderAs
 Com os métodos de extensão, não é mais necessário criar instâncias de `ILoadSceneInfo` manualmente:
 
 ```cs
-AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 ```
 
-Isso funciona tanto para a `AdvancedSceneManager` estática quanto para qualquer implementação de `ISceneManager`.
+Isso funciona tanto para a `MySceneManager` estática quanto para qualquer implementação de `ISceneManager`.
 Os métodos de extensão usam os argumentos para construir um `SceneParameter` internamente, como:
 
 ```cs
@@ -148,13 +149,13 @@ Com a remoção do `SceneLoaderCoroutine` e a conversão do tipo de retorno para
 Você só precisa converter a task para uma `WaitTask`, que pode ser aguardada:
 
 ```cs
-yield return AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene").ToWaitTask();
+yield return MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene").ToWaitTask();
 ```
 
 Você pode usar a `WaitTask` para ler a cena carregada:
 
 ```cs
-WaitTask<SceneResult> waitTask = AdvancedSceneManager.LoadAsync("my-target-scene");
+WaitTask<SceneResult> waitTask = MySceneManager.LoadAsync("my-target-scene");
 yield return waitTask;
 
 Scene loadedScene = waitTask.Task.Result.GetScene();

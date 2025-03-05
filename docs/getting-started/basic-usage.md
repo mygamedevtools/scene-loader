@@ -1,13 +1,13 @@
 ---
 sidebar_position: 3
-description: Basic introduction to the usage of the Advanced Scene Manager.
+description: Basic introduction to the usage of My Scene Manager.
 ---
 
 # Basic Usage
 
 Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
 
-You will be using the `AdvancedSceneManager` static class to perform the scene operations.
+You will be using the `MySceneManager` static class to perform the scene operations.
 
 ## Loading scenes
 
@@ -15,32 +15,32 @@ You can load scenes by using any of these references:
 
 ```cs
 // Name
-AdvancedSceneManager.LoadAsync("my-scene");
+MySceneManager.LoadAsync("my-scene");
 // Path (relative to the Assets folder)
-AdvancedSceneManager.LoadAsync("Scenes/my-scene");
+MySceneManager.LoadAsync("Scenes/my-scene");
 // Build Index
-AdvancedSceneManager.LoadAsync(1);
+MySceneManager.LoadAsync(1);
 // Address
-AdvancedSceneManager.LoadAddressableAsync("my-scene-address");
+MySceneManager.LoadAddressableAsync("my-scene-address");
 // Asset Reference
-AdvancedSceneManager.LoadAddressableAsync(mySceneAssetReference);
+MySceneManager.LoadAddressableAsync(mySceneAssetReference);
 ```
 
 Additionally, you can also pass an array of scenes (given the same type of reference):
 
 ```cs
 // Array of build indexes
-AdvancedSceneManager.LoadAsync(new int[] { 1, 2, 3});
+MySceneManager.LoadAsync(new int[] { 1, 2, 3});
 ```
 
 The loaded scene can be marked to be set as the active scene:
 
 ```cs
 // Loads a scene and sets it as the active scene
-AdvancedSceneManager.LoadAsync("my-scene", true);
+MySceneManager.LoadAsync("my-scene", true);
 
 // Loads a list of scenes and set the scene at index 1 as the active scene
-AdvancedSceneManager.LoadAsync(new int[] { 1, 2, 3 }, 1);
+MySceneManager.LoadAsync(new int[] { 1, 2, 3 }, 1);
 ```
 
 You can get the progress of the loading operation by passing an `IProgress<float>` implementation, for example:
@@ -55,7 +55,7 @@ public class SimpleProgress : IProgress<float>
 // [...]
 
 SimpleProgress progress = new SimpleProgress();
-AdvancedSceneManager.LoadAsync("my-scene", true, progress);
+MySceneManager.LoadAsync("my-scene", true, progress);
 ```
 
 ## Unloading scenes
@@ -64,24 +64,24 @@ You can unload scenes by using any reference, including the scene itself.
 
 ```cs
 // Name
-AdvancedSceneManager.UnloadAsync("my-scene");
+MySceneManager.UnloadAsync("my-scene");
 // Path (relative to the Assets folder)
-AdvancedSceneManager.UnloadAsync("Scenes/my-scene");
+MySceneManager.UnloadAsync("Scenes/my-scene");
 // Build Index
-AdvancedSceneManager.UnloadAsync(1);
+MySceneManager.UnloadAsync(1);
 // Address
-AdvancedSceneManager.UnloadAddressableAsync("my-scene-address");
+MySceneManager.UnloadAddressableAsync("my-scene-address");
 // Asset Reference
-AdvancedSceneManager.UnloadAddressableAsync(mySceneAssetReference);
+MySceneManager.UnloadAddressableAsync(mySceneAssetReference);
 // Scene
-AdvancedSceneManager.UnloadAsync(AdvancedSceneManager.GetActiveScene());
+MySceneManager.UnloadAsync(MySceneManager.GetActiveScene());
 ```
 
 You can also unload multiple scenes:
 
 ```cs
 // Array of build indexes
-AdvancedSceneManager.UnloadAsync(new int[] { 1, 2, 3});
+MySceneManager.UnloadAsync(new int[] { 1, 2, 3});
 ```
 
 ## Scene Transitions
@@ -91,10 +91,10 @@ You can use the same references from the `LoadAsync` method.
 
 ```cs
 // Name
-AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 
 // Array of AssetReference
-AdvancedSceneManager.TransitionAddressableAsync(new AssetReference[] { scene1, scene2, scene3 });
+MySceneManager.TransitionAddressableAsync(new AssetReference[] { scene1, scene2, scene3 });
 ```
 
 :::info
@@ -108,13 +108,13 @@ Check the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample 
 All scene operations are awaitable and can be used in coroutines as well. For example:
 
 ```cs
-await AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+await MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 // Do something after the transition
 ```
 
 For coroutines, you must convert the `Task` into a `WaitTask`, which is a helper struct to support coroutines:
 
 ```cs
-yield return AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene").ToWaitTask();
+yield return MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene").ToWaitTask();
 // Do something after the transition
 ```

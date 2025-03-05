@@ -10,15 +10,15 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Advanced Scene Manager',
+  title: 'My Scene Manager',
   tagline: 'Enhance your scene loading experience',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://mygamedevtools.github.io',
+  url: 'https://scene-loader.mygamedevtools.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/scene-loader/',
+  baseUrl: '',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -74,7 +74,7 @@ const config = {
     ({
       image: 'img/social-card.jpg',
       navbar: {
-        title: 'Advanced Scene Manager',
+        title: 'My Scene Manager',
         logo: {
           alt: 'My GameDev Tools Logo',
           src: 'img/logo.svg',

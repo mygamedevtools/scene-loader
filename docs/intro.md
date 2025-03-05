@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-The **Advanced Scene Manager** is a powerful Unity package designed to simplify scene management, improve performance, and enhance flexibility in your projects. Whether you're dealing with scene transitions, [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html) scenes, or async/await workflows, this package provides an easy-to-use solution for handling all your scene management needs.
+**My Scene Manager** is a powerful Unity package designed to simplify scene management, improve performance, and enhance flexibility in your projects. Whether you're dealing with scene transitions, [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html) scenes, or async/await workflows, this package provides an easy-to-use solution for handling all your scene management needs.
 
 ## Key Features
 
@@ -16,7 +16,7 @@ The **Advanced Scene Manager** is a powerful Unity package designed to simplify 
 
 ## Instalation
 
-To get started with the Advanced Scene Manager, you can install it in various ways:
+To get started with My Scene Manager, you can install it in various ways:
 
 * [OpenUPM](./getting-started/installation.mdx#openupm)
 * [Install from Git](./getting-started/installation.mdx#git)
@@ -31,5 +31,5 @@ using MyGameDevTools.SceneLoading;
 // [...]
 
 // Transition to a scene with a loading scene
-AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 ```

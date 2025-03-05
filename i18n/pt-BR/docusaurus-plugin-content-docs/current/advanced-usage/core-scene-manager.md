@@ -89,7 +89,7 @@ new CoreSceneManager(initializationScenes: new Scene[]);
 ```
 
 :::note
-Você não precisa criar manualmente uma instância de `CoreSceneManager` se estiver usando o `AdvancedSceneManager`.
+Você não precisa criar manualmente uma instância de `CoreSceneManager` se estiver usando o `MySceneManager`.
 :::
 
 ## Scene Parameter

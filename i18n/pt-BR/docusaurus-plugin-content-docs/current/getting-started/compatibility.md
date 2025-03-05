@@ -1,6 +1,6 @@
 ---
 sidebar_position: 2
-description: Pacotes compatíveis com o Advanced Scene Manager.
+description: Pacotes compatíveis com o My Scene Manager.
 ---
 
 # Compatibilidade

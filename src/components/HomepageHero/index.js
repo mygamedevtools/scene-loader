@@ -21,7 +21,7 @@ export default function Hero() {
         <div className={styles.heroOverlay}></div>
       </div>
       <div className={clsx("container", styles.heroContent)}>
-        <h1 className={clsx("hero__title", styles.heroTitle)}>Advanced Scene Manager</h1>
+        <h1 className={clsx("hero__title", styles.heroTitle)}>My Scene Manager</h1>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
           <Translate id="homepage.heroSubtitle">Enhance your scene management experience in Unity.</Translate>
         </p>
@@ -43,38 +43,3 @@ export default function Hero() {
     </header>
   );
 }
-
-// export default function Hero() {
-//   return (
-//     <header className={clsx("hero hero--primary text--center", styles.hero)}>
-//       <div className={styles.heroOverlay}>
-//         <video autoPlay loop muted playsInline className={styles.heroVideo} poster="@site/static/img/hero.jpg">
-//           <source src="@site/static/img/hero.mp4" type="video/mp4" />
-//           Your browser does not support the video tag.
-//         </video>
-//       </div>
-//       <div className="container">
-//         <h1 className={clsx("hero__title", styles.heroTitle)}>Advanced Scene Manager</h1>
-//         <span className="hero__subtitle">
-//           <p>
-//             <Translate id="homepage.heroSubtitle">Enhance your scene management experience in Unity.</Translate>
-//           </p>
-//         </span>
-//         <div className={styles.indexCta}>
-//           <Link className={clsx("button", styles.buttonCta)} to="/docs/intro">
-//             <Translate id="homepage.callToAction.label">Get Started</Translate>
-//           </Link>
-//           <span className={styles.indexCtaGitHubButtonWrapper}>
-//             <iframe
-//               className={styles.indexCtaGitHubButton}
-//               src="https://ghbtns.com/github-btn.html?user=mygamedevtools&amp;repo=scene-loader&amp;type=star&amp;count=true&amp;size=large"
-//               width={160}
-//               height={30}
-//               title="GitHub Stars"
-//             />
-//           </span>
-//         </div>
-//       </div>
-//     </header>
-//   );
-// }

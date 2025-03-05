@@ -89,7 +89,7 @@ new CoreSceneManager(initializationScenes: new Scene[]);
 ```
 
 :::note
-You don't need to manually create a `CoreSceneManager` instance if you're using the `AdvancedSceneManager`.
+You don't need to manually create a `CoreSceneManager` instance if you're using the `MySceneManager`.
 :::
 
 ## Scene Parameter
