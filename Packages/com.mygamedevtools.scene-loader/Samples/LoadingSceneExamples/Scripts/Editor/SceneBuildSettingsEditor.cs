@@ -47,7 +47,7 @@ public static class SceneBuildSettingsEditor
         {
             bool addScenes = EditorUtility.DisplayDialogComplex(
                 _sampleName,
-                "To run the " + _sampleName + ", you need to add the sample scenes to the Build Settings. Would you like to add them now?\nYou can remove them later in the menu: \"Tools/Advanced Scene Manager/Remove '" + _sampleName + "' from Build Settings\".",
+                "To run the " + _sampleName + ", you need to add the sample scenes to the Build Settings. Would you like to add them now?\nYou can remove them later in the menu: \"Tools/My Scene Manager/Remove '" + _sampleName + "' from Build Settings\".",
                 "Add Scenes",
                 "Ignore",
                 "Don't Show Again"
@@ -83,7 +83,7 @@ public static class SceneBuildSettingsEditor
         EditorBuildSettings.scenes = currentScenes.ToArray();
     }
 
-    [MenuItem("Tools/Advanced Scene Manager/Remove '" + _sampleName + "' from Build Settings")]
+    [MenuItem("Tools/My Scene Manager/Remove '" + _sampleName + "' from Build Settings")]
     static void RemoveSampleScenesFromBuildSettings()
     {
         List<EditorBuildSettingsScene> currentScenes = EditorBuildSettings.scenes.ToList();
@@ -92,7 +92,7 @@ public static class SceneBuildSettingsEditor
         EditorBuildSettings.scenes = currentScenes.ToArray();
     }
 
-    [MenuItem("Tools/Advanced Scene Manager/Reset '" + _sampleName + "' Add Scenes Prompt")]
+    [MenuItem("Tools/My Scene Manager/Reset '" + _sampleName + "' Add Scenes Prompt")]
     private static void ResetDontShowAgain()
     {
         EditorPrefs.DeleteKey(_dontShowAgainKey);

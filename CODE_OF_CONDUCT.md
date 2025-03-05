@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We, as contributors and maintainers of Advanced Scene Manager, pledge to make participation in our project and community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socioeconomic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+We, as contributors and maintainers of My Scene Manager, pledge to make participation in our project and community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socioeconomic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 We are committed to fostering an open, welcoming, and inclusive community.
 

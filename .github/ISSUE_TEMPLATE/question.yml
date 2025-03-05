@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         ## Question or Support Request
-        Need help or have a question about using the Advanced Scene Manager? Let us know!
+        Need help or have a question about using My Scene Manager? Let us know!
   - type: textarea
     id: question
     attributes:
@@ -17,7 +17,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Advanced Scene Manager Version
+      label: Package Version
       description: The version of the package you are using
       placeholder: "e.g., 3.1.0"
     validations:

@@ -10,14 +10,14 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public static class AdvancedSceneManager
+    public static class MySceneManager
     {
         internal static ISceneManager Instance
         {
             get
             {
                 if (_instance == null)
-                    throw new NullReferenceException("[AdvancedSceneManager] The static Scene Manager instance is not available before the first scene is fully loaded. Try moving the call to `Start()`.");
+                    throw new NullReferenceException($"[{nameof(MySceneManager)}] The static Scene Manager instance is not available before the first scene is fully loaded. Try moving the call to `Start()`.");
                 return _instance;
             }
         }

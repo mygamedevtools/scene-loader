@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         ## Feature Request
-        Have a feature idea? Let us know what you'd like to see in the Advanced Scene Manager!
+        Have a feature idea? Let us know what you'd like to see in My Scene Manager!
   - type: input
     id: summary
     attributes:

@@ -16,7 +16,7 @@ public class SceneTransitionTrigger : MonoBehaviour
     /// </summary>
     public void TransitionWithLoading(string loadingScene)
     {
-        AdvancedSceneManager.TransitionAsync(_targetScene, loadingScene);
+        MySceneManager.TransitionAsync(_targetScene, loadingScene);
     }
 
     /// <summary>
@@ -24,6 +24,6 @@ public class SceneTransitionTrigger : MonoBehaviour
     /// </summary>
     public void Transition()
     {
-        AdvancedSceneManager.TransitionAsync(_targetScene);
+        MySceneManager.TransitionAsync(_targetScene);
     }
 }

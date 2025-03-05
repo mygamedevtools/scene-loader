@@ -1,10 +1,10 @@
 # Contribution Guide
 
-Thank you for considering contributing to Advanced Scene Manager! Whether you're fixing a bug, adding a feature, or improving the documentation, your contributions are greatly appreciated and help make the tool better for everyone.
+Thank you for considering contributing to My Scene Manager! Whether you're fixing a bug, adding a feature, or improving the documentation, your contributions are greatly appreciated and help make the tool better for everyone.
 
 ## How to Contribute
 
-There are several ways you can contribute to Advanced Scene Manager:
+There are several ways you can contribute to My Scene Manager:
 
 ### 1. Reporting Issues
 
@@ -28,7 +28,7 @@ If you'd like to submit code to fix an issue or add a feature, please follow the
 Clone your forked repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/advanced-scene-manager.git
+git clone https://github.com/mygamedevtools/scene-loader.git
 ```
 
 #### Create a New Branch

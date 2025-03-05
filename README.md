@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/img/banner.jpg" alt="Advanced Scene Manager" width="100%" />
+  <img src="./docs/img/banner.jpg" alt="My Scene Manager" width="100%" />
 </p>
 
 <p align=center>
@@ -19,10 +19,10 @@
 
 ## ⚡ Overview
 
-The **Advanced Scene Manager** is a Unity package to **simplify** scene operations: **load**, **unload** and **transition**. In a quick example:
+**My Scene Manager** is a Unity package to **simplify** scene operations: **load**, **unload** and **transition**. In a quick example:
 
 ```cs
-AdvancedSceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 ```
 
 Instead of:
@@ -45,30 +45,43 @@ SceneManager.UnloadSceneAsync("my-previous-scene");
 
 ## 📦 Installation
 
-Follow the full installation guide in the [documentation](https://mygamedevtools.github.io/scene-loader/docs/next/getting-started/installation).
+You can install the package via **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)**, **Git** or **Tarball**.
+Check the full installation guide in the [documentation](https://mygamedevtools.com/scene-loader/docs/next/getting-started/installation).
 
-#### Via OpenUPM:
+#### OpenUPM
 
-```bash
-# Install via OpenUPM
-openupm add com.mygamedevtools.scenemanager
-```
+* Open `Edit/Project Settings/Package Manager`.
+* Add a new **Scoped Registry** (or edit the existing _OpenUPM_ entry):
+    ```
+    Name: Open UPM
+    URL: https://package.openupm.com
+    Scope(s): com.mygamedevtools
+    ```
+* Click `Apply`.
+* Open `Window/Package Manager`.
+* In the left column, select `Open UPM` inside `My Registries`.
+* Select `Advanced Scene Manager` under `My GameDev Tools`.
+* Click `Install`.
 
-#### Via Git URL:
+#### Git
 
-Add this to your Packages/manifest.json:
+1. Open `Window/Package Manager`.
+2. Click <kbd>+</kbd>.
+3. Select `Install package from git URL...`.
+4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
+5. Click `Add`.
 
-```json
-{
-  "dependencies": {
-    "com.mygamedevtools.scenemanager": "https://github.com/MyGameDevTools/SceneManager.git"
-  }
-}
-```
+#### Tarball
+
+1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
+2. Open `Window/Package Manager`.
+3. Click <kbd>+</kbd>.
+4. Select `Install package from tarball...`.
+5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
 
 ## 📚 Documentation
 
-The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://mygamedevtools.github.io/scene-loader/).
+The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://mygamedevtools.com/scene-loader/).
 
 ## 🤝 Contributing
 
