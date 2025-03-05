@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -47,7 +48,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator Dispose_DuringTransition([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.TransitionSceneParametersList))] SceneParameters sceneParameters, [ValueSource(typeof(SceneManagerTests), nameof(SceneManagerTests.LoadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
-            async Awaitable Test()
+            async Task<bool> Test()
             {
                 ISceneManager manager = managerCreateFunc();
                 await SceneManagerTests.LoadFirstScene(manager).Task;
@@ -65,8 +66,9 @@ namespace MyGameDevTools.SceneLoading.Tests
                     canceled = true;
                 }
                 Assert.True(canceled);
+                return true;
             }
-            return Test();
+            return new WaitTask<bool>(Test());
         }
     }
 }
