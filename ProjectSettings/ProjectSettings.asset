@@ -654,7 +654,8 @@ PlayerSettings:
   webGLWebAssemblyBigInt: 0
   webGLCloseOnQuit: 0
   webWasm2023: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Standalone: UNITY_ASTOOLS_EXPERIMENTAL
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
