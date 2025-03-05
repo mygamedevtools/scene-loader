@@ -46,7 +46,7 @@ SceneManager.UnloadSceneAsync("my-previous-scene");
 ## 📦 Installation
 
 You can install the package via **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)**, **Git** or **Tarball**.
-Check the full installation guide in the [documentation](https://mygamedevtools.com/scene-loader/docs/next/getting-started/installation).
+Check the full installation guide in the [documentation](https://scene-loader.mygamedevtools.com/docs/next/getting-started/installation).
 
 #### OpenUPM
 
@@ -81,7 +81,7 @@ Check the full installation guide in the [documentation](https://mygamedevtools.
 
 ## 📚 Documentation
 
-The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://mygamedevtools.com/scene-loader/).
+The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://scene-loader.mygamedevtools.com/).
 
 ## 🤝 Contributing
 
