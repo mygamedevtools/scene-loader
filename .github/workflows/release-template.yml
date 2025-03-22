@@ -28,11 +28,13 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
+
     # Removes the git plugin from semantic release so it doesn't generate a new commit
     - name: ✂️ Disable semantic release commit
       if: ${{ inputs.blockReleaseCommit == true }}
       run: |
         cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
+
     - name: 🚀 Semantic Release
       id: release
       uses: cycjimmy/semantic-release-action@v4
@@ -41,6 +43,7 @@ jobs:
         ci: ${{ inputs.blockPullRequestRelease }}
       env:
         GH_TOKEN: ${{ secrets.githubToken }}
+
     - name: 📄 Summary
       run: |
         if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ] && [ '${{ inputs.dryRun }}' == 'false' ]; then
@@ -60,29 +63,56 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: 📤 Extract Path
       id: extract-path
       run: |
         PACKAGE_PATH=$(jq -r '.plugins[] | select(type == "array" and .[0] == "@semantic-release/npm") | .[1].pkgRoot' .releaserc.json)
         echo "PACKAGE_PATH=$PACKAGE_PATH" >> $GITHUB_ENV
-    - name: ✏️ Update package.json
-      run: |
-        jq '.version = "${{ env.releaseVersion }}"' $PACKAGE_PATH/package.json > package.json.tmp && mv package.json.tmp $PACKAGE_PATH/package.json
-    - name: 📦 Package UPM Branch
-      id: package_upm
+
+    - name: ⚙️ Git Setup
       run: |
         git config --global user.name 'semantic-release-bot'
         git config --global user.email 'semantic-release-bot@martynus.net'
+
+    - name: ✏️ Update package.json
+      run: |
+        jq '.version = "${{ env.releaseVersion }}"' $PACKAGE_PATH/package.json > package.json.tmp && mv package.json.tmp $PACKAGE_PATH/package.json
         git commit --amend -a --no-edit
+
+    - name: 📦 Package UPM Branch
+      id: package_upm
+      run: |
         git branch -d upm &> /dev/null || echo upm branch not found
         git subtree split -P "$PACKAGE_PATH" -b upm
         git checkout upm
-        if [[ -d "Samples" ]]; then
-          git mv Samples Samples~
-          rm -f Samples.meta
+
+    - name: 🔄 Rename Samples Folder
+      run: |
+        if [[ -d "$PACKAGE_PATH/Samples" ]]; then
+          mv "$PACKAGE_PATH/Samples" "$PACKAGE_PATH/Samples~"
+          rm -f "$PACKAGE_PATH/Samples.meta"
           git commit --amend -a --no-edit
         fi
+
+    - name: 🚀 Push UPM Branch
+      run: |
         git push -f -u origin upm
+
+    - name: 📦 Export Unity Package
+      uses: game-ci/unity-builder@v4
+      with:
+        targetPlatform: StandaloneLinux64
+        buildMethod: PackageExporter.ExportPackage
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+    - name: 🗂️ Upload Unity Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
+        path: com.mygamedevtools.scene-loader.unitypackage
+
     - name: 🏷️ Create UPM Tag
       run: |
         git tag $TAG upm

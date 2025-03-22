@@ -31,8 +31,6 @@ MonoBehaviour:
     m_Name: Open UPM
     m_Url: https://package.openupm.com
     m_Scopes:
-    - com.cysharp.unitask
-    - com.openupm
     - com.mygamedevtools
     m_IsDefault: 0
     m_Capabilities: 0
