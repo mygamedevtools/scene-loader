@@ -76,15 +76,53 @@ jobs:
         PACKAGE_PATH=$(jq -r '.plugins[] | select(type == "array" and .[0] == "@semantic-release/npm") | .[1].pkgRoot' .releaserc.json)
         echo "PACKAGE_PATH=$PACKAGE_PATH" >> $GITHUB_ENV
 
-    - name: ⚙️ Git Setup
-      run: |
-        git config --global user.name 'semantic-release-bot'
-        git config --global user.email 'semantic-release-bot@martynus.net'
-
     - name: ✏️ Update package.json
       run: |
         jq '.version = "${{ env.releaseVersion }}"' $PACKAGE_PATH/package.json > package.json.tmp && mv package.json.tmp $PACKAGE_PATH/package.json
+
+    - name: 📦 Package UPM Branch
+      id: package_upm
+      run: |
+        git config --global user.name 'semantic-release-bot'
+        git config --global user.email 'semantic-release-bot@martynus.net'
+        git branch -d upm &> /dev/null || echo upm branch not found
+        git subtree split -P "$PACKAGE_PATH" -b upm
+        git checkout upm
+        if [[ -d "Samples" ]]; then
+          mv "Samples" "Samples~"
+          rm -f "Samples.meta"
+        fi
         git commit --amend -a --no-edit
+        git push -f -u origin upm
+
+    - name: 🏷️ Create UPM Tag
+      run: |
+        git tag $TAG upm
+        git push origin --tags
+      env:
+        TAG: upm/${{ env.releaseVersion }}
+
+  export-unity-package:
+    runs-on: ubuntu-latest
+    needs: 'semantic-release'
+    if: ${{ needs.semantic-release.outputs.new_release_published == 'true' && inputs.dryRun == false }}
+    env:
+      releaseVersion: ${{ needs.semantic-release.outputs.new_release_version }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 📤 Extract Path
+      id: extract-path
+      run: |
+        PACKAGE_PATH=$(jq -r '.plugins[] | select(type == "array" and .[0] == "@semantic-release/npm") | .[1].pkgRoot' .releaserc.json)
+        echo "PACKAGE_PATH=$PACKAGE_PATH" >> $GITHUB_ENV
+        
+    - name: ✏️ Update package.json
+      run: |
+        jq '.version = "${{ env.releaseVersion }}"' $PACKAGE_PATH/package.json > package.json.tmp && mv package.json.tmp $PACKAGE_PATH/package.json
 
     - name: 🔄 Rename Samples Folder
       run: |
@@ -116,20 +154,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
-        path: com.mygamedevtools.scene-loader.unitypackage
-
-    - name: 📦 Package UPM Branch
-      id: package_upm
-      run: |
-        git branch -d upm &> /dev/null || echo upm branch not found
-        git subtree split -P "$PACKAGE_PATH" -b upm
-        git checkout upm
-        git commit --amend -a --no-edit
-        git push -f -u origin upm
-
-    - name: 🏷️ Create UPM Tag
-      run: |
-        git tag $TAG upm
-        git push origin --tags
-      env:
-        TAG: upm/${{ env.releaseVersion }}
+        path: "./*.unitypackage"
