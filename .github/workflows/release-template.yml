@@ -99,11 +99,26 @@ jobs:
       run: |
         git push -f -u origin upm
 
+    - name: 🏷️ Create UPM Tag
+      run: |
+        git tag $TAG upm
+        git push origin --tags
+      env:
+        TAG: upm/${{ env.releaseVersion }}
+
+    - name: 🗃️ Cache Library
+      uses: actions/cache@v4
+      with:
+        path: Library
+        key: Library-StandaloneLinux64
+        restore-keys: Library-
+
     - name: 📦 Export Unity Package
       uses: game-ci/unity-builder@v4
       with:
         targetPlatform: StandaloneLinux64
         buildMethod: PackageExporter.ExportPackage
+        projectPath: "."
       env:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
@@ -112,10 +127,3 @@ jobs:
       with:
         name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
         path: com.mygamedevtools.scene-loader.unitypackage
-
-    - name: 🏷️ Create UPM Tag
-      run: |
-        git tag $TAG upm
-        git push origin --tags
-      env:
-        TAG: upm/${{ env.releaseVersion }}
