@@ -45,7 +45,7 @@ SceneManager.UnloadSceneAsync("my-previous-scene");
 
 ## 📦 Installation
 
-You can install the package via **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)**, **Git** or **Tarball**.
+You can install the package via **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)**, **Git**, **Tarball** and the **[Unity Asset Store](https://assetstore.unity.com/packages/slug/313159)**.
 Check the full installation guide in the [documentation](https://scene-loader.mygamedevtools.com/docs/next/getting-started/installation).
 
 #### OpenUPM
@@ -78,6 +78,18 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 3. Click <kbd>+</kbd>.
 4. Select `Install package from tarball...`.
 5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
+
+#### Unity Asset Store
+
+1. Obtain the package at the [Asset Store Page](https://assetstore.unity.com/packages/slug/313159).
+2. With your Unity project open, click `Open in Unity`.
+3. The `Package Manager` will open with the package selected.
+4. Click `Download` or `Update`, depending on the local cache.
+5. Click `Import`.
+6. Make sure everything is selected and click `Import` again.
+
+> [!NOTE]
+> When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
 
 ## 📚 Documentation
 
