@@ -1,4 +1,3 @@
-using UnityEngine;
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine.SceneManagement;
@@ -7,17 +6,14 @@ namespace MyGameDevTools.SceneLoading.Tests
 {
     public static class SceneTestUtilities
     {
-        public static IEnumerator UnloadManagerScenes(ISceneManager sceneManager)
+        public static IEnumerator UnloadDirectorScenes(ISceneManager sceneManager)
         {
             var lastScene = sceneManager.GetLastLoadedScene();
             while (sceneManager.LoadedSceneCount > 0 && lastScene.IsValid())
             {
-                yield return new WaitTask<Scene>(sceneManager.UnloadSceneAsync(new LoadSceneInfoScene(lastScene)).AsTask());
+                yield return new WaitTask<SceneResult>(sceneManager.UnloadAsync(lastScene));
                 lastScene = sceneManager.GetLastLoadedScene();
             }
-
-            while (sceneManager.LoadedSceneCount > 0)
-                yield return new WaitUntil(() => sceneManager.LoadedSceneCount == 0);
 
             Assert.Zero(sceneManager.LoadedSceneCount);
             Assert.False(sceneManager.GetActiveScene().IsValid());
@@ -39,7 +35,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             ISceneManager[] sceneManagers = SceneTestEnvironment.SceneManagers;
             for (int i = 0; i < sceneManagers.Length; i++)
-                yield return UnloadManagerScenes(sceneManagers[i]);
+                yield return UnloadDirectorScenes(sceneManagers[i]);
 
             yield return UnloadRemainingScenes();
         }

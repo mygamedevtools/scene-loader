@@ -22,7 +22,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public const string ScenePathBase = "Assets/_test";
         public const int DefaultTimeout = 3000;
 
-        public static readonly ILoadSceneInfo[][] MultipleLoadSceneInfoList = new ILoadSceneInfo[][]
+        static readonly ILoadSceneInfo[][] _multipleLoadSceneInfoList = new ILoadSceneInfo[][]
         {
             new ILoadSceneInfo[]
             {
@@ -60,9 +60,44 @@ namespace MyGameDevTools.SceneLoading.Tests
 #endif
         };
 
+        public static readonly ILoadSceneInfo[] SingleLoadSceneInfoList_NoAddressable = new ILoadSceneInfo[]
+        {
+            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
+            new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
+        };
+
+        public static readonly SceneParameters[] SceneParametersList = new SceneParameters[]
+        {
+            new(SingleLoadSceneInfoList[0], false),
+            new(SingleLoadSceneInfoList[0], true),
+            new(SingleLoadSceneInfoList[1], false),
+            new(SingleLoadSceneInfoList[1], true),
+            new(SingleLoadSceneInfoList[2], false),
+            new(SingleLoadSceneInfoList[2], true),
+#if ENABLE_ADDRESSABLES
+            new(SingleLoadSceneInfoList[3], false),
+            new(SingleLoadSceneInfoList[3], true),
+#endif
+            new(_multipleLoadSceneInfoList[0], -1),
+            new(_multipleLoadSceneInfoList[0], 1),
+            new(_multipleLoadSceneInfoList[1], -1),
+            new(_multipleLoadSceneInfoList[1], 1),
+        };
+        public static readonly SceneParameters[] TransitionSceneParametersList = new SceneParameters[]
+        {
+            new(SingleLoadSceneInfoList[0], true),
+            new(SingleLoadSceneInfoList[1], true),
+            new(SingleLoadSceneInfoList[2], true),
+#if ENABLE_ADDRESSABLES
+            new(SingleLoadSceneInfoList[3], true),
+#endif
+            new(_multipleLoadSceneInfoList[0], 1),
+            new(_multipleLoadSceneInfoList[1], 1),
+        };
+
         public static readonly ISceneManager[] SceneManagers = new ISceneManager[]
         {
-            new AdvancedSceneManager(),
+            new CoreSceneManager(),
         };
 
 #if UNITY_EDITOR
@@ -75,6 +110,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void Setup()
         {
 #if UNITY_EDITOR
+            if (IsSceneEnvironmentSetup())
+                return;
+
             int sceneCount = SceneBuilder.SceneNames.Length;
             List<EditorBuildSettingsScene> buildScenes = new(sceneCount);
 
@@ -107,6 +145,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void Cleanup()
         {
 #if UNITY_EDITOR
+            if (!IsSceneEnvironmentSetup())
+                return;
+
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Where(scene => !scene.path.StartsWith(ScenePathBase)).ToArray();
 
             if (!Directory.Exists(ScenePathBase))
@@ -132,26 +173,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public static void ValidateSceneEnvironment()
         {
 #if UNITY_EDITOR
-            var builtScenes = EditorBuildSettings.scenes;
-            Assert.True(hasAllEnvironmentScenes());
-
-            bool hasAllEnvironmentScenes()
-            {
-                foreach (var name in SceneBuilder.SceneNames)
-                {
-                    if (!hasBuiltSceneWithName(name))
-                        return false;
-                }
-                return true;
-            }
-
-            bool hasBuiltSceneWithName(string name)
-            {
-                foreach (var builtScene in builtScenes)
-                    if (builtScene.path.Contains(name))
-                        return true;
-                return false;
-            }
+            Assert.True(IsSceneEnvironmentSetup());
 
 #if ENABLE_ADDRESSABLES
             var operation = Addressables.LoadResourceLocationsAsync(SceneBuilder.SceneNames);
@@ -167,6 +189,29 @@ namespace MyGameDevTools.SceneLoading.Tests
                 return true;
             }
 #endif
+#endif
+        }
+
+        public static bool IsSceneEnvironmentSetup()
+        {
+#if UNITY_EDITOR
+            EditorBuildSettingsScene[] buildScenes = EditorBuildSettings.scenes;
+            foreach (string name in SceneBuilder.SceneNames)
+            {
+                if (!hasBuiltSceneWithName(name, buildScenes))
+                    return false;
+            }
+            return true;
+
+            static bool hasBuiltSceneWithName(string name, EditorBuildSettingsScene[] buildScenes)
+            {
+                foreach (EditorBuildSettingsScene buildScene in buildScenes)
+                    if (buildScene.path.Contains(name))
+                        return true;
+                return false;
+            }
+#else
+            return false;
 #endif
         }
     }

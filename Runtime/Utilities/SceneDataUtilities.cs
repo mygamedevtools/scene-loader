@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -22,13 +20,13 @@ namespace MyGameDevTools.SceneLoading
         public static void LinkLoadedScenesWithSceneDataArray(ISceneData[] sceneDataArray, IList<ISceneData> sceneDatasToExclude)
         {
             // Fill this list with all loaded scenes from the Unity Scene Manager;
-            int totalSceneCount = UnitySceneManager.sceneCount;
+            int totalSceneCount = SceneManager.sceneCount;
             List<Scene> unmatchedScenes = new(totalSceneCount);
 
             int i;
             for (i = 0; i < totalSceneCount; i++)
             {
-                Scene scene = UnitySceneManager.GetSceneAt(i);
+                Scene scene = SceneManager.GetSceneAt(i);
                 if (scene.isLoaded)
                     unmatchedScenes.Add(scene);
             }
@@ -159,22 +157,21 @@ namespace MyGameDevTools.SceneLoading
         /// <summary>
         /// Tries to get an <see cref="ISceneData"/> from a collection of <see cref="ISceneData"/>s that match the given <see cref="ILoadSceneInfo"/>.
         /// </summary>
-        public static bool TryGetSceneDataByLoadSceneInfo(ILoadSceneInfo loadSceneInfo, ICollection<ISceneData> sceneDataList, out ISceneData sceneData)
+        public static bool TryGetSceneDataByLoadSceneInfo(ILoadSceneInfo loadSceneInfo, IEnumerable<ISceneData> sceneDataList, out ISceneData sceneData)
         {
             if (loadSceneInfo == null)
                 throw new ArgumentNullException(nameof(loadSceneInfo));
 
             foreach (ISceneData tempSceneData in sceneDataList)
             {
-                if ((loadSceneInfo.Type == LoadSceneInfoType.SceneHandle && tempSceneData.SceneReference == (Scene)loadSceneInfo.Reference)
-                    || tempSceneData.LoadSceneInfo.Equals(loadSceneInfo))
+                if (tempSceneData.MatchesLoadSceneInfo(loadSceneInfo))
                 {
                     sceneData = tempSceneData;
                     return true;
                 }
             }
 
-            Debug.LogWarning($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}.");
+            Debug.LogWarning($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}. Is the scene loaded?");
             sceneData = default;
             return false;
         }
