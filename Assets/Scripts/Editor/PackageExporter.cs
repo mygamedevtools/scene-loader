@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ public static class PackageExporter
         string[] collection = Array.Empty<string>();
         collection = AssetDatabase.CollectAllChildren(rootGuid, collection);
 
-        PackageUtility.ExportPackage(collection, packageName + ".unitypackage");
-        Console.WriteLine($"Exported package to: \"{Application.dataPath}/../{packageName}.unitypackage\"");
+        PackageUtility.ExportPackage(collection, Path.Combine(Application.dataPath, packageName + ".unitypackage"));
+        Console.WriteLine($"Exported package to: \"{Application.dataPath}/{packageName}.unitypackage\"");
     }
 }

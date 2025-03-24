@@ -90,7 +90,7 @@ jobs:
         git subtree split -P "$PACKAGE_PATH" -b upm
         git checkout upm
         if [[ -d "Samples" ]]; then
-          mv Samples Samples~
+          git mv Samples Samples~
           rm -f Samples.meta
           git commit --amend -a --no-edit
         fi
@@ -165,4 +165,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
-        path: "./*.unitypackage"
+        path: "./Assets/*.unitypackage"
