@@ -22,6 +22,7 @@ It completely removes the `ISceneLoader` implementations and adds a static `MySc
 * Removed all [UniTask] references, but it's still compatible.
 * Improved scene match when unloading scenes. ([#44](https://github.com/mygamedevtools/scene-loader/issues/44))([#48](https://github.com/mygamedevtools/scene-loader/issues/48))
 * Added the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample. ([#36](https://github.com/mygamedevtools/scene-loader/issues/36))
+* Published to the [Unity Asset Store](https://assetstore.unity.com/packages/slug/313159). ([#38](https://github.com/mygamedevtools/scene-loader/issues/38))
 
 ## Code Updates
 

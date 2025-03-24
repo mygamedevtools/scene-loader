@@ -22,6 +22,7 @@ Ela remove completamente as implementações de `ISceneLoader` e adiciona a clas
 * Removidas todas as referências ao [UniTask], mas a compatibilidade foi mantida.
 * Melhorada a correspondência de cenas ao descarregá-las. ([#44](https://github.com/mygamedevtools/scene-loader/issues/44))([#48](https://github.com/mygamedevtools/scene-loader/issues/48))
 * Adicionado o Exemplo '[Loading Scene Examples](../samples/loading-scene-examples.md)'. ([#36](https://github.com/mygamedevtools/scene-loader/issues/36))
+* Publicado à [Unity Asset Store](https://assetstore.unity.com/packages/slug/313159). ([#38](https://github.com/mygamedevtools/scene-loader/issues/38))
 
 ## Atualizações de código
 
