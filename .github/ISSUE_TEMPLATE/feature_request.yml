@@ -1,0 +1,38 @@
+name: Feature Request
+description: Suggest an idea or enhancement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+        Have a feature idea? Let us know what you'd like to see in My Scene Manager!
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: A brief summary of the feature
+      placeholder: "Add support for async scene loading with progress callbacks"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem would this feature solve? How would it be useful?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe how you'd like the feature to work
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I have searched the existing issues to ensure this feature hasn't been requested already
+          required: true

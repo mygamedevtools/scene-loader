@@ -1,0 +1,71 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Please provide as much detail as possible to help us identify and fix the issue.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: A brief summary of the bug
+      placeholder: "Scene transition freezes..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the issue
+      placeholder: |
+        1. Load scene A
+        2. Transition to scene B
+        3. Observe the freeze
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      description: The version of the package you are using
+      placeholder: "e.g., 3.1.0"
+    validations:
+      required: true
+  - type: input
+    id: editorversion
+    attributes:
+      label: Unity Editor Version
+      description: The version of the Unity Editor you are using
+      placeholder: "e.g., 6000.0.40f1"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Please attach any relevant logs or errors
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I have searched the existing issues to avoid duplicates
+          required: true

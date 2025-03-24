@@ -10,5 +10,4 @@ jobs:
   create-release:
     name: Release
     uses: ./.github/workflows/release-template.yml
-    secrets:
-      githubToken: ${{ secrets.GH_TOKEN }}
+    secrets: inherit

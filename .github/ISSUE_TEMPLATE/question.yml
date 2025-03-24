@@ -1,0 +1,39 @@
+name: Question
+description: Ask a question or request help
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Question or Support Request
+        Need help or have a question about using My Scene Manager? Let us know!
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Clearly describe your question or the help you need
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      description: The version of the package you are using
+      placeholder: "e.g., 3.1.0"
+    validations:
+      required: true
+  - type: input
+    id: editorversion
+    attributes:
+      label: Unity Editor Version
+      description: The version of the Unity Editor you are using
+      placeholder: "e.g., 6000.0.40f1"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I have searched the documentation and existing issues
+          required: true

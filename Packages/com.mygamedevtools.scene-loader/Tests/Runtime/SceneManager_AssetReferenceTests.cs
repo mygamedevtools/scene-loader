@@ -12,6 +12,7 @@ namespace MyGameDevTools.SceneLoading.Tests
     // Unity Editor sessions. So, we must test AssetReference load scene infos "manually".
     public partial class SceneManagerTests
     {
+        AssetReference[] _assetReferences;
         ILoadSceneInfo[] _assetReferenceLoadSceneInfos;
 
         [OneTimeSetUp]
@@ -21,6 +22,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             operationHandle.WaitForCompletion();
 
             SceneReferenceData sceneReferenceData = operationHandle.Result;
+            _assetReferences = sceneReferenceData.sceneReferences.ToArray();
 
             _assetReferenceLoadSceneInfos = new ILoadSceneInfo[]
             {
@@ -34,27 +36,15 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator LoadScene_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(_setActiveParameterValues))] bool setActive)
+        public IEnumerator Load_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(_setIndexActiveParameterValues))] int setIndexActive)
         {
-            yield return LoadScene(manager, _assetReferenceLoadSceneInfos[1], setActive);
+            yield return Load(manager, new SceneParameters(_assetReferenceLoadSceneInfos, setIndexActive));
         }
 
         [UnityTest]
-        public IEnumerator LoadScenes_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(_setIndexActiveParameterValues))] int setIndexActive)
+        public IEnumerator Unload_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            yield return LoadScenes(manager, _assetReferenceLoadSceneInfos, setIndexActive);
-        }
-
-        [UnityTest]
-        public IEnumerator UnloadScene_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(_setActiveParameterValues))] bool setActive)
-        {
-            yield return UnloadScene(manager, _assetReferenceLoadSceneInfos[1], setActive);
-        }
-
-        [UnityTest]
-        public IEnumerator UnloadScenes_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(_setIndexActiveParameterValues))] int setIndexActive)
-        {
-            yield return UnloadScenes(manager, _assetReferenceLoadSceneInfos, setIndexActive);
+            yield return Unload(manager, new SceneParameters(_assetReferenceLoadSceneInfos));
         }
     }
 }
