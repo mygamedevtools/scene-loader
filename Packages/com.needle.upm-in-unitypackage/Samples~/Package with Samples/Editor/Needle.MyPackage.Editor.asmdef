@@ -1,17 +1,17 @@
 {
-    "name": "Editor",
+    "name": "Needle.MyPackage.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:1ef0bbeee4c5c164fadb7031fd63e223"
+        "GUID:e58729a9bca53b54381c73ba388f7dcb"
     ],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
+    "overrideReferences": true,
     "precompiledReferences": [],
-    "autoReferenced": true,
+    "autoReferenced": false,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

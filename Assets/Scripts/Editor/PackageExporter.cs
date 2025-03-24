@@ -1,16 +1,13 @@
-using System;
-using System.IO;
+using System.Linq;
+using Needle.HybridPackages;
 using UnityEditor;
-using UnityEngine;
 
 public static class PackageExporter
 {
     public static void ExportPackage()
     {
         string packageName = "com.mygamedevtools.scene-loader";
-        string exportPath = Path.Combine(Application.dataPath, packageName + ".unitypackage");
-
-        AssetDatabase.ExportPackage("Packages/" + packageName, exportPath, ExportPackageOptions.Recurse);
-        Console.WriteLine($"Exported package to: \"{exportPath}\"");
+        string[] guids = AssetDatabase.GetAllAssetPaths().Where(p => p.StartsWith("Packages/" + packageName + "/")).Select(p => AssetDatabase.AssetPathToGUID(p)).ToArray();
+        AssetStoreToolsPatchProvider.PackagerExportPatch.ExportPackage(guids, packageName + ".unitypackage");
     }
 }

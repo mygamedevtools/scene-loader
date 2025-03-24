@@ -151,13 +151,8 @@ jobs:
         UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
         UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
-    - name: 📂 List files after export
-      run: |
-        echo "Listing files after export"
-        ls -R
-
     - name: 🗂️ Upload Unity Package Artifact
       uses: actions/upload-artifact@v4
       with:
         name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
-        path: "./Assets/*.unitypackage"
+        path: "./*.unitypackage"
