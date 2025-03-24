@@ -7,7 +7,7 @@ namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Interface to standardize scene management operations.
-    /// The scene manager is responsible for scene loading operations, keeping track of its loaded scene stack and dispatching scene load events.
+    /// The Scene Manager is responsible for scene loading operations, keeping track of its loaded scene stack and dispatching scene load events.
     /// </summary>
     public interface ISceneManager : IDisposable
     {
@@ -47,59 +47,58 @@ namespace MyGameDevTools.SceneLoading
         void SetActiveScene(Scene scene);
 
         /// <summary>
-        /// Loads all scenes provided by the <paramref name="sceneInfos"/> array in parallel.
-        /// You may also provide the desired index to set as the active scene through the <paramref name="setIndexActive"/> parameter.
+        /// Triggers a transition to a group of scenes.
+        /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
+        /// to the target scene or a group of scenes via a <see cref="SceneParameters"/> struct, with an optional <paramref name="intermediateSceneReference"/>.
+        /// If the <paramref name="intermediateSceneReference"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// The complete transition flow is:
+        /// <br/><br/>
+        /// 1. Load the intermediate scene (if provided).<br/>
+        /// 2. Unload the source scene (if any).<br/>
+        /// 3. Load all target scenes.<br/>
+        /// 4. Unload the intermediate scene (if provided).<br/>
+        /// </summary>
+        /// <param name="sceneParameters">
+        /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
+        /// </param>
+        /// <param name="intermediateSceneInfo">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
+
+        /// <summary>
+        /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
+        /// You may also provide the desired index to set as the active scene.
         /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
         /// </summary>
-        /// <param name="sceneInfos">References to all scenes to load.</param>
-        /// <param name="setIndexActive">Index of the desired scene to set active, based on the <paramref name="sceneInfos"/> array.</param>
-        /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all scenes loaded.</returns>
-        /// <exception cref="ArgumentException">When scene info group is null, empty or the setIndexName is bigger than the scene length.</exception>
-        /// <exception cref="InvalidOperationException">When the provided scene info group fails to produce valid load scene operations.</exception>
-        ValueTask<Scene[]> LoadScenesAsync(ILoadSceneInfo[] sceneInfos, int setIndexActive = -1, IProgress<float> progress = null, CancellationToken token = default);
+        /// <param name="sceneParameters">
+        /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
+        /// </param>
+        /// <param name="progress">
+        /// Object to report the loading operations progress to, from 0 to 1.
+        /// </param>
+        /// <param name="token">
+        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
+        /// </param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
+        Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default);
 
         /// <summary>
-        /// Loads a scene referenced by the <paramref name="sceneInfo"/>, optionally enabling it as the active scene.
-        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the progress of the loading operation, from 0 to 1.
+        /// Unloads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
         /// </summary>
-        /// <param name="sceneInfo">A reference to the scene that's going to be loaded.</param>
-        /// <param name="setActive">Should the loaded scene be enabled as the active scene?</param>
-        /// <param name="progress">Object to report the loading operation progress to, from 0 to 1.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the loaded scene as the result.</returns>
-        /// <exception cref="ArgumentException">When scene info is null.</exception>
-        /// <exception cref="InvalidOperationException">When the provided scene info fails to produce a valid load scene operation.</exception>
-        ValueTask<Scene> LoadSceneAsync(ILoadSceneInfo sceneInfo, bool setActive = false, IProgress<float> progress = null, CancellationToken token = default);
-
-        /// <summary>
-        /// Unloads all scenes provided by the <paramref name="sceneInfos"/> array in parallel.
-        /// </summary>
-        /// <param name="sceneInfos">Reference to all scenes to unload.</param>
+        /// <param name="sceneParameters">
+        /// A <see cref="SceneParameters"/> struct that may hold one or more scenes.
+        /// </param>
         /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>
-        /// A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with all the unloaded scenes.
+        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
         /// <br/>
         /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
-        /// <exception cref="ArgumentException">When scene info group is null or empty.</exception>
-        /// <exception cref="InvalidOperationException">When the provided scene info group fails to produce valid unload scene operations.</exception>
-        ValueTask<Scene[]> UnloadScenesAsync(ILoadSceneInfo[] sceneInfos, CancellationToken token = default);
-
-        /// <summary>
-        /// Unloads a scene referenced by the <paramref name="sceneInfo"/>.
-        /// </summary>
-        /// <param name="sceneInfo">A reference to the scene that's going to be unloaded.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>
-        /// A <see cref="System.Threading.Tasks.ValueTask{TResult}"/> with the unloaded scene as the result.
-        /// <br/>
-        /// Note that in some cases, the returned scene might no longer have a reference to its native representation, which means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
-        /// </returns>
-        /// <exception cref="ArgumentException">When scene info is null.</exception>
-        /// <exception cref="InvalidOperationException">When the provided scene info fails to produce a valid unload scene operation.</exception>
-        ValueTask<Scene> UnloadSceneAsync(ILoadSceneInfo sceneInfo, CancellationToken token = default);
+        Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default);
 
         /// <summary>
         /// Gets the current active scene in this <see cref="ISceneManager"/> instance.
