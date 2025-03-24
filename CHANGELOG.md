@@ -1,5 +1,17 @@
 # Changelog
 
+# [4.0.0](https://github.com/mygamedevtools/scene-loader/compare/3.1.0...4.0.0) (2025-03-24)
+
+
+### Features
+
+* consolidate simplification ([#50](https://github.com/mygamedevtools/scene-loader/issues/50)) ([edeba3c](https://github.com/mygamedevtools/scene-loader/commit/edeba3cc7776b4244ecdf1a0ffedbaa03af841b9))
+
+
+### BREAKING CHANGES
+
+* The 4.x update consolidates the changes in the 3.x and simplifies a few more steps of the usage experience. It completely removes the ISceneLoader implementations and adds a static MySceneManager class so you don't have to manually control its lifecycle. Refer to the upgrade guide at https://scene-loader.mygamedevtools.com/docs/upgrades/from-3-to-4 for more details.
+
 # [3.1.0](https://github.com/mygamedevtools/scene-loader/compare/3.0.2...3.1.0) (2024-08-27)
 
 
