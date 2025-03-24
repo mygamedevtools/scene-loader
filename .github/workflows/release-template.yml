@@ -85,14 +85,15 @@ jobs:
       run: |
         git config --global user.name 'semantic-release-bot'
         git config --global user.email 'semantic-release-bot@martynus.net'
+        git commit --amend -a --no-edit
         git branch -d upm &> /dev/null || echo upm branch not found
         git subtree split -P "$PACKAGE_PATH" -b upm
         git checkout upm
         if [[ -d "Samples" ]]; then
-          mv "Samples" "Samples~"
-          rm -f "Samples.meta"
+          mv Samples Samples~
+          rm -f Samples.meta
+          git commit --amend -a --no-edit
         fi
-        git commit --amend -a --no-edit
         git push -f -u origin upm
 
     - name: 🏷️ Create UPM Tag
@@ -138,6 +139,11 @@ jobs:
         key: Library-StandaloneLinux64
         restore-keys: Library-
 
+    - name: 📂 List files before export
+      run: |
+        echo "Listing files before export"
+        ls -R
+
     - name: 📦 Export Unity Package
       uses: game-ci/unity-builder@v4
       with:
@@ -149,6 +155,11 @@ jobs:
         UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
         UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+    - name: 📂 List files after export
+      run: |
+        echo "Listing files after export"
+        ls -R
 
     - name: 🗂️ Upload Unity Package Artifact
       uses: actions/upload-artifact@v4
