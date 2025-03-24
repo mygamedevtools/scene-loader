@@ -1,8 +1,8 @@
 {
   "name": "com.mygamedevtools.scene-loader",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "displayName": "My Scene Manager",
-  "description": "This package simplifies scene operations: load, unload and transition.\nFor example, this is how you perform a scene transition:\n\n\u2503MySceneManager.TransitionAsync(\"my-target-scene\", \"my-loading-scene\");\n\nInstead of:\n\n\u2503 yield return SceneManager.LoadSceneAsync(\"my-loading-scene\",\n\u2503        LoadSceneMode.Additive);\n\u2503 yield return SceneManager.LoadSceneAsync(\"my-target-scene\",\n\u2503        LoadSceneMode.Additive);\n\u2503\n\u2503 SceneManager.SetActiveScene(\n\u2503        SceneManager.GetSceneByName(\"my-target-scene\"));\n\u2503\n\u2503 SceneManager.UnloadSceneAsync(\"my-loading-scene\");\n\u2503 SceneManager.UnloadSceneAsync(\"my-previous-scene\");\n\nYou can also take advantage of these features:\n\n\u25aa Unified API for addressable and non-addressable scenes.\n\u25aa Awaitable scene operations.\n\u25aa Modular implementation with interfaces.\n\u25aa Load, unload or transition to multiple scenes.",
+  "description": "This package simplifies scene operations: load, unload and transition.\nFor example, this is how you perform a scene transition:\n\n┃MySceneManager.TransitionAsync(\"my-target-scene\", \"my-loading-scene\");\n\nInstead of:\n\n┃ yield return SceneManager.LoadSceneAsync(\"my-loading-scene\",\n┃        LoadSceneMode.Additive);\n┃ yield return SceneManager.LoadSceneAsync(\"my-target-scene\",\n┃        LoadSceneMode.Additive);\n┃\n┃ SceneManager.SetActiveScene(\n┃        SceneManager.GetSceneByName(\"my-target-scene\"));\n┃\n┃ SceneManager.UnloadSceneAsync(\"my-loading-scene\");\n┃ SceneManager.UnloadSceneAsync(\"my-previous-scene\");\n\nYou can also take advantage of these features:\n\n▪ Unified API for addressable and non-addressable scenes.\n▪ Awaitable scene operations.\n▪ Modular implementation with interfaces.\n▪ Load, unload or transition to multiple scenes.",
   "unity": "2021.3",
   "keywords": [],
   "author": {
