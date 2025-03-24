@@ -139,11 +139,6 @@ jobs:
         key: Library-StandaloneLinux64
         restore-keys: Library-
 
-    - name: 📂 List files before export
-      run: |
-        echo "Listing files before export"
-        ls -R
-
     - name: 📦 Export Unity Package
       uses: game-ci/unity-builder@v4
       with:
