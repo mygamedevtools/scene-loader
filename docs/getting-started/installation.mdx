@@ -8,12 +8,12 @@ import TabItem from '@theme/TabItem';
 
 # Installation
 
-You can install the package via **OpenUPM**, **Git** or **Tarball**:
+You can install the package via **OpenUPM**, **Git**, **Tarball** or the **Unity Asset Store**:
 
 <Tabs defaultValue={(() => {
           if (typeof window !== "undefined") {
               const hash = window.location.hash.replace("#", "").toLowerCase();
-              return ["openupm", "git", "tarball"].includes(hash) ? hash : "openupm";
+              return ["openupm", "git", "tarball", "asset-store"].includes(hash) ? hash : "openupm";
           }
           return "openupm";
       })()}>
@@ -75,5 +75,19 @@ Requires [Git](https://git-scm.com/) installed and added to the PATH
 3. Click <kbd>+</kbd>.
 4. Select `Install package from tarball...`.
 5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
+</TabItem>
+
+<TabItem value="asset-store" label="Unity Asset Store">
+1. Obtain the package at the [Asset Store](https://assetstore.unity.com/packages/slug/313159).
+2. With your Unity project open, click `Open in Unity`.
+3. The `Package Manager` will open with the package selected.
+4. Click `Download` or `Update`, depending on the local cache.
+5. Click `Import`.
+6. Make sure everything is selected and click `Import` again.
+
+:::info
+When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
+:::
+
 </TabItem>
 </Tabs>

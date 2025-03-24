@@ -51,11 +51,11 @@ const config = {
           sidebarPath: './sidebars.js',
           editUrl:
             'https://github.com/mygamedevtools/scene-loader/tree/docs/',
+          lastVersion: 'current',
           versions:
           {
             current: {
-              label: '4.0.0 🚧',
-              banner: 'unreleased'
+              label: '4.0.0'
             },
           }
         },
@@ -85,6 +85,11 @@ const config = {
             sidebarId: 'documentationSidebar',
             position: 'left',
             label: 'Docs',
+          },
+          {
+            href: 'https://assetstore.unity.com/packages/slug/313159',
+            position: 'left',
+            label: 'Asset Store'
           },
           {
             type: 'docsVersionDropdown',
@@ -127,13 +132,26 @@ const config = {
             items: [
               {
                 label: 'From 3.x to 4.x',
-                to: 'docs/next/upgrades/from-3-to-4'
+                to: 'docs/upgrades/from-3-to-4'
               },
               {
                 label: 'From 2.x to 3.x',
                 to: 'docs/upgrades/from-2-to-3'
               },
             ],
+          },
+          {
+            title: 'Links',
+            items: [
+              {
+                label: 'GitHub',
+                href: 'https://github.com/mygamedevtools/scene-loader'
+              },
+              {
+                label: 'Asset Store',
+                href: 'https://assetstore.unity.com/packages/slug/313159'
+              }
+            ]
           },
           {
             title: 'Support',

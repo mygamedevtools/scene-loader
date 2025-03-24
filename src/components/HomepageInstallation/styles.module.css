@@ -37,3 +37,13 @@
     background-color: var(--ifm-color-primary-dark);
     color: var(--ifm-color-white);
 }
+
+.buttonAssetStore {
+    background-color: #3e3e3e;
+    color: var(--ifm-color-white);
+}
+
+.buttonAssetStore:hover {
+    background-color: #303030;
+    color: var(--ifm-color-white);
+}

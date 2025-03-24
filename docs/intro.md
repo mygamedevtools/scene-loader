@@ -21,6 +21,7 @@ To get started with My Scene Manager, you can install it in various ways:
 * [OpenUPM](./getting-started/installation.mdx#openupm)
 * [Install from Git](./getting-started/installation.mdx#git)
 * [Install from Tarball](./getting-started/installation.mdx#tarball)
+* [Unity Asset Store](./getting-started/installation.mdx#asset-store)
 
 ## Quick Start
 

@@ -20,6 +20,9 @@ export default function Installation() {
           <Link to="/docs/getting-started/installation#tarball" className={clsx("button button--lg margin--sm", styles.buttonTarball)}>
             Tarball
           </Link>
+          <Link to="/docs/getting-started/installation#asset-store" className={clsx("button button--lg margin--sm", styles.buttonAssetStore)}>
+            Asset Store
+          </Link>
         </div>
       </div>
     </section>
