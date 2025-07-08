@@ -70,6 +70,17 @@ namespace MyGameDevTools.SceneLoading
         Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
 
         /// <summary>
+        /// Reloads the active scene with an optional intermediate loading scene.
+        /// </summary>
+        /// <param name="intermediateSceneReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
+        Task<SceneResult> ReloadActiveSceneAsync(ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
+
+        /// <summary>
         /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
         /// You may also provide the desired index to set as the active scene.
         /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.

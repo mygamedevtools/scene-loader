@@ -118,6 +118,32 @@ namespace MyGameDevTools.SceneLoading.Tests
 #endif
 
         [UnityTest]
+        public IEnumerator Reload_Extension_ByName([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        {
+            yield return Reload_Template(manager, new LoadSceneInfoName(SceneBuilder.SceneNames[1]), () => manager.ReloadActiveSceneAsync(SceneBuilder.SceneNames[1]));
+        }
+
+        [UnityTest]
+        public IEnumerator Reload_Extension_ByIndex([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        {
+            yield return Reload_Template(manager, new LoadSceneInfoIndex(1), () => manager.ReloadActiveSceneAsync(1));
+        }
+
+#if ENABLE_ADDRESSABLES
+        [UnityTest]
+        public IEnumerator Reload_Extension_Addressable_ByAddress([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        {
+            yield return Reload_Template(manager, new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]), () => manager.ReloadActiveSceneAddressableAsync(SceneBuilder.SceneNames[1]));
+        }
+
+        [UnityTest]
+        public IEnumerator Reload_Extension_Addressable_ByAssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        {
+            yield return Reload_Template(manager, new LoadSceneInfoAssetReference(_assetReferences[1]), () => manager.ReloadActiveSceneAddressableAsync(_assetReferences[1]));
+        }
+#endif
+
+        [UnityTest]
         public IEnumerator Unload_Extension_ByIndex([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
             yield return Unload_Template(manager, () => manager.LoadAsync(1, true), () => manager.UnloadAsync(1), 1);
