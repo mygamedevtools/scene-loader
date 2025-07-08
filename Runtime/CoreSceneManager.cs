@@ -147,6 +147,15 @@ namespace MyGameDevTools.SceneLoading
                 : TransitionWithIntermediateAsync(sceneParameters, intermediateSceneReference, linkedSource.Token).RunAndDisposeToken(linkedSource);
         }
 
+        public Task<SceneResult> ReloadActiveSceneAsync(ILoadSceneInfo intermediateSceneReference = null, CancellationToken token = default)
+        {
+            if (_activeScene == null || !_activeScene.SceneReference.IsValid() || !_activeScene.SceneReference.isLoaded)
+                throw new InvalidOperationException($"[{GetType().Name}] Cannot reload the active scene because it is null or not loaded. Make sure to load a scene before trying to reload it.");
+
+            ILoadSceneInfo targetSceneInfo = _activeScene.LoadSceneInfo;
+            return TransitionAsync(new SceneParameters(targetSceneInfo, true), intermediateSceneReference, token);
+        }
+
         public Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default)
         {
             CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);

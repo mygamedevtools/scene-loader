@@ -42,6 +42,12 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        public IEnumerator Reload_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
+        {
+            yield return Reload(manager, _assetReferenceLoadSceneInfos[0], loadingScene);
+        }
+
+        [UnityTest]
         public IEnumerator Unload_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
             yield return Unload(manager, new SceneParameters(_assetReferenceLoadSceneInfos));

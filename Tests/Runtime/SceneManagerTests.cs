@@ -239,6 +239,12 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
+        public IEnumerator Reload([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo loadSceneInfo, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
+        {
+            yield return Reload_Template(manager, loadSceneInfo, () => manager.ReloadActiveSceneAsync(loadingScene));
+        }
+
+        [UnityTest]
         public IEnumerator Transition([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.
         TransitionSceneParametersList))] SceneParameters sceneParameters, [ValueSource(nameof(LoadingSceneInfos))] ILoadSceneInfo loadingScene)
         {
@@ -365,6 +371,21 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(setIndexActive >= 0 ? 1 : 0, _scenesActivated);
 
             void reportSceneLoaded(Scene loadedScene) => reportedScenes.Add(loadedScene);
+        }
+
+        public IEnumerator Reload_Template(ISceneManager manager, ILoadSceneInfo loadSceneInfo, Func<Task<SceneResult>> reloadTask)
+        {
+            yield return manager.LoadAsync(new SceneParameters(loadSceneInfo, true)).ToWaitTask();
+            string activeScene = manager.GetActiveScene().name;
+
+            var task = reloadTask();
+            yield return task.ToWaitTask();
+
+            Scene loadedScene = task.Result;
+            Assert.AreEqual(manager.GetActiveScene(), loadedScene);
+            Assert.AreEqual(activeScene, loadedScene.name);
+
+            yield return new WaitUntil(() => manager.TotalSceneCount == 1);
         }
 
         public IEnumerator Transition_Template(ISceneManager manager, Func<Task<SceneResult>> transitionTask, int sceneCount, int setIndexActive)

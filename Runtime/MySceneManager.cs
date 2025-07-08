@@ -101,6 +101,17 @@ namespace MyGameDevTools.SceneLoading
         public static Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default) => Instance.TransitionAsync(sceneParameters, intermediateSceneReference, token);
 
         /// <summary>
+        /// Reloads the active scene with an optional intermediate loading scene.
+        /// </summary>
+        /// <param name="intermediateSceneReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
+        public static Task<SceneResult> ReloadActiveSceneAsync(ILoadSceneInfo intermediateSceneReference = null, CancellationToken token = default) => Instance.ReloadActiveSceneAsync(intermediateSceneReference, token);
+
+        /// <summary>
         /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
         /// You may also provide the desired index to set as the active scene.
         /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
@@ -518,6 +529,52 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
         public static Task<SceneResult> TransitionAddressableAsync(string targetAddress, string loadingAddress = null, CancellationToken token = default) => Instance.TransitionAddressableAsync(targetAddress, loadingAddress, token);
+#endif
+
+        /// <summary>
+        /// Reloads the active scene with an optional intermediate loading scene.
+        /// </summary>
+        /// <param name="loadingSceneName">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
+        public static Task<SceneResult> ReloadActiveSceneAsync(string loadingSceneName = null, CancellationToken token = default) => Instance.ReloadActiveSceneAsync(loadingSceneName, token);
+
+        /// <summary>
+        /// Reloads the active scene with an optional intermediate loading scene.
+        /// </summary>
+        /// <param name="loadingBuildIndex">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
+        public static Task<SceneResult> ReloadActiveSceneAsync(int loadingBuildIndex = -1, CancellationToken token = default) => Instance.ReloadActiveSceneAsync(loadingBuildIndex, token);
+
+#if ENABLE_ADDRESSABLES
+        /// <summary>
+        /// Reloads the active scene with an optional intermediate loading scene.
+        /// </summary>
+        /// <param name="loadingAssetReference">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
+        public static Task<SceneResult> ReloadActiveSceneAddressableAsync(AssetReference loadingAssetReference = null, CancellationToken token = default) => Instance.ReloadActiveSceneAddressableAsync(loadingAssetReference, token);
+
+        /// <summary>
+        /// Reloads the active scene with an optional intermediate loading scene.
+        /// </summary>
+        /// <param name="loadingAddress">
+        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
+        /// If null, the transition will not have an intermediate loading scene.
+        /// </param>
+        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
+        public static Task<SceneResult> ReloadActiveSceneAddressableAsync(string loadingAddress = null, CancellationToken token = default) => Instance.ReloadActiveSceneAddressableAsync(loadingAddress, token);
 #endif
 
         /// <summary>
