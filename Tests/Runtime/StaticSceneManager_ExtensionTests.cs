@@ -138,6 +138,32 @@ namespace MyGameDevTools.SceneLoading.Tests
 #endif
 
         [UnityTest]
+        public IEnumerator Reload_Extension_ByName()
+        {
+            yield return Reload_Template(new LoadSceneInfoName(SceneBuilder.SceneNames[1]), () => MySceneManager.ReloadActiveSceneAsync(SceneBuilder.SceneNames[1]));
+        }
+
+        [UnityTest]
+        public IEnumerator Reload_Extension_ByIndex()
+        {
+            yield return Reload_Template(new LoadSceneInfoIndex(1), () => MySceneManager.ReloadActiveSceneAsync(1));
+        }
+
+#if ENABLE_ADDRESSABLES
+        [UnityTest]
+        public IEnumerator Reload_Extension_Addressable_ByAddress()
+        {
+            yield return Reload_Template(new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]), () => MySceneManager.ReloadActiveSceneAddressableAsync(SceneBuilder.SceneNames[1]));
+        }
+
+        [UnityTest]
+        public IEnumerator Reload_Extension_Addressable_ByAssetReference()
+        {
+            yield return Reload_Template(new LoadSceneInfoAssetReference(_assetReferences[1]), () => MySceneManager.ReloadActiveSceneAddressableAsync(_assetReferences[1]));
+        }
+#endif
+
+        [UnityTest]
         public IEnumerator Unload_Extension_ByIndex()
         {
             yield return Unload_Template(() => MySceneManager.LoadAsync(1, true), () => MySceneManager.UnloadAsync(1), 1);
