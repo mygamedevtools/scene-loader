@@ -1,5 +1,12 @@
 # Changelog
 
+# [4.1.0](https://github.com/mygamedevtools/scene-loader/compare/4.0.0...4.1.0) (2025-07-08)
+
+
+### Features
+
+* add reload scene methods and tests ([#53](https://github.com/mygamedevtools/scene-loader/issues/53)) ([8b5ecb9](https://github.com/mygamedevtools/scene-loader/commit/8b5ecb988abbcf0ea06f469f7c957255ed9d8df2))
+
 # [4.0.0](https://github.com/mygamedevtools/scene-loader/compare/3.1.0...4.0.0) (2025-03-24)
 
 
