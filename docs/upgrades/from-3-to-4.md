@@ -20,6 +20,7 @@ It completely removes the `ISceneLoader` implementations and adds a static `MySc
 * Merged single and multiple scene methods via the new `SceneParameter` struct.
 * Merged all return types to `Task<SceneResult>`, which can return a single or multiple scenes, be awaited and be used in coroutines with `WaitTask`. ([#49](https://github.com/mygamedevtools/scene-loader/issues/49))
 * Removed all [UniTask] references, but it's still compatible.
+* Added the `ReloadActiveSceneAsync` method to simplify reloading scenes. ([#51](https://github.com/mygamedevtools/scene-loader/issues/51))
 * Improved scene match when unloading scenes. ([#44](https://github.com/mygamedevtools/scene-loader/issues/44))([#48](https://github.com/mygamedevtools/scene-loader/issues/48))
 * Added the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample. ([#36](https://github.com/mygamedevtools/scene-loader/issues/36))
 * Published to the [Unity Asset Store](https://assetstore.unity.com/packages/slug/313159). ([#38](https://github.com/mygamedevtools/scene-loader/issues/38))

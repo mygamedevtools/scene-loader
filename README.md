@@ -18,7 +18,7 @@ You can download the latest version of Node.js from [here](https://nodejs.org/en
   ```
 3. To run the site locally:
   ```bash
-  npx docusaurus start
+  npx run start
   ```
   This will start a local development server at `http://localhost:3000`.
 4. To run the site locally in a different locale (e.g., Português Brasileiro):
@@ -26,6 +26,38 @@ You can download the latest version of Node.js from [here](https://nodejs.org/en
   npm run start -- --locale pt-BR
   ```
   This will start the site with the specified locale.
+
+## Versioning
+
+To start documentation on a new version, run:
+
+```bash
+npm run docusaurus docs:version <version>
+```
+
+This will copy the latest documentation and place it into the `version-<version>` folder.
+You can update the files inside `docs/` to reflect the new documentation version.
+
+Make sure to update the current version name as well in the `docusaurus.config.js` file at:
+
+```js
+const config = {
+  presets: [
+    [
+      ({
+        docs: {
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: '<version>'
+            }
+          }
+        }
+      })
+    ]
+  ]
+}
+```
 
 ## Building the Website Locally
 

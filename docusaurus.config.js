@@ -42,6 +42,11 @@ const config = {
     mermaid: true
   },
 
+  future: {
+    v4: true,
+    experimental_faster: true,
+  },
+
   presets: [
     [
       'classic',
@@ -52,10 +57,9 @@ const config = {
           editUrl:
             'https://github.com/mygamedevtools/scene-loader/tree/docs/',
           lastVersion: 'current',
-          versions:
-          {
+          versions: {
             current: {
-              label: '4.0.0'
+              label: '4.1.0'
             },
           }
         },

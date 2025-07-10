@@ -382,6 +382,9 @@
   "homepage.featureComparison.sceneTransition": {
     "message": "Transição de Cena Async"
   },
+  "homepage.featureComparison.sceneReloading": {
+    "message": "Recarregamento de Cena Async"
+  },
   "homepage.featureComparison.asyncAwait": {
     "message": "Suporte a Async/Await"
   },

@@ -104,6 +104,21 @@ O tipo de referência precisa ser o mesmo para a cena alvo e para a cena interme
 
 Confira o Exemplo '[Loading Scene Examples](../samples/loading-scene-examples.md)' para testar diferentes tipos de cenas de carregamento durante **Transições de Cena**.
 
+## Recerregando Cenas
+
+Você pode recarregar a cena ativa usando o método `ReloadActiveSceneAsync`.
+Um recarregamento de cena também é uma **transição de cena** internamente.
+Isso irá recarregar a cena ativa pela mesma referência que a carregou inicialmente.
+
+Assim como nas **Transições de Cena**, você também pode providenciar uma cena intermediária de carregamento.
+
+```cs
+MySceneManager.ReloadActiveSceneAsync("my-loading-scene");
+
+// Sem cena de carregamento:
+MySceneManager.ReloadActiveSceneAsync(intermediateSceneReference: null);
+```
+
 ## Programação Async
 
 Todas as operações de cena são _awaitable_ e podem ser usadas em coroutines também. Por exemplo:

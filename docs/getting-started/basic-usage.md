@@ -5,7 +5,7 @@ description: Basic introduction to the usage of My Scene Manager.
 
 # Basic Usage
 
-Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes. 
+Loading scenes with this package implies that the scenes **will always be loaded as Additive**. That is simply because there is no advantage in loading scenes in the **Single** load scene mode when you expect to work with multiple scenes.
 
 You will be using the `MySceneManager` static class to perform the scene operations.
 
@@ -102,6 +102,21 @@ The reference type must be the same for the target scene and the intermediate sc
 :::
 
 Check the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample to try different loading scenes when performing **Scene Transitions**.
+
+## Scene Reloading
+
+You can reload the active scene using the `ReloadActiveSceneAsync` method.
+A scene reload is also a **scene transition** internally.
+It will load the active scene via the same reference it was loaded initially.
+
+Just like with **Scene Transitions**, you can also pass an intermediate loading scene.
+
+```cs
+MySceneManager.ReloadActiveSceneAsync("my-loading-scene");
+
+// No loading screen:
+MySceneManager.ReloadActiveSceneAsync(intermediateSceneReference: null);
+```
 
 ## Async Programming
 

@@ -56,6 +56,7 @@ flowchart TB
 
 :::info
 **Scene Operations** refer to the Load, Unload and Transition operations.
+A Reload operation is considered a Transition operation.
 :::
 
 We will cover each of these structures in the next pages.

@@ -25,6 +25,8 @@ public interface ISceneManager : IDisposable
 
     Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
 
+    Task<SceneResult> ReloadActiveSceneAsync(ILoadSceneInfo intermediateSceneReference = null, CancellationToken token = default);
+
     Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default);
 
     Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default);
@@ -49,7 +51,7 @@ The `CoreSceneManager` is expected to be used as a layer on top of the Unity `Sc
 flowchart LR
     usm(Unity Scene Manager)
     scd(Core Scene Manager)
-    
+
     scd ==> usm
 
     scd --> s_a(["Scene [0]"]) <--> usm
@@ -58,7 +60,7 @@ flowchart LR
 
 ```
 
-The `ISceneManager` interface defines that the `LoadAsync`, `UnloadAsync` and `TransitionAsync` methods return a `Task<SceneResult>`.
+The `ISceneManager` interface defines that the `LoadAsync`, `UnloadAsync`, `TransitionAsync` and `ReloadActiveSceneAsync` methods return a `Task<SceneResult>`.
 This means you can _await_ those methods if they are implemented with the _async_ keyword, or you can subscribe to the `SceneLoaded` or `SceneUnloaded` events to receive the same scenes you would via the _async_ methods.
 
 :::info

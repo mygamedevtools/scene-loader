@@ -8,6 +8,7 @@ const features = [
   { name: <Translate id="homepage.featureComparison.sceneLoading">Async Scene Loading</Translate>, package: true, unity: true },
   { name: <Translate id="homepage.featureComparison.sceneUnloading">Async Scene Unloading</Translate>, package: true, unity: true },
   { name: <Translate id="homepage.featureComparison.sceneTransition">Async Scene Transitions</Translate>, package: true, unity: false },
+  { name: <Translate id="homepage.featureComparison.sceneReloading">Async Scene Reloading</Translate>, package: true, unity: false },
   { name: <Translate id="homepage.featureComparison.asyncAwait">Async/Await Support</Translate>, package: true, unity: false },
   { name: <Translate id="homepage.featureComparison.coroutine">Coroutine Support</Translate>, package: true, unity: true },
   { name: <Translate id="homepage.featureComparison.loading">Integrated Loading Screens</Translate>, package: true, unity: false },

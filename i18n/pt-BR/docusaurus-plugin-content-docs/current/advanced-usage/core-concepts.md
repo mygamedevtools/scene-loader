@@ -57,6 +57,7 @@ flowchart TB
 
 :::info
 **Operações de Cena** refere às operações de Carregar, Descarregar e Transicionar.
+Uma operação de Recarregar é considerada uma operação de Transicionar.
 :::
 
 Vamos cobrir cada uma dessas estruturas nas próximas páginas.
