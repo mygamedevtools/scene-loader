@@ -35,6 +35,14 @@ jobs:
         with:
           lfs: true
 
+      - name: Check for code changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            code:
+              - '**.cs'
+
       - uses: actions/cache@v5
         with:
           path: Library
@@ -66,6 +74,7 @@ jobs:
         run: echo "major=$(echo '${{ matrix.unityVersion }}' | grep -oE '^[0-9]+\.[0-9]+')" >> $GITHUB_OUTPUT
 
       - name: Upload Coverage to Codecov
+        if: steps.changes.outputs.code == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: codecov/codecov-action@v5
         with:
           name: Unity ${{ matrix.unityVersion }} - playmode

@@ -37,36 +37,40 @@ jobs:
     - name: 🔢 Calculate version
       id: version
       run: |
-        # Get the latest release tag
-        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-        LATEST_VERSION="${LATEST_TAG#v}"  # Remove 'v' prefix if present
+        # Get the latest stable release tag (exclude prereleases)
+        LATEST_STABLE_TAG=$(git tag --list --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+        LATEST_STABLE="${LATEST_STABLE_TAG#v}"  # Remove 'v' prefix if present
+        LATEST_STABLE="${LATEST_STABLE:-0.0.0}"  # Default if no tags exist
 
-        echo "Latest version: $LATEST_VERSION"
+        echo "Latest stable version: $LATEST_STABLE"
 
         # Parse version components
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_STABLE"
 
-        # Handle pre-release suffix (e.g., 1.0.0-pre.1 -> 1.0.0)
-        PATCH="${PATCH%%-*}"
-
-        # Calculate new version based on bump type
+        # Calculate base version based on bump type
         case "${{ inputs.bumpType }}" in
           major)
-            NEW_VERSION="$((MAJOR + 1)).0.0"
+            BASE_VERSION="$((MAJOR + 1)).0.0"
             ;;
           minor)
-            NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
+            BASE_VERSION="${MAJOR}.$((MINOR + 1)).0"
             ;;
           patch)
-            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+            BASE_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
             ;;
         esac
 
-        # Add pre-release suffix for feature/fix branches
-        if [[ "${{ github.ref }}" == refs/heads/feat/* ]] || [[ "${{ github.ref }}" == refs/heads/fix/* ]]; then
-          BRANCH_NAME="${{ github.ref_name }}"
-          SAFE_BRANCH="${BRANCH_NAME//\//-}"
-          NEW_VERSION="${NEW_VERSION}-${SAFE_BRANCH}.1"
+        echo "Base version for bump: $BASE_VERSION"
+
+        # Check if any prereleases exist for this base version
+        LATEST_PRE=$(git tag --list --sort=-v:refname "${BASE_VERSION}-pre.*" "v${BASE_VERSION}-pre.*" | head -n1)
+
+        if [ -n "$LATEST_PRE" ]; then
+          # Extract the pre number and increment
+          PRE_NUM=$(echo "$LATEST_PRE" | sed -E 's/.*-pre\.([0-9]+)$/\1/')
+          NEW_VERSION="${BASE_VERSION}-pre.$((PRE_NUM + 1))"
+        else
+          NEW_VERSION="${BASE_VERSION}-pre.1"
         fi
 
         echo "New version: $NEW_VERSION"

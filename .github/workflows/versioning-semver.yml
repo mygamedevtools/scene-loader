@@ -46,7 +46,7 @@ jobs:
 
     - name: 🚀 Semantic Release
       id: release
-      uses: cycjimmy/semantic-release-action@v4
+      uses: cycjimmy/semantic-release-action@v6
       with:
         dry_run: ${{ inputs.dryRun }}
         ci: ${{ inputs.blockPullRequestRelease }}
