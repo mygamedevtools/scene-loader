@@ -42,6 +42,10 @@ jobs:
           restore-keys: |
             Library-${{ matrix.unityVersion }}-
 
+      - name: Use Unity 6.0 compatible packages
+        if: startsWith(matrix.unityVersion, '6000.0')
+        run: cp Packages/manifest.6.0.json Packages/manifest.json
+
       - uses: game-ci/unity-test-runner@v4
         id: tests
         env:
@@ -58,7 +62,7 @@ jobs:
           coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading'
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           name: Unity ${{ matrix.unityVersion }} - playmode
           token: ${{ secrets.CODECOV_TOKEN }}
