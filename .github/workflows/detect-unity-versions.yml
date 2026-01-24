@@ -1,0 +1,67 @@
+name: 🔍 Detect Unity Versions
+on:
+  workflow_call:
+    inputs:
+      version-streams:
+        description: 'Comma-separated Unity version streams to detect (e.g., "6.0,6.3")'
+        required: true
+        type: string
+    outputs:
+      versions:
+        description: "JSON array of detected Unity versions for matrix use"
+        value: ${{ jobs.detect.outputs.versions }}
+
+jobs:
+  detect:
+    name: Detect Latest Unity LTS Versions
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.detect.outputs.versions }}
+    steps:
+      - name: Query Docker Hub for latest Unity versions
+        id: detect
+        run: |
+          # Query Docker Hub API for unityci/editor tags
+          TAGS=$(curl -s "https://registry.hub.docker.com/v2/repositories/unityci/editor/tags?page_size=100")
+
+          # Parse input version streams (e.g., "6.0,6.3,6.4")
+          IFS=',' read -ra STREAMS <<< "${{ inputs.version-streams }}"
+
+          # Build JSON array of detected versions
+          VERSIONS="["
+          FIRST=true
+
+          for STREAM in "${STREAMS[@]}"; do
+            # Trim whitespace
+            STREAM=$(echo "$STREAM" | xargs)
+
+            # Convert stream format (6.0 -> 6000.0, 6.3 -> 6000.3)
+            MINOR=$(echo "$STREAM" | cut -d. -f2)
+            SEARCH_PATTERN="6000\.${MINOR}\.[0-9]+f[0-9]"
+
+            # Find latest version for this stream
+            # Extract version number from tag formats like:
+            # - ubuntu-6000.0.66f1-android-3.2.1
+            # - windows-6000.3.5f1-base-3
+            # - 6000.0.66f1-android-3
+            VERSION=$(echo "$TAGS" | jq -r '.results[].name' | \
+              grep -E "$SEARCH_PATTERN" | \
+              sed -E 's/.*(6000\.[0-9]+\.[0-9]+f[0-9]+).*/\1/' | \
+              sort -V | uniq | tail -1)
+
+            if [ -n "$VERSION" ]; then
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                VERSIONS+=","
+              fi
+              VERSIONS+="\"$VERSION\""
+              echo "Detected Unity $STREAM LTS: $VERSION"
+            else
+              echo "Warning: No version found for Unity $STREAM"
+            fi
+          done
+
+          VERSIONS+="]"
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+          echo "Output matrix: $VERSIONS"
