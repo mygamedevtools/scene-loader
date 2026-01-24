@@ -29,8 +29,7 @@
       "@semantic-release/npm",
       {
         "npmPublish": false,
-        "pkgRoot": "Packages/com.mygamedevtools.scene-loader",
-        "tarballDir": "dist"
+        "pkgRoot": "Packages/com.mygamedevtools.scene-loader"
       }
     ],
     [
@@ -43,11 +42,6 @@
         "message": "ci(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": "dist/*.tgz"
-      }
-    ]
+    "@semantic-release/github"
   ]
 }

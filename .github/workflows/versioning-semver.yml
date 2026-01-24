@@ -19,6 +19,8 @@ on:
         required: true
       UNITY_PASSWORD:
         required: true
+      UNITY_ORG_ID:
+        required: true
 
 jobs:
   semantic-release:

@@ -45,10 +45,30 @@ SceneManager.UnloadSceneAsync("my-previous-scene");
 
 ## 📦 Installation
 
-You can install the package via **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)**, **Git**, **Tarball** and the **[Unity Asset Store](https://assetstore.unity.com/packages/slug/313159)**.
+You can install the package via the **[Unity Asset Store](https://assetstore.unity.com/packages/slug/313159)**, **Tarball**, **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)** and **Git**.
 Check the full installation guide in the [documentation](https://scene-loader.mygamedevtools.com/docs/next/getting-started/installation).
 
-#### OpenUPM
+#### Unity Asset Store
+
+1. Obtain the package for free at the [Asset Store Page](https://assetstore.unity.com/packages/slug/313159).
+2. With your Unity project open, click `Open in Unity`.
+3. The `Package Manager` will open with the package selected.
+4. Click `Download` or `Update`, depending on the local cache.
+5. Click `Import`.
+6. Make sure everything is selected and click `Import` again.
+
+> [!NOTE]
+> When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
+
+#### Tarball (UPM Signed)
+
+1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
+2. Open `Window/Package Manager`.
+3. Click <kbd>+</kbd>.
+4. Select `Install package from tarball...`.
+5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
+
+#### OpenUPM (UPM Unsigned)
 
 * Open `Edit/Project Settings/Package Manager`.
 * Add a new **Scoped Registry** (or edit the existing _OpenUPM_ entry):
@@ -63,33 +83,13 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 * Select `Advanced Scene Manager` under `My GameDev Tools`.
 * Click `Install`.
 
-#### Git
+#### Git (UPM Unsigned)
 
 1. Open `Window/Package Manager`.
 2. Click <kbd>+</kbd>.
 3. Select `Install package from git URL...`.
 4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
 5. Click `Add`.
-
-#### Tarball
-
-1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
-2. Open `Window/Package Manager`.
-3. Click <kbd>+</kbd>.
-4. Select `Install package from tarball...`.
-5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
-
-#### Unity Asset Store
-
-1. Obtain the package at the [Asset Store Page](https://assetstore.unity.com/packages/slug/313159).
-2. With your Unity project open, click `Open in Unity`.
-3. The `Package Manager` will open with the package selected.
-4. Click `Download` or `Update`, depending on the local cache.
-5. Click `Import`.
-6. Make sure everything is selected and click `Import` again.
-
-> [!NOTE]
-> When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
 
 ## 📚 Documentation
 

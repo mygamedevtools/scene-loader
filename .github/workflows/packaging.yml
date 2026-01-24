@@ -13,6 +13,8 @@ on:
         required: true
       UNITY_PASSWORD:
         required: true
+      UNITY_ORG_ID:
+        required: true
 
 jobs:
   package-upm:
@@ -107,5 +109,48 @@ jobs:
     - name: 📎 Attach Unity Package to Release
       run: |
         gh release upload ${{ env.releaseVersion }} ./*.unitypackage --clobber
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  detect-unity-version:
+    name: Detect Unity Version
+    uses: ./.github/workflows/detect-unity-versions.yml
+    with:
+      version-streams: "6.3"
+
+  export-signed-upm:
+    name: Export Signed UPM Package
+    needs: detect-unity-version
+    runs-on: ubuntu-latest
+    container:
+      image: unityci/editor:ubuntu-${{ fromJSON(needs.detect-unity-version.outputs.versions)[0] }}-base-3
+    permissions:
+      contents: write
+    env:
+      releaseVersion: ${{ inputs.version }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v5
+
+    - name: 📦 Prepare Package
+      uses: ./.github/actions/prepare-package
+      with:
+        version: ${{ env.releaseVersion }}
+
+    - name: 🔐 Activate Unity License
+      run: |
+        echo "${{ secrets.UNITY_LICENSE }}" | base64 -d > /unity.ulf
+        unity-editor -batchmode -manualLicenseFile /unity.ulf -logFile - || true
+
+    - name: 📦 Export Signed UPM Package
+      run: |
+        unity-editor -batchmode -quit \
+          -upmPack "$PACKAGE_PATH" "./com.mygamedevtools.scene-loader-${{ env.releaseVersion }}.tgz" \
+          -cloudOrganization "${{ secrets.UNITY_ORG_ID }}" \
+          -logFile -
+
+    - name: 📎 Attach Signed UPM Package to Release
+      run: |
+        gh release upload ${{ env.releaseVersion }} ./*.tgz --clobber
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
