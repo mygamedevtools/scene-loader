@@ -139,7 +139,7 @@ jobs:
 
     - name: 🔐 Activate Unity License
       run: |
-        echo "${{ secrets.UNITY_LICENSE }}" | base64 -d > /unity.ulf
+        echo "${{ secrets.UNITY_LICENSE }}" > /unity.ulf
         unity-editor -batchmode -manualLicenseFile /unity.ulf -logFile - || true
 
     - name: 📦 Export Signed UPM Package
