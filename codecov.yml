@@ -7,3 +7,10 @@ coverage:
       default:
         informational: true
         only_pulls: true
+
+flag_management:
+  individual_flags:
+    - name: unity-6000.0
+      carryforward: true
+    - name: unity-6000.3
+      carryforward: true

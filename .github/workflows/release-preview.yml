@@ -1,0 +1,20 @@
+name: 🚀 Release (Preview)
+on:
+  workflow_dispatch:
+    inputs:
+      bumpType:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  create-preview-release:
+    name: Preview Release
+    uses: ./.github/workflows/versioning-manual.yml
+    with:
+      bumpType: ${{ inputs.bumpType }}
+    secrets: inherit

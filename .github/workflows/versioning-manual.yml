@@ -1,0 +1,119 @@
+name: 🔄 Versioning (Manual)
+on:
+  workflow_call:
+    inputs:
+      bumpType:
+        description: 'Version bump type (patch, minor, major)'
+        required: true
+        type: string
+      dryRun:
+        description: 'Run without creating a release'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+
+jobs:
+  calculate-version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      released: ${{ steps.release.outputs.released }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: 🔢 Calculate version
+      id: version
+      run: |
+        # Get the latest stable release tag (exclude prereleases)
+        LATEST_STABLE_TAG=$(git tag --list --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+        LATEST_STABLE="${LATEST_STABLE_TAG#v}"  # Remove 'v' prefix if present
+        LATEST_STABLE="${LATEST_STABLE:-0.0.0}"  # Default if no tags exist
+
+        echo "Latest stable version: $LATEST_STABLE"
+
+        # Parse version components
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_STABLE"
+
+        # Calculate base version based on bump type
+        case "${{ inputs.bumpType }}" in
+          major)
+            BASE_VERSION="$((MAJOR + 1)).0.0"
+            ;;
+          minor)
+            BASE_VERSION="${MAJOR}.$((MINOR + 1)).0"
+            ;;
+          patch)
+            BASE_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+            ;;
+        esac
+
+        echo "Base version for bump: $BASE_VERSION"
+
+        # Check if any prereleases exist for this base version
+        LATEST_PRE=$(git tag --list --sort=-v:refname "${BASE_VERSION}-pre.*" "v${BASE_VERSION}-pre.*" | head -n1)
+
+        if [ -n "$LATEST_PRE" ]; then
+          # Extract the pre number and increment
+          PRE_NUM=$(echo "$LATEST_PRE" | sed -E 's/.*-pre\.([0-9]+)$/\1/')
+          NEW_VERSION="${BASE_VERSION}-pre.$((PRE_NUM + 1))"
+        else
+          NEW_VERSION="${BASE_VERSION}-pre.1"
+        fi
+
+        echo "New version: $NEW_VERSION"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: 📦 Create release
+      id: release
+      if: ${{ inputs.dryRun != true }}
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+
+        # Determine if this is a prerelease
+        PRERELEASE_FLAG=""
+        if [[ "$VERSION" == *-* ]]; then
+          PRERELEASE_FLAG="--prerelease"
+        fi
+
+        # Create the release
+        gh release create "$VERSION" \
+          --title "$VERSION" \
+          --generate-notes \
+          $PRERELEASE_FLAG
+
+        echo "released=true" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📄 Summary
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if [ '${{ steps.release.outputs.released }}' == 'true' ]; then
+          echo "ℹ️ Released version \`$VERSION\`" | tee -a $GITHUB_STEP_SUMMARY
+        elif [ '${{ inputs.dryRun }}' == 'true' ]; then
+          echo "ℹ️ Dry run - would release version \`$VERSION\`" | tee -a $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No version released" | tee -a $GITHUB_STEP_SUMMARY
+        fi
+
+  package:
+    name: Package
+    needs: calculate-version
+    if: ${{ needs.calculate-version.outputs.released == 'true' }}
+    uses: ./.github/workflows/packaging.yml
+    with:
+      version: ${{ needs.calculate-version.outputs.version }}
+    secrets: inherit

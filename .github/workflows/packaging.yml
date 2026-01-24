@@ -1,0 +1,111 @@
+name: 📦 Package & Publish
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The version to package (e.g., 1.2.3 or 1.2.3-pre.1)'
+        required: true
+        type: string
+    secrets:
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+
+jobs:
+  package-upm:
+    name: Package UPM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      releaseVersion: ${{ inputs.version }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: 📦 Prepare Package
+      uses: ./.github/actions/prepare-package
+      with:
+        version: ${{ env.releaseVersion }}
+
+    - name: 📦 Package UPM Branch
+      id: package_upm
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git commit --amend -a --no-edit
+        git branch -d upm &> /dev/null || echo upm branch not found
+        git subtree split -P "$PACKAGE_PATH" -b upm
+        git checkout upm
+        if [[ -d "Samples" ]]; then
+          git mv Samples Samples~
+          rm -f Samples.meta
+          git commit --amend -a --no-edit
+        fi
+        git push -f -u origin upm
+
+    - name: 🏷️ Create UPM Tag
+      run: |
+        git tag $TAG upm
+        git push origin --tags
+      env:
+        TAG: upm/${{ env.releaseVersion }}
+
+  export-unity-package:
+    name: Export Unity Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      releaseVersion: ${{ inputs.version }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v5
+
+    - name: 📦 Prepare Package
+      uses: ./.github/actions/prepare-package
+      with:
+        version: ${{ env.releaseVersion }}
+
+    - name: 🔄 Rename Samples Folder
+      run: |
+        if [[ -d "$PACKAGE_PATH/Samples" ]]; then
+          mv "$PACKAGE_PATH/Samples" "$PACKAGE_PATH/Samples~"
+          rm -f "$PACKAGE_PATH/Samples.meta"
+        fi
+
+    - name: 🗃️ Cache Library
+      uses: actions/cache@v5
+      with:
+        path: Library
+        key: Library-StandaloneLinux64
+        restore-keys: Library-
+
+    - name: 📦 Export Unity Package
+      uses: game-ci/unity-builder@v4
+      with:
+        targetPlatform: StandaloneLinux64
+        buildMethod: PackageExporter.ExportPackage
+        projectPath: "."
+        allowDirtyBuild: true
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+    - name: 🗂️ Upload Unity Package Artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
+        path: "./*.unitypackage"
+
+    - name: 📎 Attach Unity Package to Release
+      run: |
+        gh release upload ${{ env.releaseVersion }} ./*.unitypackage --clobber
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

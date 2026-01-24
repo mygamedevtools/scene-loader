@@ -9,5 +9,5 @@ on:
 jobs:
   create-release:
     name: Release
-    uses: ./.github/workflows/release-template.yml
+    uses: ./.github/workflows/versioning-semver.yml
     secrets: inherit

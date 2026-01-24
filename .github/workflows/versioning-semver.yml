@@ -1,0 +1,71 @@
+name: 🔄 Versioning (Semantic)
+on:
+  workflow_call:
+    inputs:
+      blockPullRequestRelease:
+        required: false
+        type: boolean
+        default: true
+      blockReleaseCommit:
+        required: false
+        type: boolean
+      dryRun:
+        required: false
+        type: boolean
+    secrets:
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+
+jobs:
+  semantic-release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      new_release_published: ${{ steps.release.outputs.new_release_published }}
+      new_release_version: ${{ steps.release.outputs.new_release_version }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    # Removes the git plugin from semantic release so it doesn't generate a new commit
+    - name: ✂️ Disable semantic release commit
+      if: ${{ inputs.blockReleaseCommit == true }}
+      run: |
+        cat .releaserc.json | jq 'del(.plugins[] | select(type == "array" and .[0] == "@semantic-release/git"))' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
+
+    - name: 🚀 Semantic Release
+      id: release
+      uses: cycjimmy/semantic-release-action@v6
+      with:
+        dry_run: ${{ inputs.dryRun }}
+        ci: ${{ inputs.blockPullRequestRelease }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📄 Summary
+      run: |
+        if [ '${{ steps.release.outputs.new_release_published }}' == 'true' ] && [ '${{ inputs.dryRun }}' == 'false' ]; then
+          echo "ℹ️ Released version \`${{ steps.release.outputs.new_release_version }}\`" | tee -a $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No version released" | tee -a $GITHUB_STEP_SUMMARY
+        fi
+
+  package:
+    name: Package
+    needs: semantic-release
+    if: ${{ needs.semantic-release.outputs.new_release_published == 'true' && inputs.dryRun == false }}
+    uses: ./.github/workflows/packaging.yml
+    with:
+      version: ${{ needs.semantic-release.outputs.new_release_version }}
+    secrets: inherit
