@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.1](https://github.com/mygamedevtools/scene-loader/compare/4.1.0...4.1.1) (2026-01-24)
+
+
+### Bug Fixes
+
+* reorder #if statements to fix compilation issue ([#55](https://github.com/mygamedevtools/scene-loader/issues/55)) ([39ae2f5](https://github.com/mygamedevtools/scene-loader/commit/39ae2f5534e5692b05bb010e7116d667c6eb578e))
+
 # [4.1.0](https://github.com/mygamedevtools/scene-loader/compare/4.0.0...4.1.0) (2025-07-08)
 
 
