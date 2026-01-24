@@ -13,8 +13,6 @@ on:
         required: false
         type: boolean
     secrets:
-      GH_TOKEN:
-        required: true
       UNITY_LICENSE:
         required: true
       UNITY_EMAIL:
@@ -25,12 +23,16 @@ on:
 jobs:
   semantic-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     outputs:
       new_release_published: ${{ steps.release.outputs.new_release_published }}
       new_release_version: ${{ steps.release.outputs.new_release_version }}
     steps:
     - name: 📂 Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
         persist-credentials: false
@@ -48,7 +50,7 @@ jobs:
         dry_run: ${{ inputs.dryRun }}
         ci: ${{ inputs.blockPullRequestRelease }}
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: 📄 Summary
       run: |
@@ -66,7 +68,7 @@ jobs:
       releaseVersion: ${{ needs.semantic-release.outputs.new_release_version }}
     steps:
     - name: 📂 Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -107,11 +109,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: 'semantic-release'
     if: ${{ needs.semantic-release.outputs.new_release_published == 'true' && inputs.dryRun == false }}
+    permissions:
+      contents: write
     env:
       releaseVersion: ${{ needs.semantic-release.outputs.new_release_version }}
     steps:
     - name: 📂 Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -133,7 +137,7 @@ jobs:
         fi
 
     - name: 🗃️ Cache Library
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: Library
         key: Library-StandaloneLinux64
@@ -152,7 +156,13 @@ jobs:
         UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
     - name: 🗂️ Upload Unity Package Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}
         path: "./*.unitypackage"
+
+    - name: 📎 Attach Unity Package to Release
+      run: |
+        gh release upload ${{ env.releaseVersion }} ./*.unitypackage --clobber
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
