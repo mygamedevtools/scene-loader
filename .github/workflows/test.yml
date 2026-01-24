@@ -61,10 +61,15 @@ jobs:
           checkName: Unity ${{ matrix.unityVersion }} playmode Test Results
           coverageOptions: 'generateAdditionalMetrics;assemblyFilters:+MyGameDevTools.SceneLoading'
 
+      - name: Extract Unity major version
+        id: unity-version
+        run: echo "major=$(echo '${{ matrix.unityVersion }}' | grep -oE '^[0-9]+\.[0-9]+')" >> $GITHUB_OUTPUT
+
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           name: Unity ${{ matrix.unityVersion }} - playmode
+          flags: unity-${{ steps.unity-version.outputs.major }}
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ steps.tests.outputs.coveragePath }}/**/*.xml
 
