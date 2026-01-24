@@ -1,0 +1,115 @@
+name: 🔄 Versioning (Manual)
+on:
+  workflow_call:
+    inputs:
+      bumpType:
+        description: 'Version bump type (patch, minor, major)'
+        required: true
+        type: string
+      dryRun:
+        description: 'Run without creating a release'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+
+jobs:
+  calculate-version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      released: ${{ steps.release.outputs.released }}
+    steps:
+    - name: 📂 Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: 🔢 Calculate version
+      id: version
+      run: |
+        # Get the latest release tag
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+        LATEST_VERSION="${LATEST_TAG#v}"  # Remove 'v' prefix if present
+
+        echo "Latest version: $LATEST_VERSION"
+
+        # Parse version components
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+
+        # Handle pre-release suffix (e.g., 1.0.0-pre.1 -> 1.0.0)
+        PATCH="${PATCH%%-*}"
+
+        # Calculate new version based on bump type
+        case "${{ inputs.bumpType }}" in
+          major)
+            NEW_VERSION="$((MAJOR + 1)).0.0"
+            ;;
+          minor)
+            NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
+            ;;
+          patch)
+            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+            ;;
+        esac
+
+        # Add pre-release suffix for feature/fix branches
+        if [[ "${{ github.ref }}" == refs/heads/feat/* ]] || [[ "${{ github.ref }}" == refs/heads/fix/* ]]; then
+          BRANCH_NAME="${{ github.ref_name }}"
+          SAFE_BRANCH="${BRANCH_NAME//\//-}"
+          NEW_VERSION="${NEW_VERSION}-${SAFE_BRANCH}.1"
+        fi
+
+        echo "New version: $NEW_VERSION"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: 📦 Create release
+      id: release
+      if: ${{ inputs.dryRun != true }}
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+
+        # Determine if this is a prerelease
+        PRERELEASE_FLAG=""
+        if [[ "$VERSION" == *-* ]]; then
+          PRERELEASE_FLAG="--prerelease"
+        fi
+
+        # Create the release
+        gh release create "$VERSION" \
+          --title "$VERSION" \
+          --generate-notes \
+          $PRERELEASE_FLAG
+
+        echo "released=true" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📄 Summary
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if [ '${{ steps.release.outputs.released }}' == 'true' ]; then
+          echo "ℹ️ Released version \`$VERSION\`" | tee -a $GITHUB_STEP_SUMMARY
+        elif [ '${{ inputs.dryRun }}' == 'true' ]; then
+          echo "ℹ️ Dry run - would release version \`$VERSION\`" | tee -a $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ No version released" | tee -a $GITHUB_STEP_SUMMARY
+        fi
+
+  package:
+    name: Package
+    needs: calculate-version
+    if: ${{ needs.calculate-version.outputs.released == 'true' }}
+    uses: ./.github/workflows/packaging.yml
+    with:
+      version: ${{ needs.calculate-version.outputs.version }}
+    secrets: inherit

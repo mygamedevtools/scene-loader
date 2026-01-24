@@ -1,0 +1,26 @@
+name: 'Prepare UPM Package'
+description: 'Extract package path from .releaserc.json and update version in package.json'
+inputs:
+  version:
+    description: 'Version to set in package.json'
+    required: true
+outputs:
+  package-path:
+    description: 'Path to the package directory'
+    value: ${{ steps.extract.outputs.path }}
+runs:
+  using: 'composite'
+  steps:
+    - name: 📤 Extract Path
+      id: extract
+      shell: bash
+      run: |
+        PACKAGE_PATH=$(jq -r '.plugins[] | select(type == "array" and .[0] == "@semantic-release/npm") | .[1].pkgRoot' .releaserc.json)
+        echo "path=$PACKAGE_PATH" >> $GITHUB_OUTPUT
+        echo "PACKAGE_PATH=$PACKAGE_PATH" >> $GITHUB_ENV
+
+    - name: ✏️ Update package.json
+      shell: bash
+      run: |
+        jq '.version = "${{ inputs.version }}"' $PACKAGE_PATH/package.json > package.json.tmp
+        mv package.json.tmp $PACKAGE_PATH/package.json

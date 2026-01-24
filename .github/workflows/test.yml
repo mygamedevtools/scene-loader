@@ -41,7 +41,6 @@ jobs:
           key: Library-${{ matrix.unityVersion }}-playmode
           restore-keys: |
             Library-${{ matrix.unityVersion }}-
-            Library-
 
       - uses: game-ci/unity-test-runner@v4
         id: tests
