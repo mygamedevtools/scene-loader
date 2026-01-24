@@ -27,11 +27,11 @@ public static class MaterialPipelineConverter
 
     public static void ConvertMaterials()
     {
+#if CONVERT_MATERIALS
         RenderPipelineAsset renderPipeline = GraphicsSettings.currentRenderPipeline;
         if (!renderPipeline)
             return;
 
-#if CONVERT_MATERIALS
         string[] materialPaths = AssetDatabase.FindAssets("t:Material")
             .Select(AssetDatabase.GUIDToAssetPath)
             .Where(path => path.Contains(_partialPath))
