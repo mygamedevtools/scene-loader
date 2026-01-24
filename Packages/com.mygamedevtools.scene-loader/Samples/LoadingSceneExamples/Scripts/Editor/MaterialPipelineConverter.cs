@@ -77,6 +77,7 @@ public static class MaterialPipelineConverter
 #endif
 }
 
+#if CONVERT_MATERIALS
 #if CONVERT_HDRP
 // Modified original from `Packages/com.unity.render-pipelines.high-definition/Editor/Material/Lit/StandardsToHDLitMaterialUpgrader.cs`
 internal class StandardsToHDLitMaterialUpgrader : MaterialUpgrader
@@ -127,4 +128,5 @@ internal class StandardsToHDLitMaterialUpgrader : MaterialUpgrader
         HDShaderUtils.ResetMaterialKeywords(dstMaterial);
     }
 }
+#endif
 #endif
