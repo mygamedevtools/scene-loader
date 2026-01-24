@@ -27,11 +27,11 @@ public static class MaterialPipelineConverter
 
     public static void ConvertMaterials()
     {
+#if CONVERT_MATERIALS
         RenderPipelineAsset renderPipeline = GraphicsSettings.currentRenderPipeline;
         if (!renderPipeline)
             return;
 
-#if CONVERT_MATERIALS
         string[] materialPaths = AssetDatabase.FindAssets("t:Material")
             .Select(AssetDatabase.GUIDToAssetPath)
             .Where(path => path.Contains(_partialPath))
@@ -77,6 +77,7 @@ public static class MaterialPipelineConverter
 #endif
 }
 
+#if CONVERT_MATERIALS
 #if CONVERT_HDRP
 // Modified original from `Packages/com.unity.render-pipelines.high-definition/Editor/Material/Lit/StandardsToHDLitMaterialUpgrader.cs`
 internal class StandardsToHDLitMaterialUpgrader : MaterialUpgrader
@@ -127,4 +128,5 @@ internal class StandardsToHDLitMaterialUpgrader : MaterialUpgrader
         HDShaderUtils.ResetMaterialKeywords(dstMaterial);
     }
 }
+#endif
 #endif
