@@ -145,6 +145,8 @@ jobs:
     - name: 📦 Export Signed UPM Package
       run: |
         unity-editor -batchmode -quit \
+          -username "${{ secrets.UNITY_EMAIL }}" \
+          -password "${{ secrets.UNITY_PASSWORD }}" \
           -upmPack "$PACKAGE_PATH" "./com.mygamedevtools.scene-loader-${{ env.releaseVersion }}.tgz" \
           -cloudOrganization "${{ secrets.UNITY_ORG_ID }}" \
           -logFile -
