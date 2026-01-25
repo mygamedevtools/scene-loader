@@ -151,6 +151,10 @@ jobs:
           -cloudOrganization "${{ secrets.UNITY_ORG_ID }}" \
           -logFile -
 
+    - name: 📥 Install GitHub CLI
+      run: |
+        apt-get update && apt-get install -y gh
+
     - name: 📎 Attach Signed UPM Package to Release
       run: |
         gh release upload ${{ env.releaseVersion }} ./*.tgz --clobber
