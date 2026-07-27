@@ -7,15 +7,21 @@ using UnityEngine.LowLevel;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public static class UnityTaskUtilities
+    public static partial class UnityTaskUtilities
     {
         static Queue<Action> Actions;
 
         /// <summary>
-        /// Clears the static state before anything else runs, so that a queue left over from the
-        /// previous play mode session is not reused when <b>Domain Reload</b> is disabled.
+        /// Clears the static state, so that a queue left over from the previous play mode session is
+        /// not reused when <b>Domain Reload</b> is disabled.
+        /// <br/>
+        /// Runs on entering play mode on every supported version, and also on exiting it from Unity
+        /// 6000.5, which drops any actions still queued when play mode ended.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#if UNITY_6000_5_OR_NEWER
+        [OnExitingPlayMode]
+#endif
         static void ResetStatics()
         {
             Actions = null;

@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public static class MySceneManager
+    public static partial class MySceneManager
     {
         internal static ISceneManager Instance
         {
@@ -25,14 +25,21 @@ namespace MyGameDevTools.SceneLoading
         static ISceneManager _instance;
 
         /// <summary>
-        /// Clears the static state before anything else runs.
+        /// Disposes and clears the static state.
         /// <br/>
         /// With <b>Domain Reload</b> disabled, <see cref="_instance"/> still holds the previous play
         /// mode session's manager until <see cref="Initialize"/> runs after the first scene loads.
         /// Without this, anything touching <see cref="MySceneManager"/> from <c>Awake()</c> would get
         /// a stale manager pointing at destroyed scenes instead of the expected exception.
+        /// <br/>
+        /// Runs on entering play mode on every supported version, and also on exiting it from Unity
+        /// 6000.5, which releases the manager instead of holding it for the whole edit mode session.
+        /// Clearing the field keeps this safe to run twice.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#if UNITY_6000_5_OR_NEWER
+        [OnExitingPlayMode]
+#endif
         static void ResetStatics()
         {
             _instance?.Dispose();
