@@ -305,14 +305,13 @@ namespace AssetStoreTools.Previews.Generators
             foreach (var obj in objects)
             {
                 var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GUIDToAssetPath(obj.Guid));
-#if UNITY_6000_5_OR_NEWER
+#if UNITY_6000_3_OR_NEWER
                 if (AssetPreview.IsLoadingAssetPreview(asset.GetEntityId()))
+                    await WaitForEndOfFrame();
 #else
                 if (AssetPreview.IsLoadingAssetPreview(asset.GetInstanceID()))
-#endif
-                {
                     await WaitForEndOfFrame();
-                }
+#endif
             }
 
             // Writing

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 
 namespace AssetStoreTools.Exporter
 {
@@ -92,7 +93,7 @@ namespace AssetStoreTools.Exporter
             // Some special folders (e.g. SomeName.framework) do not have meta files inside them.
             // Their contents should be exported with any arbitrary GUID so that Unity Importer could pick them up
             if (generateIfPlugin && PathBelongsToPlugin(assetPath))
-                return UnityEngine.GUID.Generate().ToString();
+                return GUID.Generate().ToString();
 
             // Files in hidden folders (e.g. Samples~) are not part of the Asset Database,
             // therefore GUIDs need to be scraped from the .meta file.
