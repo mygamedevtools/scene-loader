@@ -1,8 +1,4 @@
 {
-  "version.label": {
-    "message": "4.0.0",
-    "description": "The label for version current"
-  },
   "sidebar.documentationSidebar.category.Getting Started": {
     "message": "Começando",
     "description": "The label for category Getting Started in sidebar documentationSidebar"
