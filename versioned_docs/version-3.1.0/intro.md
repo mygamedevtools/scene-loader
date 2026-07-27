@@ -14,7 +14,7 @@ The **Advanced Scene Manager** is a powerful Unity package designed to simplify 
 * **Loading Screens**: Easily build loading screens with built-in components.
 * **Cancellation Support**: Cancel long-running scene operations to handle edge cases or user interactions.
 
-## Instalation
+## Installation
 
 To get started with the Advanced Scene Manager, you can install it in various ways:
 
