@@ -269,7 +269,12 @@ namespace MyGameDevTools.SceneLoading
             Scene loadingScene = await LoadAsync(new SceneParameters(intermediateSceneInfo, false), token: token);
             intermediateSceneInfo = new LoadSceneInfoScene(loadingScene);
 
-            LoadingBehavior loadingBehavior = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None).FirstOrDefault(l => l.gameObject.scene == loadingScene);
+#if UNITY_6000_5_OR_NEWER
+            LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>();
+#else
+            LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None);
+#endif
+            LoadingBehavior loadingBehavior = loadingBehaviors.FirstOrDefault(l => l.gameObject.scene == loadingScene);
             return loadingBehavior
                 ? await TransitionWithIntermediateLoadingAsync(sceneParameters, intermediateSceneInfo, loadingBehavior, token)
                 : await TransitionWithIntermediateNoLoadingAsync(sceneParameters, intermediateSceneInfo, token);
