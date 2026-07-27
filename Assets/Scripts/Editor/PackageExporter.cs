@@ -12,15 +12,9 @@ public static class PackageExporter
     /// <summary>
     /// Exports the package as a .unitypackage, including hidden folders such as Samples~.
     /// </summary>
-    /// <remarks>
-    /// Asset Store Tools' exporter walks the file system directly and scrapes GUIDs from
-    /// .meta files, so it picks up hidden folders that are not in the Asset Database. That
-    /// is what com.needle.upm-in-unitypackage used to patch in, and why it is no longer needed.
-    ///
-    /// Those exporter types are `internal` and this project vendors Asset Store Tools
-    /// unmodified, so they are driven through reflection rather than by adding an
-    /// InternalsVisibleTo that the next package upgrade would overwrite.
-    /// </remarks>
+    // Asset Store Tools' exporter walks the file system and scrapes GUIDs from .meta files, so it
+    // covers hidden folders. Its types are internal and the package is vendored unmodified, hence
+    // reflection instead of an InternalsVisibleTo that the next upgrade would overwrite.
     public static void ExportPackage()
     {
         string packagePath = $"Packages/{PackageName}";

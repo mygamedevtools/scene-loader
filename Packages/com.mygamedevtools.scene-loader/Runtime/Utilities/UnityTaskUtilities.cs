@@ -11,13 +11,7 @@ namespace MyGameDevTools.SceneLoading
     {
         static Queue<Action> Actions;
 
-        /// <summary>
-        /// Clears the static state, so that a queue left over from the previous play mode session is
-        /// not reused when <b>Domain Reload</b> is disabled.
-        /// <br/>
-        /// Runs on entering play mode on every supported version, and also on exiting it from Unity
-        /// 6000.5, which drops any actions still queued when play mode ended.
-        /// </summary>
+        // Statics survive a disabled Domain Reload, so don't reuse the previous session's queue.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #if UNITY_6000_5_OR_NEWER
         [OnExitingPlayMode]
@@ -37,8 +31,7 @@ namespace MyGameDevTools.SceneLoading
 
             PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             List<PlayerLoopSystem> updatedSystems = new(playerLoop.subSystemList);
-            // The player loop is native state that survives a disabled Domain Reload, so drop the
-            // system a previous session registered instead of queueing up another one.
+            // The player loop is native state, so drop a previous session's system instead of stacking.
             updatedSystems.RemoveAll(system => system.type == typeof(UnityTaskUtilities));
             updatedSystems.Add(new PlayerLoopSystem
             {
@@ -92,8 +85,7 @@ namespace MyGameDevTools.SceneLoading
 
         static void ProcessMainThreadQueue()
         {
-            // A system registered by a previous session can tick between the reset above and
-            // HookToPlayerLoop rebuilding the queue.
+            // A previous session's system can tick before the queue is rebuilt.
             if (Actions == null)
                 return;
 
