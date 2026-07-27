@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
 {
-    public static class MySceneManager
+    public static partial class MySceneManager
     {
         internal static ISceneManager Instance
         {
@@ -23,6 +23,18 @@ namespace MyGameDevTools.SceneLoading
         }
 
         static ISceneManager _instance;
+
+        // Statics survive a disabled Domain Reload, so the previous session's manager would linger
+        // until Initialize runs after the first scene loads. Clearing the field makes this reentrant.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#if UNITY_6000_5_OR_NEWER
+        [OnExitingPlayMode]
+#endif
+        static void ResetStatics()
+        {
+            _instance?.Dispose();
+            _instance = null;
+        }
 
         [RuntimeInitializeOnLoadMethod]
         internal static void Initialize()

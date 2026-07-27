@@ -19,7 +19,7 @@
     {
       "displayName": "Loading Scene Examples",
       "description": "Experiment with different loading scenes for Scene Transitions. Use the sample scenes as a starting point to build your own loading scenes.",
-      "path": "Samples~/LoadingSceneExamples"
+      "path": "Samples/LoadingSceneExamples"
     }
   ]
 }

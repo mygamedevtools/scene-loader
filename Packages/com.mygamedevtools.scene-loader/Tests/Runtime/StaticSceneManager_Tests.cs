@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
@@ -153,7 +152,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             var load = loadTask();
             yield return load.ToWaitTask();
-            var loadedSceneHandles = load.Result.GetScenes().Select(s => s.handle).ToArray();
+            var loadedScenes = load.Result.GetScenes();
 
             var reportedScenes = new List<Scene>(sceneCount);
             MySceneManager.SceneUnloaded += reportSceneUnloaded;
@@ -171,14 +170,14 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(sceneCount, _scenesUnloaded);
 
             for (int i = 0; i < sceneCount; i++)
-                Assert.True(hasReference(loadedSceneHandles[i], reportedScenes));
+                Assert.True(hasReference(loadedScenes[i], reportedScenes));
 
             void reportSceneUnloaded(Scene loadedScene) => reportedScenes.Add(loadedScene);
 
-            bool hasReference(int handle, List<Scene> scenes)
+            bool hasReference(Scene expectedScene, List<Scene> scenes)
             {
                 foreach (var scene in scenes)
-                    if (scene.handle == handle)
+                    if (scene.handle == expectedScene.handle)
                     {
                         scenes.Remove(scene);
                         return true;

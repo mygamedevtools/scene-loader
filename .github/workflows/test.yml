@@ -68,6 +68,10 @@ jobs:
         if: startsWith(matrix.unityVersion, '6000.0')
         run: cp Packages/manifest.6.0.json Packages/manifest.json
 
+      - name: Use Unity 6.3 compatible packages
+        if: startsWith(matrix.unityVersion, '6000.3')
+        run: cp Packages/manifest.6.3.json Packages/manifest.json
+
       - uses: game-ci/unity-test-runner@v4
         id: tests
         env:
