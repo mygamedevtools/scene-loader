@@ -1,15 +1,31 @@
 name: 🧪 Tests
 on:
+  # Keep these two lists in sync. GitHub Actions does not support YAML anchors.
   push:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
+    paths:
+      # The Unity project: the package under test, the manifests that resolve its
+      # dependencies, the vendored packages it compiles alongside, the Addressables
+      # setup the tests run against, and the editor version the project opens with.
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      # The workflows that decide what gets tested and how.
+      - '.github/workflows/test.yml'
+      - '.github/workflows/detect-unity-versions.yml'
+      # Docs never change behaviour, including docs shipped inside a package.
+      - '!**.md'
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/test.yml'
+      - '.github/workflows/detect-unity-versions.yml'
+      - '!**.md'
   schedule:
     # Run on the 1st of every month at 2 AM UTC
     - cron: '0 2 1 * *'
