@@ -10,6 +10,12 @@ import TabItem from '@theme/TabItem';
 
 Você pode instalar o pacote via **OpenUPM**, **Git**, **Tarball** ou **Unity Asset Store**:
 
+:::info[Assinatura de Pacote]
+Os tarballs de cada versão são assinados com a [assinatura de pacotes do UPM](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), que o **Package Manager** verifica a partir do **Unity 6.3**.
+As instalações via **OpenUPM** e **Tarball** preservam a assinatura, enquanto instalações via **Git** nunca são assinadas.
+Versões publicadas antes da introdução da assinatura (`4.1.1` e anteriores) não são assinadas.
+:::
+
 <Tabs defaultValue={(() => {
           if (typeof window !== "undefined") {
               const hash = window.location.hash.replace("#", "").toLowerCase();
@@ -18,6 +24,12 @@ Você pode instalar o pacote via **OpenUPM**, **Git**, **Tarball** ou **Unity As
           return "openupm";
       })()}>
 <TabItem value="openupm" label="OpenUPM" default>
+
+:::note[Assinado]
+O OpenUPM republica o tarball assinado de cada versão do GitHub sem alterações, então a assinatura é preservada.
+Versões publicadas antes da introdução da assinatura continuam sem assinatura.
+:::
+
 Esse pacote está disponível no registro [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader).
 Você pode instalar um pacote **OpenUPM** tanto pelo [openupm-cli](https://github.com/openupm/openupm-cli) ou manualmente pelo **Package Manager**.
 
@@ -61,6 +73,11 @@ Isso irá atualizar automaticamente o **Scoped Registries** e instalar o pacote 
 Requer [Git](https://git-scm.com/) instalado e disponível em PATH
 :::
 
+:::warning[Sem assinatura]
+Pacotes instalados por URL do Git não são assinados, então o **Package Manager** os exibe como não assinados no **Unity 6.3** ou mais recente.
+Instale via **OpenUPM** ou **Tarball** se precisar de um pacote assinado.
+:::
+
 1. Abra `Window/Package Manager`.
 2. Clique <kbd>+</kbd>.
 3. Selecione `Install package from git URL...`.
@@ -70,6 +87,10 @@ Requer [Git](https://git-scm.com/) instalado e disponível em PATH
 
 <TabItem value="tarball" label="Tarball">
 
+:::note[Assinado]
+Os tarballs de cada versão são assinados, então o **Package Manager** os exibe como assinados no **Unity 6.3** ou mais recente.
+:::
+
 1. Escolha a [versão](https://github.com/mygamedevtools/scene-loader/releases) que deseja instalar e baixe o pacote `com.mygamedevtools.scene-loader-<release>.tgz`.
 2. Abra `Window/Package Manager`.
 3. Clique <kbd>+</kbd>.
@@ -78,7 +99,7 @@ Requer [Git](https://git-scm.com/) instalado e disponível em PATH
 </TabItem>
 
 <TabItem value="asset-store" label="Unity Asset Store">
-1. Obtenha o pacote na [Asset Store](https://assetstore.unity.com/packages/slug/313159).
+1. Obtenha o pacote gratuitamente na [Asset Store](https://assetstore.unity.com/packages/slug/313159).
 2. Com seu projeto Unity aberto, clique `Open in Unity`.
 3. O `Package Manager` abrirá com o pacote selecionado.
 4. Clique `Download` ou `Update`, dependendo no estado local de cache.
@@ -86,7 +107,11 @@ Requer [Git](https://git-scm.com/) instalado e disponível em PATH
 6. Valide que tudo está selecionado e clique `Import` novamente.
 
 :::info
-When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
+Ao atualizar pela Asset Store, garanta que a versão anterior foi removida completamente antes de adicionar a versão atualizada.
+:::
+
+:::note
+Pacotes da Asset Store são importados na pasta `Assets` do seu projeto em vez de serem gerenciados pelo **Package Manager**, então a assinatura de pacotes não se aplica a eles.
 :::
 
 </TabItem>
