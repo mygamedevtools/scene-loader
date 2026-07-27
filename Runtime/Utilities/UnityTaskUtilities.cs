@@ -11,28 +11,34 @@ namespace MyGameDevTools.SceneLoading
     {
         static Queue<Action> Actions;
 
+        /// <summary>
+        /// Clears the static state before anything else runs, so that a queue left over from the
+        /// previous play mode session is not reused when <b>Domain Reload</b> is disabled.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            Actions = null;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void HookToPlayerLoop()
         {
-#if UNITY_EDITOR
-            bool domainReloadDisabled = UnityEditor.EditorSettings.enterPlayModeOptionsEnabled && UnityEditor.EditorSettings.enterPlayModeOptions.HasFlag(UnityEditor.EnterPlayModeOptions.DisableDomainReload);
-            if (!domainReloadDisabled && Actions != null)
-                return;
-#else
             if (Actions != null)
                 return;
-#endif
 
             Actions = new Queue<Action>(16);
+
             PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            List<PlayerLoopSystem> updatedSystems = new(playerLoop.subSystemList)
+            List<PlayerLoopSystem> updatedSystems = new(playerLoop.subSystemList);
+            // The player loop is native state that survives a disabled Domain Reload, so drop the
+            // system a previous session registered instead of queueing up another one.
+            updatedSystems.RemoveAll(system => system.type == typeof(UnityTaskUtilities));
+            updatedSystems.Add(new PlayerLoopSystem
             {
-                new PlayerLoopSystem
-                {
-                    type = typeof(UnityTaskUtilities),
-                    updateDelegate = ProcessMainThreadQueue
-                }
-            };
+                type = typeof(UnityTaskUtilities),
+                updateDelegate = ProcessMainThreadQueue
+            });
 
             playerLoop.subSystemList = updatedSystems.ToArray();
             PlayerLoop.SetPlayerLoop(playerLoop);
@@ -80,6 +86,11 @@ namespace MyGameDevTools.SceneLoading
 
         static void ProcessMainThreadQueue()
         {
+            // A system registered by a previous session can tick between the reset above and
+            // HookToPlayerLoop rebuilding the queue.
+            if (Actions == null)
+                return;
+
             lock (Actions)
             {
                 while (Actions.TryDequeue(out Action action))

@@ -24,6 +24,21 @@ namespace MyGameDevTools.SceneLoading
 
         static ISceneManager _instance;
 
+        /// <summary>
+        /// Clears the static state before anything else runs.
+        /// <br/>
+        /// With <b>Domain Reload</b> disabled, <see cref="_instance"/> still holds the previous play
+        /// mode session's manager until <see cref="Initialize"/> runs after the first scene loads.
+        /// Without this, anything touching <see cref="MySceneManager"/> from <c>Awake()</c> would get
+        /// a stale manager pointing at destroyed scenes instead of the expected exception.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            _instance?.Dispose();
+            _instance = null;
+        }
+
         [RuntimeInitializeOnLoadMethod]
         internal static void Initialize()
         {
