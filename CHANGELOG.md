@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.3](https://github.com/mygamedevtools/scene-loader/compare/4.1.2...4.1.3) (2026-07-27)
+
+
+### Bug Fixes
+
+* support Unity 6.5 ([#66](https://github.com/mygamedevtools/scene-loader/issues/66)) ([a86f7cb](https://github.com/mygamedevtools/scene-loader/commit/a86f7cba633c0bfeecece8c599e316d80217589b))
+
 ## [4.1.2](https://github.com/mygamedevtools/scene-loader/compare/4.1.1...4.1.2) (2026-07-27)
 
 
