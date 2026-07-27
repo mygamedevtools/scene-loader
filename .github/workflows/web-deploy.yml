@@ -4,6 +4,18 @@ on:
   push:
     branches:
       - docs
+  pull_request:
+    branches:
+      - docs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  # Never interrupt a deploy that is already publishing, but stale PR builds are
+  # safe to drop as soon as a new commit lands.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -12,20 +24,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Docusaurus site
         run: npm run build
 
-      - name: Deploy to GitHub Pages
+      - name: Upload Pages artifact
+        if: github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3
         with:
           path: build
@@ -33,6 +49,7 @@ jobs:
   deploy:
     name: Deploy To GitHub Pages 🚀
     needs: build
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
