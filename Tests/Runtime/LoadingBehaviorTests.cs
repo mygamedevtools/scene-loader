@@ -10,10 +10,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         [OneTimeTearDown]
         public void Teardown()
         {
-#if UNITY_2023_2_OR_NEWER
-            var behaviors = Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None);
+#if UNITY_6000_5_OR_NEWER
+            var behaviors = Object.FindObjectsByType<LoadingBehavior>();
 #else
-            var behaviors = Object.FindObjectsOfType<LoadingBehavior>();
+            var behaviors = Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None);
 #endif
             foreach (var b in behaviors)
                 Object.DestroyImmediate(b.gameObject);
