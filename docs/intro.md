@@ -14,7 +14,7 @@ sidebar_position: 1
 * **Loading Screens**: Easily build loading screens with built-in components.
 * **Cancellation Support**: Cancel long-running scene operations to handle edge cases or user interactions.
 
-## Instalation
+## Installation
 
 To get started with My Scene Manager, you can install it in various ways:
 

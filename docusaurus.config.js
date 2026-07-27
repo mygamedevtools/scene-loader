@@ -24,7 +24,6 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'mygamedevtools', // Usually your GitHub org/user name.
   projectName: 'scene-loader', // Usually your repo name.
-  deploymentBranch: 'gh-pages',
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
@@ -56,10 +55,15 @@ const config = {
           sidebarPath: './sidebars.js',
           editUrl:
             'https://github.com/mygamedevtools/scene-loader/tree/docs/',
+          // Point "Edit this page" at the translation rather than the English
+          // source when browsing a localized page.
+          editLocalizedFiles: true,
           lastVersion: 'current',
           versions: {
             current: {
-              label: '4.1.0'
+              // Minor-level label: patch releases don't change the docs, so
+              // this only needs a bump when a new minor ships.
+              label: '4.1.x'
             },
           }
         },

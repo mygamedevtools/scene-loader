@@ -5,7 +5,7 @@ This website is built using [Docusaurus](https://docusaurus.io/), a modern stati
 
 ## Prerequisites
 
-To run and build this documentation site locally, you need to have **Node.js 18+** installed.
+To run and build this documentation site locally, you need to have **Node.js 20+** installed.
 
 You can download the latest version of Node.js from [here](https://nodejs.org/en/download/).
 
@@ -14,11 +14,11 @@ You can download the latest version of Node.js from [here](https://nodejs.org/en
 1. Clone the repository (if you haven’t already).
 2. Install the necessary dependencies:
   ```bash
-  npm install
+  npm ci
   ```
 3. To run the site locally:
   ```bash
-  npx run start
+  npm run start
   ```
   This will start a local development server at `http://localhost:3000`.
 4. To run the site locally in a different locale (e.g., Português Brasileiro):
@@ -38,7 +38,8 @@ npm run docusaurus docs:version <version>
 This will copy the latest documentation and place it into the `version-<version>` folder.
 You can update the files inside `docs/` to reflect the new documentation version.
 
-Make sure to update the current version name as well in the `docusaurus.config.js` file at:
+Make sure to update the current version label as well in the `docusaurus.config.js` file.
+The label tracks the minor release (e.g. `4.1.x`), so it only needs a bump when a new minor ships — not on every patch:
 
 ```js
 const config = {
