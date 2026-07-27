@@ -28,6 +28,9 @@
 # Rider
 .idea/
 
+# Claude Code
+.claude/
+
 # Gradle cache directory
 .gradle/
 
