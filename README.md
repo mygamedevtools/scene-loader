@@ -83,7 +83,7 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 * Click `Apply`.
 * Open `Window/Package Manager`.
 * In the left column, select `Open UPM` inside `My Registries`.
-* Select `Advanced Scene Manager` under `My GameDev Tools`.
+* Select `My Scene Manager` under `My GameDev Tools`.
 * Click `Install`.
 
 #### Git (UPM Unsigned)
