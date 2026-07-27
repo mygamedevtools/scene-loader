@@ -13,6 +13,10 @@ on:
         required: false
         type: boolean
     secrets:
+      # PAT: the release commit targets a protected branch, which the default
+      # GITHUB_TOKEN (github-actions[bot]) is not allowed to push to
+      GH_TOKEN:
+        required: true
       UNITY_LICENSE:
         required: true
       UNITY_EMAIL:
@@ -57,7 +61,7 @@ jobs:
         dry_run: ${{ inputs.dryRun }}
         ci: ${{ inputs.blockPullRequestRelease }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     - name: 📄 Summary
       run: |
