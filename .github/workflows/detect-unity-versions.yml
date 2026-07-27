@@ -3,8 +3,9 @@ on:
   workflow_call:
     inputs:
       version-streams:
-        description: 'Comma-separated Unity version streams to detect (e.g., "6.0,6.3")'
-        required: true
+        description: 'Optional override, comma-separated (e.g. "6000.0,6000.3"). Empty = auto-detect every active LTS stream.'
+        required: false
+        default: ''
         type: string
     outputs:
       versions:
@@ -18,36 +19,54 @@ jobs:
     outputs:
       versions: ${{ steps.detect.outputs.versions }}
     steps:
-      - name: Query Docker Hub for latest Unity versions
+      - name: Resolve Unity LTS versions
         id: detect
         run: |
-          # Query Docker Hub API for unityci/editor tags
-          TAGS=$(curl -s "https://registry.hub.docker.com/v2/repositories/unityci/editor/tags?page_size=100")
+          set -o pipefail
 
-          # Parse input version streams (e.g., "6.0,6.3,6.4")
-          IFS=',' read -ra STREAMS <<< "${{ inputs.version-streams }}"
+          STREAMS_INPUT="${{ inputs.version-streams }}"
 
-          # Build JSON array of detected versions
+          if [ -n "$STREAMS_INPUT" ]; then
+            MODE="pinned"
+            STREAM_LIST=$(echo "$STREAMS_INPUT" | tr ',' '\n' | xargs -n1 | sed -E 's/^6\./6000./' | sort -Vu | tr '\n' ' ')
+          else
+            MODE="auto"
+            # Unity's release API is the only source that labels a stream LTS.
+            # limit caps at 25; that window spans several months, so every
+            # actively-released LTS stream appears in it.
+            LTS=$(curl -sf "https://services.api.unity.com/unity/editor/release/v1/releases?stream=LTS&limit=25&order=RELEASE_DATE_DESC") || {
+              echo "::error::Unity release API query failed"
+              exit 1
+            }
+            STREAM_LIST=$(echo "$LTS" | jq -r '.results[].version | split(".")[0:2] | join(".")' | sort -Vu | tr '\n' ' ')
+          fi
+
+          read -ra STREAMS <<< "$STREAM_LIST"
+          if [ ${#STREAMS[@]} -eq 0 ]; then
+            echo "::error::No Unity LTS streams found ($MODE mode)"
+            exit 1
+          fi
+          echo "LTS streams ($MODE): ${STREAMS[*]}"
+
           VERSIONS="["
           FIRST=true
+          MISSING=""
 
           for STREAM in "${STREAMS[@]}"; do
-            # Trim whitespace
-            STREAM=$(echo "$STREAM" | xargs)
+            ESCAPED=${STREAM//./\\.}
 
-            # Convert stream format (6.0 -> 6000.0, 6.3 -> 6000.3)
-            MINOR=$(echo "$STREAM" | cut -d. -f2)
-            SEARCH_PATTERN="6000\.${MINOR}\.[0-9]+f[0-9]"
+            # Query per stream: tags are paginated by last_updated, so an unfiltered
+            # page only covers recently pushed streams. `name` keeps this stream on page 1.
+            TAGS=$(curl -sf "https://registry.hub.docker.com/v2/repositories/unityci/editor/tags?page_size=100&name=${STREAM}") || TAGS=""
 
-            # Find latest version for this stream
-            # Extract version number from tag formats like:
-            # - ubuntu-6000.0.66f1-android-3.2.1
-            # - windows-6000.3.5f1-base-3
-            # - 6000.0.66f1-android-3
-            VERSION=$(echo "$TAGS" | jq -r '.results[].name' | \
-              grep -E "$SEARCH_PATTERN" | \
-              sed -E 's/.*(6000\.[0-9]+\.[0-9]+f[0-9]+).*/\1/' | \
-              sort -V | uniq | tail -1)
+            # Tags look like ubuntu-6000.0.66f1-android-3.2.1 or 6000.3.5f1-base-3
+            VERSION=""
+            if [ -n "$TAGS" ]; then
+              VERSION=$(echo "$TAGS" | jq -r '.results[]? | .name' | \
+                grep -E "${ESCAPED}\.[0-9]+f[0-9]" | \
+                sed -E "s/.*(${ESCAPED}\.[0-9]+f[0-9]+).*/\1/" | \
+                sort -V | uniq | tail -1) || VERSION=""
+            fi
 
             if [ -n "$VERSION" ]; then
               if [ "$FIRST" = true ]; then
@@ -58,10 +77,27 @@ jobs:
               VERSIONS+="\"$VERSION\""
               echo "Detected Unity $STREAM LTS: $VERSION"
             else
-              echo "Warning: No version found for Unity $STREAM"
+              MISSING+=" $STREAM"
             fi
           done
 
           VERSIONS+="]"
+
+          if [ -n "$MISSING" ]; then
+            if [ "$MODE" = "pinned" ]; then
+              # An explicitly requested stream must exist; a miss is a config error.
+              echo "::error::No unityci/editor image for pinned stream(s):$MISSING"
+              exit 1
+            fi
+            # In auto mode a new LTS stream routinely lands before game-ci builds its
+            # image. Warn instead of failing, but never let the matrix go empty.
+            echo "::warning::No unityci/editor image yet for LTS stream(s):$MISSING"
+          fi
+
+          if [ "$FIRST" = true ]; then
+            echo "::error::No Unity versions resolved for any LTS stream"
+            exit 1
+          fi
+
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
           echo "Output matrix: $VERSIONS"

@@ -19,8 +19,6 @@ jobs:
   detect-versions:
     name: Detect Unity Versions
     uses: ./.github/workflows/detect-unity-versions.yml
-    with:
-      version-streams: "6.0,6.3"
 
   test:
     name: Unity ${{ matrix.unityVersion }} - playmode
