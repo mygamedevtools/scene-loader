@@ -14,7 +14,7 @@ namespace MyGameDevTools.SceneLoading
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void HookToPlayerLoop()
         {
-#if UNITY_EDITOR && UNITY_2019_3_OR_NEWER
+#if UNITY_EDITOR
             bool domainReloadDisabled = UnityEditor.EditorSettings.enterPlayModeOptionsEnabled && UnityEditor.EditorSettings.enterPlayModeOptions.HasFlag(UnityEditor.EnterPlayModeOptions.DisableDomainReload);
             if (!domainReloadDisabled && Actions != null)
                 return;
