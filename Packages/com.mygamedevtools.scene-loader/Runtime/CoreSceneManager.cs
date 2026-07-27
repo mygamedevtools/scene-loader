@@ -223,13 +223,19 @@ namespace MyGameDevTools.SceneLoading
             {
                 await Task.WhenAll(loadTasks);
             }
-            catch (OperationCanceledException exception)
+            catch (OperationCanceledException)
             {
+                // The scenes were already removed from `_loadedScenes` and their unload operations
+                // cannot be cancelled, so they are gone either way. Clear the active scene as the
+                // successful path does, otherwise it keeps pointing at a scene no longer managed.
                 for (i = 0; i < sceneCount; i++)
                 {
-                    _unloadingScenes.Remove(sceneDataArray[i]);
+                    tempSceneData = sceneDataArray[i];
+                    _unloadingScenes.Remove(tempSceneData);
+                    if (_activeScene == tempSceneData)
+                        SetActiveScene(GetLastLoadedScene());
                 }
-                throw exception;
+                throw;
             }
 
             for (i = 0; i < sceneCount; i++)
