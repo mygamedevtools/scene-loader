@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.1.2](https://github.com/mygamedevtools/scene-loader/compare/4.1.1...4.1.2) (2026-07-27)
+
+
+### Bug Fixes
+
+* Add Unity 6.3 Package Signing ([#58](https://github.com/mygamedevtools/scene-loader/issues/58)) ([39fa26b](https://github.com/mygamedevtools/scene-loader/commit/39fa26b198f8016a833f200e6b79422c843b7b5f))
+* **ci:** restore PAT for the semantic-release commit ([#59](https://github.com/mygamedevtools/scene-loader/issues/59)) ([10699fa](https://github.com/mygamedevtools/scene-loader/commit/10699fabe276052416a7f109610f4fc3a2b1705e))
+
 ## [4.1.1](https://github.com/mygamedevtools/scene-loader/compare/4.1.0...4.1.1) (2026-01-24)
 
 
