@@ -15,6 +15,10 @@ on:
         required: true
       UNITY_ORG_ID:
         required: true
+      UPM_SERVICE_ACCOUNT_KEY_ID:
+        required: true
+      UPM_SERVICE_ACCOUNT_KEY_SECRET:
+        required: true
 
 jobs:
   package-upm:
@@ -112,22 +116,17 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  detect-unity-version:
-    name: Detect Unity Version
-    uses: ./.github/workflows/detect-unity-versions.yml
-    with:
-      version-streams: "6.3"
-
   export-signed-upm:
     name: Export Signed UPM Package
-    needs: detect-unity-version
     runs-on: ubuntu-latest
-    container:
-      image: unityci/editor:ubuntu-${{ fromJSON(needs.detect-unity-version.outputs.versions)[0] }}-base-3
     permissions:
       contents: write
     env:
       releaseVersion: ${{ inputs.version }}
+      # Read by the `upm` CLI when it signs the tarball
+      UPM_SERVICE_ACCOUNT_KEY_ID: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_ID }}
+      UPM_SERVICE_ACCOUNT_KEY_SECRET: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_SECRET }}
+      DIST_DIR: ${{ github.workspace }}/upm-dist
     steps:
     - name: 📂 Checkout
       uses: actions/checkout@v5
@@ -137,26 +136,64 @@ jobs:
       with:
         version: ${{ env.releaseVersion }}
 
-    - name: 🔐 Activate Unity License
+    - name: 🔄 Rename Samples Folder
       run: |
-        echo "${{ secrets.UNITY_LICENSE }}" > /unity.ulf
-        unity-editor -batchmode -manualLicenseFile /unity.ulf -logFile - || true
+        if [[ -d "$PACKAGE_PATH/Samples" ]]; then
+          mv "$PACKAGE_PATH/Samples" "$PACKAGE_PATH/Samples~"
+          rm -f "$PACKAGE_PATH/Samples.meta"
+        fi
 
-    - name: 📦 Export Signed UPM Package
+    - name: 🛠️ Install Unity Package Manager CLI
       run: |
-        unity-editor -batchmode -quit \
-          -username "${{ secrets.UNITY_EMAIL }}" \
-          -password "${{ secrets.UNITY_PASSWORD }}" \
-          -upmPack "$PACKAGE_PATH" "./com.mygamedevtools.scene-loader-${{ env.releaseVersion }}.tgz" \
-          -cloudOrganization "${{ secrets.UNITY_ORG_ID }}" \
-          -logFile -
+        curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o "$RUNNER_TEMP/install-upm.sh"
+        bash "$RUNNER_TEMP/install-upm.sh"
+        echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
 
-    - name: 📥 Install GitHub CLI
+    - name: 🔏 Pack & Sign UPM Package
       run: |
-        apt-get update && apt-get install -y gh
+        mkdir -p "$DIST_DIR"
+        upm --version
+        upm pack "$PACKAGE_PATH" \
+          --organization-id "${{ secrets.UNITY_ORG_ID }}" \
+          --destination "$DIST_DIR"
+
+    - name: ✅ Verify Signed Package
+      run: |
+        shopt -s nullglob
+        archives=("$DIST_DIR"/*.tgz "$DIST_DIR"/*.tar.gz)
+        if [[ ${#archives[@]} -ne 1 ]]; then
+          echo "::error::Expected exactly one signed archive in $DIST_DIR, found ${#archives[@]}"
+          exit 1
+        fi
+        archive="${archives[0]}"
+
+        tar -tzf "$archive" | grep -qx 'package/package.json' \
+          || { echo "::error::Tarball is missing package/package.json"; exit 1; }
+        tar -tzf "$archive" | grep -qx 'package/.attestation.p7m' \
+          || { echo "::error::Tarball is unsigned - missing package/.attestation.p7m"; exit 1; }
+
+        packedName=$(tar -xOzf "$archive" package/package.json | jq -r '.name')
+        packedVersion=$(tar -xOzf "$archive" package/package.json | jq -r '.version')
+        if [[ "$packedVersion" != "$releaseVersion" ]]; then
+          echo "::error::Packed version $packedVersion does not match release $releaseVersion"
+          exit 1
+        fi
+
+        # OpenUPM resolves the release asset by the "<package-name>-" prefix, so pin the filename
+        expected="$DIST_DIR/$packedName-$packedVersion.tgz"
+        [[ "$archive" == "$expected" ]] || mv "$archive" "$expected"
+
+        echo "PACKAGE_ARCHIVE=$expected" >> "$GITHUB_ENV"
+        echo "✅ Signed \`$packedName@$packedVersion\`" | tee -a $GITHUB_STEP_SUMMARY
+
+    - name: 🗂️ Upload Signed UPM Package Artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: com.mygamedevtools.scene-loader-${{ env.releaseVersion }}-signed
+        path: ${{ env.PACKAGE_ARCHIVE }}
 
     - name: 📎 Attach Signed UPM Package to Release
       run: |
-        gh release upload ${{ env.releaseVersion }} ./*.tgz --clobber
+        gh release upload "$releaseVersion" "$PACKAGE_ARCHIVE" --clobber
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

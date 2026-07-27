@@ -18,6 +18,12 @@ on:
         required: true
       UNITY_PASSWORD:
         required: true
+      UNITY_ORG_ID:
+        required: true
+      UPM_SERVICE_ACCOUNT_KEY_ID:
+        required: true
+      UPM_SERVICE_ACCOUNT_KEY_SECRET:
+        required: true
 
 jobs:
   calculate-version:

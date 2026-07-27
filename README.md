@@ -68,7 +68,10 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 4. Select `Install package from tarball...`.
 5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
 
-#### OpenUPM (UPM Unsigned)
+#### OpenUPM (UPM Signed)
+
+> [!NOTE]
+> OpenUPM republishes the signed tarball from each GitHub release unchanged. Versions published before signing was introduced remain unsigned.
 
 * Open `Edit/Project Settings/Package Manager`.
 * Add a new **Scoped Registry** (or edit the existing _OpenUPM_ entry):
