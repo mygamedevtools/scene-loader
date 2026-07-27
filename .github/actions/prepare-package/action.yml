@@ -1,5 +1,5 @@
 name: 'Prepare UPM Package'
-description: 'Extract package path from .releaserc.json and update version in package.json'
+description: 'Extract package path from .releaserc.json and update the version and sample paths in package.json'
 inputs:
   version:
     description: 'Version to set in package.json'
@@ -22,5 +22,10 @@ runs:
     - name: ✏️ Update package.json
       shell: bash
       run: |
-        jq '.version = "${{ inputs.version }}"' $PACKAGE_PATH/package.json > package.json.tmp
+        # Samples are kept in `Samples` so the dev project compiles them, and the
+        # packaging jobs rename the folder to `Samples~` to hide it in the shipped
+        # package. The declared sample paths have to follow that rename.
+        jq '.version = "${{ inputs.version }}"
+            | (.samples[]?.path) |= sub("^Samples/"; "Samples~/")' \
+          $PACKAGE_PATH/package.json > package.json.tmp
         mv package.json.tmp $PACKAGE_PATH/package.json
