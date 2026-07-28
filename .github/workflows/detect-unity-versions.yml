@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       version-streams:
-        description: 'Optional override, comma-separated (e.g. "6000.0,6000.3"). Empty = auto-detect every active LTS stream.'
+        description: 'Optional override, comma-separated (e.g. "6000.0,6000.3"). Empty = auto-detect every active LTS stream plus the latest non-LTS stable stream.'
         required: false
         default: ''
         type: string
@@ -14,12 +14,12 @@ on:
 
 jobs:
   detect:
-    name: Detect Latest Unity LTS Versions
+    name: Detect Latest Unity Versions
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.detect.outputs.versions }}
     steps:
-      - name: Resolve Unity LTS versions
+      - name: Resolve Unity versions
         id: detect
         run: |
           set -o pipefail
@@ -31,22 +31,34 @@ jobs:
             STREAM_LIST=$(echo "$STREAMS_INPUT" | tr ',' '\n' | xargs -n1 | sed -E 's/^6\./6000./' | sort -Vu | tr '\n' ' ')
           else
             MODE="auto"
+            API="https://services.api.unity.com/unity/editor/release/v1/releases"
+
             # Unity's release API is the only source that labels a stream LTS.
             # limit caps at 25; that window spans several months, so every
-            # actively-released LTS stream appears in it.
-            LTS=$(curl -sf "https://services.api.unity.com/unity/editor/release/v1/releases?stream=LTS&limit=25&order=RELEASE_DATE_DESC") || {
+            # actively-released stream appears in it.
+            LTS=$(curl -sf "$API?stream=LTS&limit=25&order=RELEASE_DATE_DESC") || {
               echo "::error::Unity release API query failed"
               exit 1
             }
-            STREAM_LIST=$(echo "$LTS" | jq -r '.results[].version | split(".")[0:2] | join(".")' | sort -Vu | tr '\n' ' ')
+            STREAM_LIST=$(echo "$LTS" | jq -r '.results[].version | split(".")[0:2] | join(".")')
+
+            # SUPPORTED is the stable non-LTS track; prereleases live in the separate
+            # BETA/ALPHA streams, so its newest entry is the latest non-beta stream.
+            if SUP=$(curl -sf "$API?stream=SUPPORTED&limit=25&order=RELEASE_DATE_DESC"); then
+              STREAM_LIST+=$'\n'$(echo "$SUP" | jq -r '.results[].version | split(".")[0:2] | join(".")' | sort -V | tail -1)
+            else
+              echo "::warning::Could not query the non-LTS (SUPPORTED) stream; testing LTS only"
+            fi
+
+            STREAM_LIST=$(echo "$STREAM_LIST" | grep -v '^$' | sort -Vu | tr '\n' ' ')
           fi
 
           read -ra STREAMS <<< "$STREAM_LIST"
           if [ ${#STREAMS[@]} -eq 0 ]; then
-            echo "::error::No Unity LTS streams found ($MODE mode)"
+            echo "::error::No Unity streams found ($MODE mode)"
             exit 1
           fi
-          echo "LTS streams ($MODE): ${STREAMS[*]}"
+          echo "Unity streams ($MODE): ${STREAMS[*]}"
 
           VERSIONS="["
           FIRST=true
@@ -75,7 +87,7 @@ jobs:
                 VERSIONS+=","
               fi
               VERSIONS+="\"$VERSION\""
-              echo "Detected Unity $STREAM LTS: $VERSION"
+              echo "Detected Unity $STREAM: $VERSION"
             else
               MISSING+=" $STREAM"
             fi
@@ -89,13 +101,13 @@ jobs:
               echo "::error::No unityci/editor image for pinned stream(s):$MISSING"
               exit 1
             fi
-            # In auto mode a new LTS stream routinely lands before game-ci builds its
+            # In auto mode a new stream routinely lands before game-ci builds its
             # image. Warn instead of failing, but never let the matrix go empty.
-            echo "::warning::No unityci/editor image yet for LTS stream(s):$MISSING"
+            echo "::warning::No unityci/editor image yet for stream(s):$MISSING"
           fi
 
           if [ "$FIRST" = true ]; then
-            echo "::error::No Unity versions resolved for any LTS stream"
+            echo "::error::No Unity versions resolved for any stream"
             exit 1
           fi
 

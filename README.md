@@ -3,7 +3,7 @@
 </p>
 
 <p align=center>
-  <a href=""><img src="https://img.shields.io/badge/Unity-6.3-57b9d3.svg?color=5189bd&logo=unity" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Unity-6.5-57b9d3.svg?color=5189bd&logo=unity" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/mygamedevtools/scene-loader?color=5189bd" /></a>
   <a href="https://github.com/mygamedevtools/scene-loader/releases/latest"><img src="https://img.shields.io/github/v/release/mygamedevtools/scene-loader?color=5189bd&sort=semver" /></a>
   <a href="https://openupm.com/packages/com.mygamedevtools.scene-loader/"><img src="https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?color=5189bd&label=openupm&registry_uri=https://package.openupm.com" /></a>
