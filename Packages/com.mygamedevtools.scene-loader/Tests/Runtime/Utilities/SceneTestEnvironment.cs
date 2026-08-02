@@ -22,77 +22,83 @@ namespace MyGameDevTools.SceneLoading.Tests
         public const string ScenePathBase = "Assets/_test";
         public const int DefaultTimeout = 3000;
 
-        static readonly ILoadSceneInfo[][] _multipleLoadSceneInfoList = new ILoadSceneInfo[][]
+        // ⚠️ Every scene name below exists TWICE: once under `Assets/_test`, which is in the
+        // build settings, and once under `Assets/_addressables-test`, registered as an
+        // Addressables entry under the very same address. So every bare name is a double match,
+        // and the build settings win — which means a case that must actually exercise
+        // Addressables has to say `SceneRef.Address(...)`. Translating one of those to a plain
+        // string would silently move it onto the standard backend and keep passing.
+        static readonly SceneRef[][] _multipleSceneRefList = new SceneRef[][]
         {
-            new ILoadSceneInfo[]
+            new SceneRef[]
             {
-                new LoadSceneInfoName(SceneBuilder.SceneNames[0]),
-                new LoadSceneInfoIndex(1),
+                SceneBuilder.SceneNames[0],
+                1,
 #if ENABLE_ADDRESSABLES
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[2]),
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[3]),
+                SceneRef.Address(SceneBuilder.SceneNames[2]),
+                SceneRef.Address(SceneBuilder.SceneNames[3]),
 #endif
-                new LoadSceneInfoName(SceneBuilder.ScenePaths[3])
+                SceneBuilder.ScenePaths[3]
             },
-            // This list of scenes expects two load scene infos that point to the same source scene,
+            // This list of scenes expects two scene refs that point to the same source scene,
             // and validates whether that causes any issues when linking to the target loaded scene.
-            new ILoadSceneInfo[]
+            new SceneRef[]
             {
-                new LoadSceneInfoIndex(1),
-                new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
+                1,
+                SceneBuilder.SceneNames[1],
+                SceneBuilder.ScenePaths[1],
 #if ENABLE_ADDRESSABLES
                 // Since we can't test statically with AssetReference, we should at least validate
                 // that two AsyncOperations with the same addressable source do not cause issues.
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
-                new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+                SceneRef.Address(SceneBuilder.SceneNames[1]),
+                SceneRef.Address(SceneBuilder.SceneNames[1]),
 #endif
             }
         };
 
-        public static readonly ILoadSceneInfo[] SingleLoadSceneInfoList = new ILoadSceneInfo[]
+        public static readonly SceneRef[] SingleSceneRefList = new SceneRef[]
         {
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
-            new LoadSceneInfoIndex(1),
+            SceneBuilder.SceneNames[1],
+            SceneBuilder.ScenePaths[1],
+            1,
 #if ENABLE_ADDRESSABLES
-            new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]),
+            SceneRef.Address(SceneBuilder.SceneNames[1]),
 #endif
         };
 
-        public static readonly ILoadSceneInfo[] SingleLoadSceneInfoList_NoAddressable = new ILoadSceneInfo[]
+        public static readonly SceneRef[] SingleSceneRefList_NoAddressable = new SceneRef[]
         {
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoName(SceneBuilder.ScenePaths[1]),
+            SceneBuilder.SceneNames[1],
+            SceneBuilder.ScenePaths[1],
         };
 
         public static readonly SceneParameters[] SceneParametersList = new SceneParameters[]
         {
-            new(SingleLoadSceneInfoList[0], false),
-            new(SingleLoadSceneInfoList[0], true),
-            new(SingleLoadSceneInfoList[1], false),
-            new(SingleLoadSceneInfoList[1], true),
-            new(SingleLoadSceneInfoList[2], false),
-            new(SingleLoadSceneInfoList[2], true),
+            new(SingleSceneRefList[0], false),
+            new(SingleSceneRefList[0], true),
+            new(SingleSceneRefList[1], false),
+            new(SingleSceneRefList[1], true),
+            new(SingleSceneRefList[2], false),
+            new(SingleSceneRefList[2], true),
 #if ENABLE_ADDRESSABLES
-            new(SingleLoadSceneInfoList[3], false),
-            new(SingleLoadSceneInfoList[3], true),
+            new(SingleSceneRefList[3], false),
+            new(SingleSceneRefList[3], true),
 #endif
-            new(_multipleLoadSceneInfoList[0], -1),
-            new(_multipleLoadSceneInfoList[0], 1),
-            new(_multipleLoadSceneInfoList[1], -1),
-            new(_multipleLoadSceneInfoList[1], 1),
+            new(_multipleSceneRefList[0], -1),
+            new(_multipleSceneRefList[0], 1),
+            new(_multipleSceneRefList[1], -1),
+            new(_multipleSceneRefList[1], 1),
         };
         public static readonly SceneParameters[] TransitionSceneParametersList = new SceneParameters[]
         {
-            new(SingleLoadSceneInfoList[0], true),
-            new(SingleLoadSceneInfoList[1], true),
-            new(SingleLoadSceneInfoList[2], true),
+            new(SingleSceneRefList[0], true),
+            new(SingleSceneRefList[1], true),
+            new(SingleSceneRefList[2], true),
 #if ENABLE_ADDRESSABLES
-            new(SingleLoadSceneInfoList[3], true),
+            new(SingleSceneRefList[3], true),
 #endif
-            new(_multipleLoadSceneInfoList[0], 1),
-            new(_multipleLoadSceneInfoList[1], 1),
+            new(_multipleSceneRefList[0], 1),
+            new(_multipleSceneRefList[1], 1),
         };
 
         public static readonly ISceneManager[] SceneManagers = new ISceneManager[]
@@ -100,10 +106,27 @@ namespace MyGameDevTools.SceneLoading.Tests
             new CoreSceneManager(),
         };
 
+        /// <summary>
+        /// Forces every key to the addressable interpretation.
+        /// <br/>
+        /// Needed because <see cref="SceneParameters"/>' <c>string[]</c> conversion produces
+        /// unresolved keys, and every test scene name is a double match that the build settings
+        /// would win. Without this, an "addressable, multiple scenes" case would quietly test
+        /// the standard backend instead.
+        /// </summary>
+        public static SceneRef[] Addresses(params string[] addresses)
+        {
+            SceneRef[] sceneRefs = new SceneRef[addresses.Length];
+            for (int i = 0; i < addresses.Length; i++)
+                sceneRefs[i] = SceneRef.Address(addresses[i]);
+
+            return sceneRefs;
+        }
+
 #if UNITY_EDITOR
 #if ENABLE_ADDRESSABLES
-        const string _addressableScenePathBase = "Assets/_addressables-test";
-        const string _sceneReferencePath = _addressableScenePathBase + "/sceneReference.asset";
+        public const string AddressableScenePathBase = "Assets/_addressables-test";
+        const string _sceneReferencePath = AddressableScenePathBase + "/sceneReference.asset";
 #endif
 #endif
 
@@ -125,7 +148,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 #if ENABLE_ADDRESSABLES
             SceneReferenceData sceneReferenceData = ScriptableObject.CreateInstance<SceneReferenceData>();
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
-            SceneBuilder.TryBuildScenes(_addressableScenePathBase, (i, s, p) =>
+            SceneBuilder.TryBuildScenes(AddressableScenePathBase, (i, s, p) =>
             {
                 string guid = AssetDatabase.AssetPathToGUID(p);
                 AddressableAssetEntry entry = settings.CreateOrMoveEntry(guid, settings.DefaultGroup);
@@ -158,13 +181,13 @@ namespace MyGameDevTools.SceneLoading.Tests
 
 #if ENABLE_ADDRESSABLES
             var settings = AddressableAssetSettingsDefaultObject.Settings;
-            var scenePaths = EditorBuildSettings.scenes.Where(scene => scene.path.StartsWith(_addressableScenePathBase)).Select(scene => scene.path);
+            var scenePaths = EditorBuildSettings.scenes.Where(scene => scene.path.StartsWith(AddressableScenePathBase)).Select(scene => scene.path);
             foreach (var path in scenePaths)
                 settings.RemoveAssetEntry(AssetDatabase.AssetPathToGUID(path), false);
 
             settings.RemoveAssetEntry(AssetDatabase.AssetPathToGUID(_sceneReferencePath), false);
 
-            AssetDatabase.DeleteAsset(_addressableScenePathBase);
+            AssetDatabase.DeleteAsset(AddressableScenePathBase);
             AssetDatabase.Refresh();
 #endif
 #endif
