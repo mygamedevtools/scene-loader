@@ -8,17 +8,19 @@ namespace MyGameDevTools.SceneLoading
     public static class SceneDataBuilder
     {
         /// <summary>
-        /// Builds an <see cref="ISceneData"/> of the appropriate type (addressable or non-addressable), depending on the <see cref="ILoadSceneInfo.Type"/> value.
+        /// Builds an <see cref="ISceneData"/> of the appropriate type for a <b>resolved</b>
+        /// <see cref="SceneRef"/> — see <see cref="SceneRefResolver"/>, which settles a bare
+        /// string into one of these kinds before it ever gets here.
         /// </summary>
-        public static ISceneData BuildFromLoadSceneInfo(ILoadSceneInfo sourceLoadSceneInfo)
+        public static ISceneData BuildFromSceneRef(SceneRef sceneRef)
         {
-            return sourceLoadSceneInfo.Type switch
+            return sceneRef.Kind switch
             {
-                LoadSceneInfoType.BuildIndex or LoadSceneInfoType.Name => new SceneDataStandard(sourceLoadSceneInfo),
+                SceneRefKind.BuildIndex => new SceneDataStandard(sceneRef),
 #if ENABLE_ADDRESSABLES
-                LoadSceneInfoType.AssetReference or LoadSceneInfoType.Address => new SceneDataAddressable(sourceLoadSceneInfo),
+                SceneRefKind.AssetReference or SceneRefKind.Address => new SceneDataAddressable(sceneRef),
 #endif
-                _ => throw new System.Exception($"[{nameof(SceneDataBuilder)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type."),
+                _ => throw new System.ArgumentException($"[{nameof(SceneDataBuilder)}] Cannot load {sceneRef}. A {nameof(SceneRefKind)} of '{sceneRef.Kind}' cannot start a load operation.", nameof(sceneRef)),
             };
         }
 

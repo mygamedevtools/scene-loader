@@ -6,33 +6,34 @@ using UnityEngine.SceneManagement;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// Struct to manage the link between addressable scene operations, its <see cref="ILoadSceneInfo"/> and resulting loaded scene.
+    /// Struct to manage the link between addressable scene operations, its <see cref="SceneRef"/> and resulting loaded scene.
     /// </summary>
     public struct SceneDataAddressable : ISceneData
     {
         public readonly IAsyncSceneOperation AsyncOperation => _asyncSceneOperation;
 
-        public readonly ILoadSceneInfo LoadSceneInfo => _loadSceneInfo;
+        public readonly SceneRef SceneRef => _sceneRef;
 
         public readonly Scene SceneReference => _sceneReference;
 
-        readonly ILoadSceneInfo _loadSceneInfo;
+        readonly SceneRef _sceneRef;
 
         AsyncSceneOperationAddressable _asyncSceneOperation;
         Scene _sceneReference;
 
         /// <summary>
-        /// Creates a new <see cref="SceneDataAddressable"/> with the provided <see cref="ILoadSceneInfo"/>.
-        /// Only supports an <see cref="ILoadSceneInfo"/> with the types <see cref="LoadSceneInfoType.AssetReference" /> or <see cref="LoadSceneInfoType.Address"/>, since those are addressable types.
+        /// Creates a new <see cref="SceneDataAddressable"/> with the provided <see cref="SceneRef"/>.
+        /// Only supports the addressable kinds, <see cref="SceneRefKind.AssetReference"/> and
+        /// <see cref="SceneRefKind.Address"/>.
         /// </summary>
-        public SceneDataAddressable(ILoadSceneInfo loadSceneInfo)
+        public SceneDataAddressable(SceneRef sceneRef)
         {
-            if (loadSceneInfo.Type != LoadSceneInfoType.AssetReference && loadSceneInfo.Type != LoadSceneInfoType.Address)
+            if (sceneRef.Kind != SceneRefKind.AssetReference && sceneRef.Kind != SceneRefKind.Address)
             {
-                throw new ArgumentException($"Cannot create a {nameof(SceneDataAddressable)} with an {nameof(ILoadSceneInfo)} of type '{loadSceneInfo.Type}'. It only supports the {nameof(LoadSceneInfoType.AssetReference)} and {nameof(LoadSceneInfoType.Address)}");
+                throw new ArgumentException($"Cannot create a {nameof(SceneDataAddressable)} with a {nameof(SceneRef)} of kind '{sceneRef.Kind}'. It only supports {nameof(SceneRefKind.AssetReference)} and {nameof(SceneRefKind.Address)}.", nameof(sceneRef));
             }
 
-            _loadSceneInfo = loadSceneInfo;
+            _sceneRef = sceneRef;
             _asyncSceneOperation = default;
             _sceneReference = default;
         }
@@ -40,40 +41,32 @@ namespace MyGameDevTools.SceneLoading
         public void SetSceneReferenceManually(Scene scene)
         {
             if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
-                SceneManagerLog.Warning($"[{GetType().Name}] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling {nameof(ISceneData.UpdateSceneReference)}.");
+                SceneManagerLog.Warning($"[{nameof(SceneDataAddressable)}] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling {nameof(ISceneData.UpdateSceneReference)}.");
             _sceneReference = scene;
         }
 
         public void UpdateSceneReference()
         {
             if (!AsyncOperation.IsDone)
-                throw new Exception($"[{GetType().Name}] Cannot update the scene reference before the scene has been loaded.");
+                throw new Exception($"[{nameof(SceneDataAddressable)}] Cannot update the scene reference before the scene has been loaded.");
 
             _sceneReference = AsyncOperation.GetResult();
         }
 
-        public bool MatchesLoadSceneInfo(ILoadSceneInfo loadSceneInfo)
+        public readonly bool Matches(SceneRef sceneRef)
         {
-            return loadSceneInfo.Type switch
+            return sceneRef.Kind switch
             {
-                LoadSceneInfoType.AssetReference or LoadSceneInfoType.Address => loadSceneInfo.Equals(_loadSceneInfo),
-                _ => loadSceneInfo.CanBeReferenceToScene(_sceneReference),
+                SceneRefKind.AssetReference or SceneRefKind.Address => sceneRef.Equals(_sceneRef),
+                _ => sceneRef.CanBeReferenceToScene(_sceneReference),
             };
         }
 
         public IAsyncSceneOperation LoadSceneAsync()
         {
-            switch (_loadSceneInfo.Type)
-            {
-                case LoadSceneInfoType.AssetReference:
-                case LoadSceneInfoType.Address:
-                    _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(_loadSceneInfo.Reference, LoadSceneMode.Additive));
-                    return _asyncSceneOperation;
-                default:
-                    if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
-                        SceneManagerLog.Warning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
-                    return default;
-            }
+            object key = _sceneRef.Kind == SceneRefKind.AssetReference ? _sceneRef.AssetReference : _sceneRef.Key;
+            _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(key, LoadSceneMode.Additive));
+            return _asyncSceneOperation;
         }
 
         public IAsyncSceneOperation UnloadSceneAsync()

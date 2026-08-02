@@ -8,6 +8,10 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// Interface to standardize scene management operations.
     /// The Scene Manager is responsible for scene loading operations, keeping track of its loaded scene stack and dispatching scene load events.
+    /// <br/><br/>
+    /// There are four async operations here, where v4 had 64. The difference is not capability:
+    /// every reference kind, arity and host v4 spelled out as its own method is now reachable
+    /// through <see cref="SceneParameters"/>' implicit conversions.
     /// </summary>
     public interface ISceneManager : IDisposable
     {
@@ -49,8 +53,8 @@ namespace MyGameDevTools.SceneLoading
         /// <summary>
         /// Triggers a transition to a group of scenes.
         /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
-        /// to the target scene or a group of scenes via a <see cref="SceneParameters"/> struct, with an optional <paramref name="intermediateSceneReference"/>.
-        /// If the <paramref name="intermediateSceneReference"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// to the target scene or a group of scenes via a <see cref="SceneParameters"/> struct, with an optional <paramref name="loadingScene"/>.
+        /// If the <paramref name="loadingScene"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
         /// The complete transition flow is:
         /// <br/><br/>
         /// 1. Load the intermediate scene (if provided).<br/>
@@ -61,24 +65,22 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneParameters">
         /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
         /// </param>
-        /// <param name="intermediateSceneInfo">
-        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
-        /// If null, the transition will not have an intermediate loading scene.
+        /// <param name="loadingScene">
+        /// The scene to load as the transition intermediate. Leave it unset for a transition with no loading scene.
         /// </param>
         /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
-        Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
+        Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default, CancellationToken token = default);
 
         /// <summary>
         /// Reloads the active scene with an optional intermediate loading scene.
         /// </summary>
-        /// <param name="intermediateSceneReference">
-        /// A reference to the scene that's going to be loaded as the transition intermediate (as a loading scene).
-        /// If null, the transition will not have an intermediate loading scene.
+        /// <param name="loadingScene">
+        /// The scene to load as the transition intermediate. Leave it unset for a reload with no loading scene.
         /// </param>
         /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
-        Task<SceneResult> ReloadActiveSceneAsync(ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
+        Task<SceneResult> ReloadActiveSceneAsync(SceneRef loadingScene = default, CancellationToken token = default);
 
         /// <summary>
         /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
@@ -107,7 +109,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>
         /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
         /// <br/>
-        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, hich means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
+        /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, which means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
         Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default);
 
