@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      # The long-lived v5 branch. The stack of v5 PRs targets it rather than main,
+      # so without this entry none of that work would be tested until the final merge.
+      - 'feat/v5'
     paths:
       # The Unity project: the package under test, the manifests that resolve its
       # dependencies, the vendored packages it compiles alongside, the Addressables
@@ -19,6 +22,7 @@ on:
   pull_request:
     branches:
       - main
+      - 'feat/v5'
     paths:
       - 'Assets/**'
       - 'Packages/**'

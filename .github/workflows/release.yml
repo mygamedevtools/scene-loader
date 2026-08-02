@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - 'main'
+      # The long-lived v5 branch. `.releaserc.json` already maps `feat/*` to the `pre`
+      # prerelease channel, so every merge into it publishes a 5.0.0-pre.N for early
+      # adopters and for the docs site to build against, without touching `main`.
+      - 'feat/v5'
     paths-ignore:
       - '**.md'
 
