@@ -6,7 +6,8 @@ public class SceneTransitionTrigger : MonoBehaviour
     /// <summary>
     /// Target Scene name.
     /// Editable via the Unity Inspector.
-    /// Make sure to provide a scene that has been added to the Build Settings.
+    /// The scene can live in the Build Settings or in Addressables — the name resolves to
+    /// whichever has it, with the Build Settings winning if both do.
     /// </summary>
     [SerializeField]
     string _targetScene;
@@ -25,5 +26,22 @@ public class SceneTransitionTrigger : MonoBehaviour
     public void Transition()
     {
         MySceneManager.TransitionAsync(_targetScene);
+    }
+
+    /// <summary>
+    /// The same transition, but watched: progress goes to the console and the operation is
+    /// cancelled if this object is destroyed mid-flight.
+    /// <br/>
+    /// Shows the shape of the v5 handle — everything here used to have to be decided up front,
+    /// as constructor arguments to the call.
+    /// </summary>
+    public void TransitionWatched(string loadingScene)
+    {
+        SceneOperation operation = MySceneManager
+            .TransitionAsync(_targetScene, loadingScene)
+            .CancelWith(destroyCancellationToken);
+
+        operation.Progressed += progress => Debug.Log($"Loading {_targetScene}: {progress:P0}");
+        operation.Completed += o => Debug.Log($"{_targetScene} transition finished as {o.State}.");
     }
 }
