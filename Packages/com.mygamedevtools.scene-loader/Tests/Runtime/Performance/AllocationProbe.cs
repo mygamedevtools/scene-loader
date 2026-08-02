@@ -35,15 +35,17 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         public const int TestTimeout = 300000;
 
         // Reference figures, Unity 6000.5.5f1, editor batchmode playmode, Addressables 2.9.1.
-        // Recorded on #72 so a run can be eyeballed against them; nothing reads them.
+        // Averaged over five iterations, updated as each step lands; nothing reads them.
+        // The v4.1.3 baseline is on #72.
         //
-        //   Transition_WithLoadingScreen  avg 33,610 B  (32,566 – 34,654)
-        //   Transition_Direct             avg 19,501 B  (19,188 – 20,232)
-        //   Load_Single                   avg  8,400 B  ( 8,192 –  8,714)
-        //   Load_Multiple                 avg 19,968 B  (19,968 – 19,968)
-        //   Unload_Single                 avg  4,662 B  ( 4,662 –  4,662)
-        //   Load_Single_Addressable       avg 10,323 B  (10,010 – 10,532)
-        //   Transition_..._Addressable    avg 43,662 B  (43,558 – 44,080)
+        //                                  v4.1.3    ISceneBackend (#75)
+        //   Transition_WithLoadingScreen   33,610 B  →  29,551 B   -12%
+        //   Transition_Direct              19,501 B  →  16,479 B   -15%
+        //   Load_Single                     8,400 B  →   7,990 B    -5%
+        //   Load_Multiple                  19,968 B  →  17,500 B   -12%
+        //   Unload_Single                   4,662 B  →   3,174 B   -32%
+        //   Load_Single_Addressable        10,323 B  →   9,788 B
+        //   Transition_..._Addressable     43,662 B  →  37,880 B
 
         /// <summary>
         /// Measures <paramref name="operation"/> after discarded warmups and reports each run to

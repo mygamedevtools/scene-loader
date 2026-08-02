@@ -110,7 +110,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return new WaitUntil(() => loadedScene.IsValid());
 
             // The lookup that fails before the throw reports itself as a link failure.
-            LogAssert.Expect(LogType.Error, new Regex("Unable to get an ISceneData with the loaded scene"));
+            LogAssert.Expect(LogType.Error, new Regex("Cannot set active the scene"));
             Assert.Throws<InvalidOperationException>(() => manager.SetActiveScene(loadedScene));
 
             yield return SceneManager.UnloadSceneAsync(loadedScene);
@@ -236,7 +236,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator Unload_NotLoaded([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            LogAssert.Expect(LogType.Error, new Regex("Unable to get an ISceneData with the scene"));
+            LogAssert.Expect(LogType.Error, new Regex("Unable to find a managed scene matching"));
 
             Task<SceneResult> task = manager.UnloadAsync("not-a-real-scene");
             yield return new WaitUntil(() => task.IsCompleted);
