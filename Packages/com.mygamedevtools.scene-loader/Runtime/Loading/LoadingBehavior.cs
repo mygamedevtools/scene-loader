@@ -20,7 +20,11 @@ namespace MyGameDevTools.SceneLoading
 
         void Awake()
         {
-            Progress = new LoadingProgress();
+            Progress = new LoadingProgress
+            {
+                // Named so a gate that never opens can say which behaviour is holding it.
+                OwnerDescription = $"'{name}' in scene '{gameObject.scene.name}'",
+            };
             Progress.LoadingCompleted += OnLoadingCompleted;
         }
 
