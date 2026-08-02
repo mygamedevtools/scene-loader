@@ -11,7 +11,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             var lastScene = sceneManager.GetLastLoadedScene();
             while (sceneManager.LoadedSceneCount > 0 && lastScene.IsValid())
             {
-                yield return new WaitTask<SceneResult>(sceneManager.UnloadAsync(lastScene));
+                yield return sceneManager.UnloadAsync(lastScene).ToCoroutine();
                 lastScene = sceneManager.GetLastLoadedScene();
             }
 

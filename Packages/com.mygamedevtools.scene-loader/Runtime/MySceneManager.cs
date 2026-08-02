@@ -1,7 +1,5 @@
 #if !DISABLE_STATIC_SCENE_MANAGER
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -81,6 +79,14 @@ namespace MyGameDevTools.SceneLoading
             add => Default.SceneLoaded += value;
             remove => Default.SceneLoaded -= value;
         }
+        /// <summary>
+        /// Reports every operation started through the static manager, before it runs.
+        /// </summary>
+        public static event Action<SceneOperation> OperationStarted
+        {
+            add => Default.OperationStarted += value;
+            remove => Default.OperationStarted -= value;
+        }
 
         /// <summary>
         /// The amount of scenes loaded through the <see cref="MySceneManager"/>.
@@ -106,20 +112,17 @@ namespace MyGameDevTools.SceneLoading
         /// a <see cref="SceneParameters"/> when you also need to say which becomes active.
         /// </summary>
         /// <param name="sceneParameters">The scene or scenes to load, and optionally which to activate.</param>
-        /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="Task{TResult}"/> with all scenes loaded.</returns>
-        public static Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default) => Default.LoadAsync(sceneParameters, progress, token);
+        /// <returns>A <see cref="SceneOperation"/> handle on the load.</returns>
+        public static SceneOperation LoadAsync(SceneParameters sceneParameters) => Default.LoadAsync(sceneParameters);
 
         /// <summary>Unloads the target scene or group of scenes.</summary>
         /// <param name="sceneParameters">The scene or scenes to unload.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>
-        /// A <see cref="Task{TResult}"/> with all the unloaded scenes.
+        /// A <see cref="SceneOperation"/> handle on the unload, whose result is the unloaded scenes.
         /// <br/>
         /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, which means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
-        public static Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default) => Default.UnloadAsync(sceneParameters, token);
+        public static SceneOperation UnloadAsync(SceneParameters sceneParameters) => Default.UnloadAsync(sceneParameters);
 
         /// <summary>
         /// Transitions from the active scene to the target scene or group, optionally showing a
@@ -128,15 +131,13 @@ namespace MyGameDevTools.SceneLoading
         /// </summary>
         /// <param name="sceneParameters">The scene or scenes to transition to. One of them must be marked active.</param>
         /// <param name="loadingScene">The scene to load as the transition intermediate. Leave it unset for a transition with no loading scene.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="Task{TResult}"/> with all scenes loaded.</returns>
-        public static Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default, CancellationToken token = default) => Default.TransitionAsync(sceneParameters, loadingScene, token);
+        /// <returns>A <see cref="SceneOperation"/> handle on the transition.</returns>
+        public static SceneOperation TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default) => Default.TransitionAsync(sceneParameters, loadingScene);
 
         /// <summary>Reloads the active scene, optionally showing a loading screen.</summary>
         /// <param name="loadingScene">The scene to load as the transition intermediate. Leave it unset for a reload with no loading scene.</param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="Task{TResult}"/> with all scenes reloaded.</returns>
-        public static Task<SceneResult> ReloadActiveSceneAsync(SceneRef loadingScene = default, CancellationToken token = default) => Default.ReloadActiveSceneAsync(loadingScene, token);
+        /// <returns>A <see cref="SceneOperation"/> handle on the reload.</returns>
+        public static SceneOperation ReloadActiveSceneAsync(SceneRef loadingScene = default) => Default.ReloadActiveSceneAsync(loadingScene);
 
         /// <summary>Gets the current active scene.</summary>
         /// <returns>The current active scene, or an invalid scene if none of the loaded scenes are enabled as the active scene.</returns>

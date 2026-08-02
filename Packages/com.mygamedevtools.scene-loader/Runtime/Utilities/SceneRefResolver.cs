@@ -55,6 +55,26 @@ namespace MyGameDevTools.SceneLoading
             return Task.FromResult(resolved);
         }
 
+        /// <summary>
+        /// Settles every reference without touching the catalog, if it can. Lets a caller find
+        /// out whether resolution will suspend before committing to it.
+        /// </summary>
+        public static bool TryResolveAllImmediate(SceneRef[] sceneRefs, out SceneRef[] resolved)
+        {
+            resolved = new SceneRef[sceneRefs.Length];
+
+            for (int i = 0; i < sceneRefs.Length; i++)
+            {
+                if (TryResolveImmediate(sceneRefs[i], out resolved[i]))
+                    continue;
+
+                resolved = null;
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>Settles a single reference. See <see cref="ResolveAllAsync"/> for the cost model.</summary>
         public static async Task<SceneRef> ResolveAsync(SceneRef sceneRef)
         {

@@ -60,8 +60,8 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         {
             for (int i = 0; i < 3; i++)
             {
-                yield return Manager.LoadAsync(new SceneParameters(_targetScene)).ToWaitTask();
-                yield return Manager.UnloadAsync(new SceneParameters(_targetScene)).ToWaitTask();
+                yield return Manager.LoadAsync(new SceneParameters(_targetScene)).ToCoroutine();
+                yield return Manager.UnloadAsync(new SceneParameters(_targetScene)).ToCoroutine();
             }
         }
 
@@ -94,7 +94,7 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             yield return AllocationProbe.Measure(
                 nameof(Transition_WithLoadingScreen),
                 setup: null,
-                operation: () => Manager.TransitionAsync(new SceneParameters(_targetScene, true), _loadingScene).ToWaitTask(),
+                operation: () => Manager.TransitionAsync(new SceneParameters(_targetScene, true), _loadingScene).ToCoroutine(),
                 teardown: null);
         }
 
@@ -108,7 +108,7 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             yield return AllocationProbe.Measure(
                 nameof(Transition_Direct),
                 setup: null,
-                operation: () => Manager.TransitionAsync(new SceneParameters(_targetScene, true)).ToWaitTask(),
+                operation: () => Manager.TransitionAsync(new SceneParameters(_targetScene, true)).ToCoroutine(),
                 teardown: null);
         }
 
@@ -118,8 +118,8 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             yield return AllocationProbe.Measure(
                 nameof(Load_Single),
                 setup: null,
-                operation: () => Manager.LoadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
-                teardown: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToWaitTask());
+                operation: () => Manager.LoadAsync(new SceneParameters(_targetScene)).ToCoroutine(),
+                teardown: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToCoroutine());
         }
 
         [UnityTest, Order(3), Performance, Timeout(AllocationProbe.TestTimeout)]
@@ -128,8 +128,8 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             yield return AllocationProbe.Measure(
                 nameof(Load_Multiple),
                 setup: null,
-                operation: () => Manager.LoadAsync(new SceneParameters(_multipleScenes)).ToWaitTask(),
-                teardown: () => Manager.UnloadAsync(new SceneParameters(_multipleScenes)).ToWaitTask());
+                operation: () => Manager.LoadAsync(new SceneParameters(_multipleScenes)).ToCoroutine(),
+                teardown: () => Manager.UnloadAsync(new SceneParameters(_multipleScenes)).ToCoroutine());
         }
 
         [UnityTest, Order(3), Performance, Timeout(AllocationProbe.TestTimeout)]
@@ -137,8 +137,8 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         {
             yield return AllocationProbe.Measure(
                 nameof(Unload_Single),
-                setup: () => Manager.LoadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
-                operation: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
+                setup: () => Manager.LoadAsync(new SceneParameters(_targetScene)).ToCoroutine(),
+                operation: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToCoroutine(),
                 teardown: null);
         }
 
@@ -149,8 +149,8 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             yield return AllocationProbe.Measure(
                 nameof(Load_Single_Addressable),
                 setup: null,
-                operation: () => Manager.LoadAsync(new SceneParameters(_addressableTargetScene)).ToWaitTask(),
-                teardown: () => Manager.UnloadAsync(new SceneParameters(_addressableTargetScene)).ToWaitTask());
+                operation: () => Manager.LoadAsync(new SceneParameters(_addressableTargetScene)).ToCoroutine(),
+                teardown: () => Manager.UnloadAsync(new SceneParameters(_addressableTargetScene)).ToCoroutine());
         }
 
         [UnityTest, Order(3), Performance, Timeout(AllocationProbe.TestTimeout)]
@@ -161,7 +161,7 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             yield return AllocationProbe.Measure(
                 nameof(Transition_WithLoadingScreen_Addressable),
                 setup: null,
-                operation: () => Manager.TransitionAsync(new SceneParameters(_addressableTargetScene, true), _addressableLoadingScene).ToWaitTask(),
+                operation: () => Manager.TransitionAsync(new SceneParameters(_addressableTargetScene, true), _addressableLoadingScene).ToCoroutine(),
                 teardown: null);
         }
 #endif
@@ -186,7 +186,7 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         // state: one loaded scene in, one loaded scene out.
         IEnumerator LoadSourceScene()
         {
-            yield return Manager.LoadAsync(new SceneParameters(_targetScene, true)).ToWaitTask();
+            yield return Manager.LoadAsync(new SceneParameters(_targetScene, true)).ToCoroutine();
         }
     }
 }
