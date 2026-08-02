@@ -1,6 +1,5 @@
 #if ENABLE_ADDRESSABLES
 using System;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
 
@@ -40,7 +39,8 @@ namespace MyGameDevTools.SceneLoading
 
         public void SetSceneReferenceManually(Scene scene)
         {
-            Debug.LogWarning($"[{GetType().Name}] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling {nameof(ISceneData.UpdateSceneReference)}.");
+            if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
+                SceneManagerLog.Warning($"[{GetType().Name}] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling {nameof(ISceneData.UpdateSceneReference)}.");
             _sceneReference = scene;
         }
 
@@ -70,7 +70,8 @@ namespace MyGameDevTools.SceneLoading
                     _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     return _asyncSceneOperation;
                 default:
-                    Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
+                    if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
+                        SceneManagerLog.Warning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
                     return default;
             }
         }

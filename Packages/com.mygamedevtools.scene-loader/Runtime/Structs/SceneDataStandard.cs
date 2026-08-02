@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -62,7 +61,8 @@ namespace MyGameDevTools.SceneLoading
 
         public void UpdateSceneReference()
         {
-            Debug.LogWarning($"[{nameof(SceneDataStandard)}] This type of scene data should not have its scene set automatically. Instead, it is expected to set it by calling {nameof(ISceneData.SetSceneReferenceManually)}.");
+            if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
+                SceneManagerLog.Warning($"[{nameof(SceneDataStandard)}] This type of scene data should not have its scene set automatically. Instead, it is expected to set it by calling {nameof(ISceneData.SetSceneReferenceManually)}.");
         }
 
         public bool MatchesLoadSceneInfo(ILoadSceneInfo loadSceneInfo)
@@ -81,7 +81,8 @@ namespace MyGameDevTools.SceneLoading
                     _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.LoadSceneAsync((string)_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     break;
                 default:
-                    Debug.LogWarning($"[{nameof(SceneDataStandard)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
+                    if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
+                        SceneManagerLog.Warning($"[{nameof(SceneDataStandard)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
                     return default;
             }
             return _asyncSceneOperation;

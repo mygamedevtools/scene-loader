@@ -56,9 +56,9 @@ namespace MyGameDevTools.SceneLoading
             {
                 _activeScene = sceneData;
             }
-            else if (loadedSceneCount == 0)
+            else if (loadedSceneCount == 0 && SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
             {
-                Debug.LogWarning("Tried to create a Scene Manager with all loaded scenes, but encoutered none. Did you create the Scene Manager on `Awake()`? If so, try moving the call to `Start()` instead.");
+                SceneManagerLog.Warning("Tried to create a Scene Manager with all loaded scenes, but encoutered none. Did you create the Scene Manager on `Awake()`? If so, try moving the call to `Start()` instead.");
             }
         }
         /// <summary>
