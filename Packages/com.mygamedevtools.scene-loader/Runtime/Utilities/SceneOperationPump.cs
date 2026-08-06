@@ -7,17 +7,13 @@ using UnityEngine.LowLevel;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// Ticks every in-flight backend operation once per frame, from the player loop.
-    /// <br/><br/>
-    /// This is what replaced v4's <c>await Task.Yield()</c> progress loop, which ran once per
-    /// frame <i>per operation group</i>, round-tripped through the
-    /// <c>SynchronizationContext</c> every time, and reported progress on every tick whether or
-    /// not the value had moved. One pump, one pass, and <see cref="SceneOperation.Progressed"/>
-    /// only fires when there is something to report.
-    /// <br/><br/>
+    /// Ticks every in-flight backend operation once per frame, from the player loop. One pump,
+    /// one pass, and <see cref="SceneOperation.Progressed"/> only fires when there is something
+    /// to report — where v4 polled once per frame <i>per group</i> through the
+    /// <c>SynchronizationContext</c>.
+    /// <br/>
     /// Running on the player loop is also what makes <see cref="SceneOperationAwaiter"/> honest:
-    /// continuations resume on the main thread because that is where the pump ticks, not because
-    /// a captured context posted them there.
+    /// continuations resume on the main thread because that is where the pump ticks.
     /// </summary>
     public static partial class SceneOperationPump
     {
@@ -40,18 +36,15 @@ namespace MyGameDevTools.SceneLoading
             public bool Warned;
         }
 
-        /// <summary>
-        /// How long a gate waits in a development build before naming what is blocking it. The
-        /// wait continues afterwards — this reports, it does not give up.
-        /// </summary>
+        /// <summary>How long a gate waits before naming what blocks it. It then keeps waiting.</summary>
         public const float GateWarningSeconds = 10f;
 
         static List<Entry> _entries;
         static List<ConditionEntry> _conditionEntries;
 
         /// <summary>
-        /// An awaitable over a group of backend operations, completing when all of them are done
-        /// and reporting their average progress to <paramref name="operation"/> while they run.
+        /// Completes when every handle is done, reporting their average progress to
+        /// <paramref name="operation"/> meanwhile.
         /// </summary>
         public static BackendGroupAwaiter WaitForAll(SceneBackendHandle[] handles, SceneOperation operation)
         {
@@ -59,12 +52,11 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// An awaitable over an arbitrary per-frame condition — the loading-screen gates, in
-        /// practice.
+        /// An awaitable over a per-frame condition — the loading-screen gates, in practice.
         /// </summary>
         /// <param name="description">
-        /// What is being waited on. Named in the development-build warning if the wait runs long,
-        /// which is how a loading screen that never opens its gate stops being a silent hang.
+        /// Named in the development-build warning if the wait runs long, so a gate that never
+        /// opens stops being a silent hang.
         /// </param>
         public static ConditionAwaiter WaitUntil(Func<bool> condition, SceneOperation operation, string description)
         {
@@ -191,8 +183,8 @@ namespace MyGameDevTools.SceneLoading
 
                     if (!SceneLinker.HasCompletedAll(entry.Handles))
                     {
-                        // An engine operation that never reports itself done would otherwise be
-                        // an unexplained freeze. Say what is stuck, once, and keep waiting.
+                        // An engine operation that never reports itself done would otherwise be an
+                        // unexplained freeze. Say what is stuck, once, and keep waiting.
                         entry.Waited += Time.unscaledDeltaTime;
                         if (!entry.Warned && entry.Waited >= GateWarningSeconds && Debug.isDebugBuild)
                         {
@@ -207,21 +199,18 @@ namespace MyGameDevTools.SceneLoading
                 }
 
                 // Remove before resuming: the continuation runs the next phase, which may add
-                // entries of its own, and reordering the list underneath this loop would skip them.
+                // entries of its own.
                 _entries.RemoveAt(i);
                 entry.Continuation();
             }
         }
 
-        /// <summary>
-        /// Awaits a group of backend operations through the pump.
-        /// </summary>
+        /// <summary>Awaits a group of backend operations through the pump.</summary>
         public readonly struct BackendGroupAwaiter : INotifyCompletion
         {
             /// <summary>
-            /// Whether the group has already finished, in which case <c>await</c> does not
-            /// suspend. A cancelled operation counts as finished — its remaining phases are
-            /// skipped, even though the engine keeps loading underneath.
+            /// Whether the group has finished. A cancelled operation counts as finished — its
+            /// remaining phases are skipped, even though the engine keeps loading underneath.
             /// </summary>
             public readonly bool IsCompleted => (_operation != null && _operation.IsCancellationRequested) || SceneLinker.HasCompletedAll(_handles);
 
@@ -241,14 +230,10 @@ namespace MyGameDevTools.SceneLoading
             public readonly void GetResult() { }
         }
 
-        /// <summary>
-        /// Awaits an arbitrary per-frame condition through the pump.
-        /// </summary>
+        /// <summary>Awaits a per-frame condition through the pump.</summary>
         public readonly struct ConditionAwaiter : INotifyCompletion
         {
-            /// <summary>
-            /// Whether the condition already holds, or the operation was cancelled.
-            /// </summary>
+            /// <summary>Whether the condition already holds, or the operation was cancelled.</summary>
             public readonly bool IsCompleted => (_operation != null && _operation.IsCancellationRequested) || _condition();
 
             readonly Func<bool> _condition;

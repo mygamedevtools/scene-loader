@@ -6,12 +6,8 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// Disposing a manager cancels everything it still has in flight.
-    /// <br/>
-    /// Same behaviour as v4, with none of the machinery: there is no lifetime
-    /// <c>CancellationTokenSource</c>, no linked source per call, and no
-    /// <c>token.Register</c> closure. The manager simply holds its live operations and cancels
-    /// each one.
+    /// Disposing a manager cancels everything in flight — same behaviour as v4, with none of the
+    /// token machinery.
     /// </summary>
     public class SceneManager_DisposeTests : SceneTestBase
     {

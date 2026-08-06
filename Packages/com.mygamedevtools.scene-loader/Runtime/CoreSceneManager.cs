@@ -21,14 +21,12 @@ namespace MyGameDevTools.SceneLoading
 
         readonly List<SceneBackendHandle> _unloadingScenes = new();
         readonly List<SceneBackendHandle> _loadedScenes = new();
-        // Live operations, so Dispose can cancel them. This replaces v4's lifetime
-        // CancellationTokenSource, and with it the linked source, the token.Register closure and
-        // the CancellationTokenRegistration that every single call used to allocate.
+        // Live operations, so Dispose can cancel them — replacing v4's lifetime
+        // CancellationTokenSource and the linked source, closure and registration per call.
         readonly List<SceneOperation> _liveOperations = new();
 
-        // The active scene is identified by the Scene itself rather than by a tracked object.
-        // Handles are values now, so there is no reference to compare — and the scene handle is
-        // the identity the engine itself uses.
+        // Identified by the Scene itself: handles are values now, so there is no reference to
+        // compare, and the scene handle is the identity the engine uses.
         Scene _activeScene;
 
         /// <summary>
@@ -95,10 +93,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Cancels every operation still in flight and forgets every tracked scene.
-        /// <br/>
-        /// The underlying Unity operations keep running — they cannot be aborted — so the scenes
-        /// they were loading will finish loading. They simply stop being this manager's.
+        /// Cancels everything in flight and forgets every tracked scene. The Unity operations keep
+        /// running — they simply stop being this manager's.
         /// </summary>
         public void Dispose()
         {
@@ -211,10 +207,8 @@ namespace MyGameDevTools.SceneLoading
         void RemoveLiveOperation(SceneOperation operation) => _liveOperations.Remove(operation);
 
         /// <summary>
-        /// Runs an operation's body, funnelling anything it throws into the handle.
-        /// <br/>
-        /// Nothing awaits the returned task — the <see cref="SceneOperation"/> is the handle
-        /// callers hold — so an unobserved exception here would otherwise be swallowed entirely.
+        /// Runs an operation's body, funnelling anything it throws into the handle. Nothing awaits
+        /// the returned task, so an unobserved exception would otherwise vanish.
         /// </summary>
         static async Task RunAsync(SceneOperation operation, Task body)
         {
@@ -367,8 +361,8 @@ namespace MyGameDevTools.SceneLoading
 
         async Task<SceneBackendHandle[]> UnloadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs)
         {
-            // Unload resolves too, so that unloading by the same string that loaded a scene
-            // matches it — an address and the scene's name are not required to be the same word.
+            // Unload resolves too, so unloading by the same string that loaded a scene matches
+            // it — an address and the scene's name need not be the same word.
             sceneRefs = await ResolveForUnloadAsync(operation, sceneRefs);
 
             int sceneCount = sceneRefs.Length;
@@ -400,11 +394,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Resolves references for an unload, leaving unresolvable keys as they are.
-        /// <br/>
-        /// A key that matches nothing is a caller error on the load path and throws there. Here
-        /// it is only a failed match, and the "no loaded scene matches this" error further down
-        /// says far more about what went wrong than "not in the build settings" would.
+        /// Resolves references for an unload, leaving unresolvable keys alone — the "no loaded
+        /// scene matches this" error below says more than "not in the build settings" would.
         /// </summary>
         async Task<SceneRef[]> ResolveForUnloadAsync(SceneOperation operation, SceneRef[] sceneRefs)
         {
@@ -438,10 +429,7 @@ namespace MyGameDevTools.SceneLoading
             return loadingBehavior ? loadingBehavior.Progress : null;
         }
 
-        /// <summary>
-        /// Wraps an already-loaded scene the manager did not load itself: a scene handed to a
-        /// constructor, or the temporary scene a direct transition creates.
-        /// </summary>
+        /// <summary>Wraps an already-loaded scene the manager did not load itself.</summary>
         static SceneBackendHandle CreateHandleForLoadedScene(Scene scene)
         {
             SceneRef sceneRef = SceneRef.FromScene(scene);

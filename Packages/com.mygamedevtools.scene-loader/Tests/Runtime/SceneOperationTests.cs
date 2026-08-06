@@ -10,9 +10,7 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    /// <summary>
-    /// The operation handle itself: its state machine, its awaiter, and the combinators.
-    /// </summary>
+    /// <summary>The operation handle: its state machine, its awaiter, and the combinators.</summary>
     public class SceneOperationTests : SceneTestBase
     {
         ISceneManager Manager => SceneTestEnvironment.SceneManagers[0];
@@ -20,11 +18,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         [OneTimeSetUp]
         public void OneTimeSetup() => SceneTestEnvironment.ValidateSceneEnvironment();
 
-        /// <summary>
-        /// Subscribes through <see cref="ISceneManager.OperationStarted"/> rather than to the
-        /// returned handle, because the first state is entered synchronously — by the time the
-        /// call returns, the operation is already loading.
-        /// </summary>
+        // Subscribes through OperationStarted rather than to the returned handle: the first
+        // state is entered synchronously, so by the time the call returns it is already loading.
         [UnityTest]
         public IEnumerator Load_MovesThroughItsStatesInOrder()
         {
@@ -220,10 +215,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
     static class TaskTestExtensions
     {
-        /// <summary>
-        /// Drives a <see cref="Task"/> from a <c>[UnityTest]</c>, rethrowing whatever it threw so
-        /// the assertions inside it actually fail the test.
-        /// </summary>
+        /// <summary>Drives a <see cref="Task"/> from a <c>[UnityTest]</c>, rethrowing so its assertions fail the test.</summary>
         public static IEnumerator ToCoroutineTest(this Task task)
         {
             while (!task.IsCompleted)

@@ -8,12 +8,9 @@ namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// A live handle on a scene operation: what phase it is in, how far along it is, what it
-    /// produced, and how to wait for it.
-    /// <br/><br/>
-    /// Every operation returns one of these instead of a <c>Task&lt;SceneResult&gt;</c>. That is
-    /// what let <c>IProgress&lt;float&gt;</c> and <c>CancellationToken</c> leave every public
-    /// signature: in v4 you had to decide up front whether you wanted progress or cancellation,
-    /// because there was nothing to attach them to afterwards.
+    /// produced, and how to wait for it. Returned instead of a <c>Task&lt;SceneResult&gt;</c>,
+    /// which is what let <c>IProgress&lt;float&gt;</c> and <c>CancellationToken</c> leave every
+    /// public signature — you attach them here instead of deciding up front.
     /// <code>
     /// SceneOperation op = MySceneManager.TransitionAsync("target", "loading");
     ///
@@ -24,82 +21,51 @@ namespace MyGameDevTools.SceneLoading
     /// </code>
     /// </summary>
     /// <remarks>
-    /// <b>Not pooled, deliberately.</b> #76 asked for pooling, and it is not safe for a handle
-    /// this API actively encourages callers to keep: <c>op.Result</c> after completion and
-    /// awaiting the same operation twice are both supported, so there is no moment at which the
-    /// package can know nobody holds it any more. Recycling anyway is exactly the
-    /// single-await-then-return-to-pool hazard that kept <c>Awaitable</c> out of the design
-    /// (#71 §7.5), and it would trade a use-after-free footgun for one small class allocation
-    /// against the tens of kilobytes a scene load costs. The per-operation buffers <i>are</i>
-    /// pooled, in <see cref="SceneLinker"/> and <see cref="SceneOperationPump"/>.
+    /// <b>Not pooled, deliberately.</b> This API encourages callers to keep the handle —
+    /// <c>op.Result</c> after completion and awaiting twice are both supported — so nothing can
+    /// know when it is free. Recycling anyway is the same hazard that kept <c>Awaitable</c> out,
+    /// traded against one small allocation per scene load. The per-operation buffers are pooled.
     /// </remarks>
     public sealed class SceneOperation
     {
-        /// <summary>
-        /// Progress has to move by at least this much before <see cref="Progressed"/> fires
-        /// again. Without it the pump would re-raise an unchanged value every frame.
-        /// </summary>
+        // Without this the pump would re-raise an unchanged value every frame.
         const float ProgressEpsilon = 0.0001f;
 
-        /// <summary>
-        /// Which operation this is.
-        /// </summary>
+        /// <summary>Which operation this is.</summary>
         public SceneOperationKind Kind { get; }
 
-        /// <summary>
-        /// The phase this operation is in.
-        /// </summary>
+        /// <summary>The phase this operation is in.</summary>
         public SceneOperationState State { get; private set; }
 
         /// <summary>
-        /// How far the load has got, from 0 to 1.
-        /// <br/>
-        /// The two backends measure different work — Addressables includes download time, the
-        /// standard path does not — so a group mixing them advances unevenly. That is a
-        /// presentation caveat, not a bug: rescaling one to match the other would be inventing a
-        /// number neither backend reports.
+        /// How far the load has got, from 0 to 1. A group mixing backends advances unevenly,
+        /// since Addressables includes download time and the standard path does not.
         /// </summary>
         public float Progress { get; private set; }
 
-        /// <summary>
-        /// The scenes this operation produced. Empty until <see cref="State"/> reaches
-        /// <see cref="SceneOperationState.Completed"/>.
-        /// </summary>
+        /// <summary>The scenes produced, empty until <see cref="SceneOperationState.Completed"/>.</summary>
         public SceneResult Result { get; private set; }
 
         /// <summary>
-        /// Why the operation faulted, or <see langword="null"/>.
-        /// <br/>
-        /// Only the addressable path can report a real failure. The Unity Scene Manager has no
-        /// failure surface at all — a bad scene name logs to the console and the operation still
-        /// reports itself done — so a standard-path failure surfaces as a link failure instead.
+        /// Why the operation faulted, or <see langword="null"/>. Only the addressable path can
+        /// report a real failure; a standard-path failure surfaces as a link failure instead.
         /// </summary>
         public Exception Exception { get; private set; }
 
-        /// <summary>
-        /// Whether the operation has finished, successfully or not.
-        /// </summary>
+        /// <summary>Whether the operation has finished, successfully or not.</summary>
         public bool IsDone => State >= SceneOperationState.Completed;
 
-        /// <summary>
-        /// Fires when <see cref="Progress"/> moves. Not raised for unchanged values.
-        /// </summary>
+        /// <summary>Fires when <see cref="Progress"/> moves. Not raised for unchanged values.</summary>
         public event Action<float> Progressed;
-        /// <summary>
-        /// Fires once per scene this operation loads.
-        /// </summary>
+        /// <summary>Fires once per scene loaded.</summary>
         public event Action<Scene> SceneLoaded;
-        /// <summary>
-        /// Fires once per scene this operation unloads.
-        /// </summary>
+        /// <summary>Fires once per scene unloaded.</summary>
         public event Action<Scene> SceneUnloaded;
-        /// <summary>
-        /// Fires on every <see cref="State"/> change.
-        /// </summary>
+        /// <summary>Fires on every <see cref="State"/> change.</summary>
         public event Action<SceneOperation> StateChanged;
         /// <summary>
-        /// Fires exactly once when the operation finishes — on success, cancellation and fault
-        /// alike. Subscribing after completion invokes it immediately.
+        /// Fires once when the operation finishes — success, cancellation and fault alike.
+        /// Subscribing after completion invokes it immediately.
         /// </summary>
         public event Action<SceneOperation> Completed
         {
@@ -115,10 +81,7 @@ namespace MyGameDevTools.SceneLoading
             remove => _completed -= value;
         }
 
-        /// <summary>
-        /// Whether <see cref="Cancel"/> has been called. Internal phases check this to stop
-        /// early.
-        /// </summary>
+        /// <summary>Whether <see cref="Cancel"/> has been called; phases check this to stop early.</summary>
         internal bool IsCancellationRequested { get; private set; }
 
         Action<SceneOperation> _completed;
@@ -132,14 +95,11 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Stops this operation as soon as it can, completing it in
-        /// <see cref="SceneOperationState.Canceled"/>.
-        /// <br/><br/>
-        /// <b>The underlying Unity scene operations keep running.</b> They cannot be aborted —
-        /// that is not a limitation of this package, and it is why v4's
-        /// <c>CancellationToken</c> parameters never cancelled the work either, only the await.
-        /// A scene that was already loading will finish loading; what stops is this operation's
-        /// reporting, its remaining phases, and everything waiting on it.
+        /// Stops this operation, completing it in <see cref="SceneOperationState.Canceled"/>.
+        /// <br/>
+        /// <b>The underlying Unity operations keep running</b> — they cannot be aborted, which is
+        /// why v4's tokens never cancelled the work either. A scene already loading will finish;
+        /// what stops is this operation's reporting, its remaining phases, and its waiters.
         /// </summary>
         public void Cancel()
         {
@@ -156,15 +116,13 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Cancels this operation when <paramref name="token"/> is cancelled.
-        /// <br/>
-        /// The opt-in bridge for structured concurrency — a <c>MonoBehaviour</c>'s
-        /// <c>destroyCancellationToken</c>, typically — rather than a parameter on every method:
+        /// Cancels this operation when <paramref name="token"/> is cancelled — the opt-in bridge
+        /// for structured concurrency, rather than a parameter on every method.
         /// <code>
         /// MySceneManager.TransitionAsync("target", "loading").CancelWith(destroyCancellationToken);
         /// </code>
         /// </summary>
-        /// <returns>This operation, so it can be chained onto the call that created it.</returns>
+        /// <returns>This operation, so it chains onto the call that created it.</returns>
         public SceneOperation CancelWith(CancellationToken token)
         {
             if (IsDone || !token.CanBeCanceled)
@@ -180,23 +138,12 @@ namespace MyGameDevTools.SceneLoading
             return this;
         }
 
-        /// <summary>
-        /// Makes <c>await operation</c> work.
-        /// <br/>
-        /// The awaiter is hand-rolled over this operation's continuation list — no
-        /// <c>Task</c>, no <c>Awaitable</c>. Because <see cref="SceneOperationPump"/> runs on
-        /// the player loop, continuations resume on the main thread by construction, with no
-        /// <c>SynchronizationContext</c> round-trip. It is also re-awaitable: awaiting the same
-        /// operation twice, or from two places, both work.
-        /// </summary>
+        /// <summary>Makes <c>await operation</c> work. See <see cref="SceneOperationAwaiter"/>.</summary>
         public SceneOperationAwaiter GetAwaiter() => new(this);
 
         /// <summary>
-        /// Bridges to <see cref="Task"/> for third-party interop — <c>Task</c>-typed APIs,
-        /// <c>ContinueWith</c>, UniTask.
-        /// <br/>
-        /// A convenience, not the primary path: it costs a <see cref="TaskCompletionSource{T}"/>
-        /// per call, and <c>await operation</c> costs nothing. Prefer the latter.
+        /// Bridges to <see cref="Task"/> for third-party interop. A convenience, not the primary
+        /// path: it costs a <see cref="TaskCompletionSource{T}"/> per call and <c>await</c> does not.
         /// </summary>
         public Task<SceneResult> AsTask()
         {
@@ -222,10 +169,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Waits for this operation from a coroutine: <c>yield return operation.ToCoroutine()</c>.
-        /// <br/>
-        /// Replaces v4's <c>WaitTask&lt;T&gt;</c>. Faults are rethrown when the coroutine
-        /// resumes; a cancellation simply ends the wait.
+        /// Waits from a coroutine: <c>yield return operation.ToCoroutine()</c>. Faults rethrow;
+        /// a cancellation simply ends the wait.
         /// </summary>
         public IEnumerator ToCoroutine()
         {
@@ -237,19 +182,13 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// One operation that finishes when all of <paramref name="operations"/> have.
-        /// <br/>
-        /// Its <see cref="Result"/> is every scene from every operation, in order. Prefer this
-        /// over <c>Task.WhenAll</c> on <see cref="AsTask"/>: it works over the same continuation
-        /// lists and costs no <see cref="TaskCompletionSource{T}"/> per operation.
+        /// Finishes when all of <paramref name="operations"/> have, with every scene in order.
+        /// Cheaper than <c>Task.WhenAll</c> over <see cref="AsTask"/>, which costs a
+        /// <see cref="TaskCompletionSource{T}"/> each.
         /// </summary>
         public static SceneOperation WhenAll(params SceneOperation[] operations) => Combine(operations, requireAll: true);
 
-        /// <summary>
-        /// One operation that finishes as soon as any of <paramref name="operations"/> does.
-        /// <br/>
-        /// Its <see cref="Result"/> is the winner's. The others keep running.
-        /// </summary>
+        /// <summary>Finishes as soon as any of <paramref name="operations"/> does; the others keep running.</summary>
         public static SceneOperation WhenAny(params SceneOperation[] operations) => Combine(operations, requireAll: false);
 
         public override string ToString() => $"{Kind} operation ({State}, {Progress:P0})";
@@ -370,8 +309,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Registers a continuation, or runs it immediately if the operation already finished.
-        /// This is what makes the awaiter re-awaitable.
+        /// Registers a continuation, or runs it immediately if already finished — which is what
+        /// makes the awaiter re-awaitable.
         /// </summary>
         internal void AddContinuation(Action continuation)
         {
@@ -384,9 +323,7 @@ namespace MyGameDevTools.SceneLoading
             _continuations += continuation;
         }
 
-        /// <summary>
-        /// The result an awaiter hands back, rethrowing a fault the way <c>Task</c> would.
-        /// </summary>
+        /// <summary>The result an awaiter hands back, rethrowing a fault the way <c>Task</c> would.</summary>
         internal SceneResult GetResultOrThrow()
         {
             return State switch
