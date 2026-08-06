@@ -10,11 +10,9 @@ namespace MyGameDevTools.SceneLoading
     /// A player-loop hook that turns backend operations into awaitable tasks.
     /// </summary>
     /// <remarks>
-    /// The v4 version bridged through the operation's <c>completed</c> event, which cost a
-    /// delegate, a <c>token.Register</c> closure and a queued <c>Action</c> closure per scene.
-    /// <see cref="ISceneBackend"/> deliberately has no completion event — polling is what the
-    /// operation pump in the next step needs anyway — so this ticks a list of pending operations
-    /// once per frame instead. Same job, three fewer closures.
+    /// <see cref="ISceneBackend"/> deliberately has no completion event, so this polls once per
+    /// frame instead of bridging through one — which drops a delegate, a <c>token.Register</c>
+    /// closure and a queued <c>Action</c> closure per scene.
     /// </remarks>
     public static partial class UnityTaskUtilities
     {
@@ -59,9 +57,7 @@ namespace MyGameDevTools.SceneLoading
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
 
-        /// <summary>
-        /// Completes when the handle's operation finishes, or cancels with the token.
-        /// </summary>
+        /// <summary>Completes when the handle's operation finishes, or cancels with the token.</summary>
         public static Task FromBackendHandle(SceneBackendHandle handle, CancellationToken token = default)
         {
             TaskCompletionSource<bool> completion = new();

@@ -8,14 +8,10 @@ namespace MyGameDevTools.SceneLoading
     /// Loads and unloads through the Unity <see cref="SceneManager"/>.
     /// </summary>
     /// <remarks>
-    /// What this backend cannot do shapes the rest of the design. The Scene Manager will not
-    /// tell you which scene an operation produced, which is why
-    /// <see cref="TryResolveScene"/> answers <see langword="false"/> and the manager matches
-    /// newly-loaded scenes against references instead. It also has no failure surface at all: a
-    /// bad scene name logs to the console and <c>isDone</c> still goes true. So a faulted state
-    /// is only honestly reachable on the addressable path, and failure here can only be
-    /// <i>inferred</i> from "the operation finished and no new scene appeared" — reported
-    /// through <see cref="SceneManagerLog"/> rather than dressed up as parity.
+    /// What this backend cannot do shapes the rest of the design. The Scene Manager will not say
+    /// which scene an operation produced, and it has no failure surface at all — a bad scene name
+    /// logs to the console and <c>isDone</c> still goes true. So a faulted state is only honestly
+    /// reachable on the addressable path.
     /// </remarks>
     public sealed class StandardSceneBackend : ISceneBackend
     {
@@ -47,9 +43,8 @@ namespace MyGameDevTools.SceneLoading
 
         public float GetProgress(SceneBackendHandle handle)
         {
-            // `progress` caps at 0.9 while `allowSceneActivation` is false. The package never
-            // sets it, and there is no API to, so the well-known 0.9 stall does not apply here
-            // and the value genuinely reaches 1.
+            // The well-known 0.9 cap only applies while `allowSceneActivation` is false, which
+            // the package never sets, so this genuinely reaches 1.
             return handle.StandardOperation?.progress ?? 0f;
         }
 
@@ -57,8 +52,7 @@ namespace MyGameDevTools.SceneLoading
 
         public bool TryResolveScene(SceneBackendHandle handle, out Scene scene)
         {
-            // See the type-level remarks: there is no API that answers this, so the manager
-            // falls back to matching against newly-loaded scenes.
+            // No API answers this, so the manager matches newly-loaded scenes instead.
             scene = default;
             return false;
         }

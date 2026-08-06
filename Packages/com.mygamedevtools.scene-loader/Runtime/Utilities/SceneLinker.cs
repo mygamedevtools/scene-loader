@@ -6,34 +6,23 @@ using UnityEngine.SceneManagement;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// Works out which loaded scene belongs to which handle.
-    /// <br/><br/>
-    /// This exists because the Unity Scene Manager will not tell you what an operation loaded.
-    /// It is also historically the buggiest part of the package — 3.0.1 was a scene-linking fix
-    /// — so every step narrates itself at <see cref="SceneLogLevel.Verbose"/>.
-    /// <br/><br/>
-    /// The v4 version allocated a <c>List&lt;Scene&gt;</c> and a <c>List&lt;ISceneData&gt;</c>
-    /// per load and did O(n·m) linear <c>Remove</c> scans over both. Typical n is under 8, so
-    /// this uses pooled arrays with swap-remove instead. The semantics are unchanged: this is a
-    /// data-structure rewrite, not an algorithm one.
+    /// Works out which loaded scene belongs to which handle, because the Unity Scene Manager will
+    /// not say. Historically the buggiest part of the package — 3.0.1 was a linking fix — so
+    /// every step narrates itself at <see cref="SceneLogLevel.Verbose"/>.
     /// </summary>
     public static partial class SceneLinker
     {
-        // Scratch buffers, reused across operations. Linking runs synchronously start to finish
-        // with no awaits in between, so two overlapping operations can never be inside it at
-        // once — which is what makes sharing these safe on the main thread.
+        // Scratch buffers, reused across operations. Linking runs synchronously start to finish,
+        // so two overlapping operations can never be inside it at once.
         static Scene[] _candidateScenes = new Scene[8];
         static int[] _unlinkedHandles = new int[8];
         static int[] _availableHandles = new int[8];
 
         /// <summary>
-        /// Fills in each handle's <see cref="SceneBackendHandle.Scene"/>.
-        /// <br/>
-        /// Backends that can name their own result do so first; whatever is left is matched
-        /// against the scenes that appeared and are not already tracked.
+        /// Fills in each handle's <see cref="SceneBackendHandle.Scene"/>. Backends that can name
+        /// their own result do so first; the rest are matched against scenes that appeared and
+        /// are not <paramref name="alreadyTracked"/>.
         /// </summary>
-        /// <param name="handles">Handles to link, updated in place.</param>
-        /// <param name="alreadyTracked">Scenes the manager already owns, excluded from matching.</param>
         /// <exception cref="Exception">A handle could not be linked to any loaded scene.</exception>
         public static void Link(SceneBackendHandle[] handles, IReadOnlyList<SceneBackendHandle> alreadyTracked)
         {
@@ -92,9 +81,7 @@ namespace MyGameDevTools.SceneLoading
             throw new Exception($"Unable to link all scenes to loaded scenes. Linked {handleCount - unlinkedCount}/{handleCount}. Unlinked: {unlinked}.");
         }
 
-        /// <summary>
-        /// Finds the tracked handles matching a group of references, in the same order.
-        /// </summary>
+        /// <summary>Finds the tracked handles matching a group of references, in the same order.</summary>
         /// <exception cref="Exception">A reference matched no tracked scene.</exception>
         public static SceneBackendHandle[] GetTrackedHandles(SceneRef[] sceneRefs, IReadOnlyList<SceneBackendHandle> tracked)
         {
@@ -139,9 +126,7 @@ namespace MyGameDevTools.SceneLoading
             return matched;
         }
 
-        /// <summary>
-        /// The scenes behind a group of handles.
-        /// </summary>
+        /// <summary>The scenes behind a group of handles.</summary>
         public static Scene[] GetScenes(SceneBackendHandle[] handles)
         {
             Scene[] scenes = new Scene[handles.Length];
@@ -151,9 +136,7 @@ namespace MyGameDevTools.SceneLoading
             return scenes;
         }
 
-        /// <summary>
-        /// The average progress of a group of handles, each normalized 0..1 by its own backend.
-        /// </summary>
+        /// <summary>The average progress of a group of handles.</summary>
         public static float GetAverageProgress(SceneBackendHandle[] handles)
         {
             float total = 0;
@@ -163,9 +146,7 @@ namespace MyGameDevTools.SceneLoading
             return total / handles.Length;
         }
 
-        /// <summary>
-        /// Whether every handle's operation has finished.
-        /// </summary>
+        /// <summary>Whether every handle's operation has finished.</summary>
         public static bool HasCompletedAll(SceneBackendHandle[] handles)
         {
             for (int i = 0; i < handles.Length; i++)
@@ -175,12 +156,8 @@ namespace MyGameDevTools.SceneLoading
             return true;
         }
 
-        /// <summary>
-        /// Whether <paramref name="sceneRef"/> identifies the scene behind <paramref name="handle"/>.
-        /// <br/>
-        /// The addressable kinds compare references, because an address says nothing about the
-        /// resulting scene's name. Everything else matches against the loaded scene.
-        /// </summary>
+        // The addressable kinds compare references, because an address says nothing about the
+        // resulting scene's name. Everything else matches against the loaded scene.
         static bool Matches(SceneBackendHandle handle, SceneRef sceneRef)
         {
             return sceneRef.Kind switch
@@ -247,8 +224,8 @@ namespace MyGameDevTools.SceneLoading
             return string.Join(", ", descriptions);
         }
 
-        // The buffers are static, so a disabled Domain Reload would carry a previous session's
-        // Scene structs — pointing at native scenes that no longer exist — into the next one.
+        // Statics survive a disabled Domain Reload, and these hold Scene structs pointing at
+        // native scenes that would no longer exist.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #if UNITY_6000_5_OR_NEWER
         [OnExitingPlayMode]

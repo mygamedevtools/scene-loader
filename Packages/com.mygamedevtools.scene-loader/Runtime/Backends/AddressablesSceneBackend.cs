@@ -10,11 +10,10 @@ namespace MyGameDevTools.SceneLoading
     /// Loads and unloads through Addressables.
     /// </summary>
     /// <remarks>
-    /// Only the two-argument <c>LoadSceneAsync(key, LoadSceneMode)</c> overload is used, because
-    /// the CI matrix resolves three different Addressables majors — 1.19.19, 2.8.0 and 2.9.1 —
-    /// behind a single <c>ENABLE_ADDRESSABLES</c> define that does not distinguish them. Anything
-    /// newer, <c>SceneReleaseMode</c> in particular, would need its own version define in the
-    /// asmdef before it could be touched.
+    /// Only the two-argument <c>LoadSceneAsync(key, LoadSceneMode)</c> overload is used: the CI
+    /// matrix resolves Addressables 1.19.19, 2.8.0 and 2.9.1 behind a single
+    /// <c>ENABLE_ADDRESSABLES</c> define that does not distinguish them. Anything newer —
+    /// <c>SceneReleaseMode</c> in particular — needs its own version define first.
     /// </remarks>
     public sealed class AddressablesSceneBackend : ISceneBackend
     {
@@ -42,8 +41,8 @@ namespace MyGameDevTools.SceneLoading
 
         public float GetProgress(SceneBackendHandle handle)
         {
-            // Spans download, load and activation, so it measures strictly more work than the
-            // standard backend's `progress`. See ISceneBackend.GetProgress.
+            // Spans download, load and activation, so it measures more work than the standard
+            // backend's `progress`. See ISceneBackend.GetProgress.
             return handle.AddressableOperation.IsValid() ? handle.AddressableOperation.PercentComplete : 0f;
         }
 
