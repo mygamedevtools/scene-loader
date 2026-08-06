@@ -86,11 +86,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             }
         }
 
-        /// <summary>
-        /// <see cref="SceneLogLevel.Off"/> is a threshold, never a thing to ask about: asking
-        /// whether "nothing" is enabled should answer no at every level, including
-        /// <see cref="SceneLogLevel.Verbose"/>.
-        /// </summary>
+        // Off is a threshold, never a thing to ask about.
         [Test]
         public void IsEnabled_Off_IsNeverEnabled([ValueSource(nameof(_allLevels))] SceneLogLevel level)
         {
@@ -98,11 +94,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.False(SceneManagerLog.IsEnabled(SceneLogLevel.Off));
         }
 
-        /// <summary>
-        /// The error below never reaches the console. If the substituted handler were ignored
-        /// it would, and the test framework would fail this test on an unexpected error log —
-        /// which is exactly the proof we want.
-        /// </summary>
+        // The error below never reaches the console. If the substituted handler were ignored it
+        // would, and the framework would fail this test on an unexpected error log.
         [Test]
         public void SubstitutedHandler_ReceivesMessages_AndTheDefaultDoesNot()
         {
@@ -122,10 +115,6 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreSame(Debug.unityLogger.logHandler, SceneManagerLog.Handler);
         }
 
-        /// <summary>
-        /// Statics survive a disabled Domain Reload, so a test that raises the level or swaps
-        /// the handler would otherwise leak into the next play session.
-        /// </summary>
         [Test]
         public void ResetStatics_RestoresDefaults()
         {
@@ -140,15 +129,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             SceneManagerLog.Handler = _handler;
         }
 
-        /// <summary>
-        /// The whole point of the call-site guard convention: with the level disabled, a
-        /// guarded verbose site must not build its interpolated message.
-        /// <br/>
-        /// 100,000 unguarded interpolations would allocate megabytes, so a per-frame budget of
-        /// a couple of kilobytes is a wide margin that still fails loudly if the guard stops
-        /// working. The counter only publishes at frame boundaries, which is why the loop is
-        /// bracketed by <c>yield return null</c>.
-        /// </summary>
+        // 100,000 unguarded interpolations would allocate megabytes, so a couple of kilobytes is
+        // a wide margin that still fails loudly if the call-site guard stops working.
         [UnityTest]
         public IEnumerator DisabledLevel_GuardedCallSite_DoesNotAllocate()
         {
