@@ -6,12 +6,8 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests.Performance
 {
     /// <summary>
-    /// The allocation and timing baseline the v5 rework is measured against.
-    /// <br/>
-    /// Every case runs the same shape: discard <see cref="AllocationGate.WarmupIterations"/>
-    /// warmups, then average <see cref="AllocationGate.MeasurementIterations"/> measured runs.
-    /// Non-addressable cases assert against a ceiling; addressable cases report only, because
-    /// the CI matrix resolves three different Addressables majors (see <see cref="AllocationGate"/>).
+    /// The allocation and timing baseline the v5 rework is measured against. Non-addressable
+    /// cases assert against a ceiling; addressable ones report only — see <see cref="AllocationGate"/>.
     /// </summary>
     public class SceneManagerPerformanceTests : SceneTestBase
     {
@@ -128,11 +124,8 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         }
 #endif
 
-        /// <summary>
-        /// Transitions unload the active scene, so they need one to start from. Loading it
-        /// outside the measured loop keeps every iteration in the same steady state:
-        /// one loaded scene in, one loaded scene out.
-        /// </summary>
+        // Loaded outside the measured loop, so every iteration starts from the same steady
+        // state: one loaded scene in, one loaded scene out.
         IEnumerator LoadSourceScene()
         {
             yield return Manager.LoadAsync(new SceneParameters(_targetScene, true)).ToWaitTask();
