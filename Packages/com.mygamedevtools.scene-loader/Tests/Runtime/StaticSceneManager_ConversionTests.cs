@@ -9,11 +9,7 @@ using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    /// <summary>
-    /// The static mirror of <see cref="SceneManagerTests"/>' conversion coverage. Same premise:
-    /// these were the extension-method tests, and they now reach the same operations through
-    /// the implicit conversions that replaced them.
-    /// </summary>
+    /// <summary>The static mirror of <see cref="SceneManagerTests"/>' conversion coverage.</summary>
     public partial class StaticSceneManager_Tests
     {
         int[] _buildIndexes = new[] { 1, 2, 3 };

@@ -7,55 +7,34 @@ using UnityEngine.SceneManagement;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// A reference to a scene, in any of the forms this package accepts: a name, a path, an
-    /// Addressables address, a build index, an <c>AssetReference</c>, or an already-loaded
-    /// <see cref="Scene"/>.
-    /// <br/><br/>
-    /// This one value type replaces v4's <c>ILoadSceneInfo</c> interface and its five
-    /// implementing structs. Those were mutable structs stored behind an interface, so every
-    /// creation boxed and every reference carried an <c>object</c>-typed payload that boxed
-    /// build indices on the way in and on the way out. None of that survives here.
-    /// <br/><br/>
-    /// A bare <see cref="string"/> is deliberately ambiguous and stays that way until the
-    /// operation starts — see <see cref="SceneRefResolver"/> for the precedence rules and
-    /// <see cref="Address"/> for the override.
+    /// A reference to a scene, in any form this package accepts: a name, a path, an Addressables
+    /// address, a build index, an <c>AssetReference</c>, or an already-loaded <see cref="Scene"/>.
+    /// <br/>
+    /// A bare <see cref="string"/> stays ambiguous until the operation starts — see
+    /// <see cref="SceneRefResolver"/> for the precedence rules and <see cref="Address"/> for the override.
     /// </summary>
     public readonly struct SceneRef : IEquatable<SceneRef>
     {
-        /// <summary>
-        /// What this reference points at.
-        /// </summary>
+        /// <summary>What this reference points at.</summary>
         public readonly SceneRefKind Kind => _kind;
 
-        /// <summary>
-        /// Whether this reference points at anything. <c>default(SceneRef)</c> does not, which
-        /// is how an omitted loading-scene argument is spelled.
-        /// </summary>
+        /// <summary>Whether this points at anything. <c>default(SceneRef)</c> does not.</summary>
         public readonly bool IsValid => _kind != SceneRefKind.None;
 
         /// <summary>
-        /// The scene name, path or address this reference was built from, or
-        /// <see langword="null"/> for kinds that were never built from a string.
-        /// <br/>
-        /// A resolved reference keeps this, which is what lets a name that resolved to a build
-        /// index still be matched against a loaded scene by name.
+        /// The name, path or address this was built from, or <see langword="null"/>. A resolved
+        /// reference keeps it, so a name that became a build index still matches by name.
         /// </summary>
         public readonly string Key => _key;
 
-        /// <summary>
-        /// The build index, valid for <see cref="SceneRefKind.BuildIndex"/>.
-        /// </summary>
+        /// <summary>Valid for <see cref="SceneRefKind.BuildIndex"/>.</summary>
         public readonly int BuildIndex => _buildIndex;
 
-        /// <summary>
-        /// The referenced scene, valid for <see cref="SceneRefKind.Scene"/>.
-        /// </summary>
+        /// <summary>Valid for <see cref="SceneRefKind.Scene"/>.</summary>
         public readonly Scene Scene => _scene;
 
 #if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// The referenced asset, valid for <see cref="SceneRefKind.AssetReference"/>.
-        /// </summary>
+        /// <summary>Valid for <see cref="SceneRefKind.AssetReference"/>.</summary>
         public readonly AssetReference AssetReference => _asset as AssetReference;
 #endif
 
@@ -63,9 +42,8 @@ namespace MyGameDevTools.SceneLoading
         readonly int _buildIndex;
         readonly Scene _scene;
         readonly string _key;
-        // Typed `object` rather than `AssetReference` so the field, and therefore the struct's
-        // layout, does not change shape with ENABLE_ADDRESSABLES. AssetReference is a class,
-        // so there is nothing to box here.
+        // Typed `object` so the struct's layout does not change shape with ENABLE_ADDRESSABLES.
+        // AssetReference is a class, so nothing boxes.
         readonly object _asset;
 
         SceneRef(SceneRefKind kind, string key, int buildIndex, Scene scene, object asset)
@@ -78,11 +56,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// References a scene by name, path or Addressables address, leaving which one it is to
-        /// be decided when the operation starts.
-        /// <br/>
-        /// The build settings win over Addressables when both match. Use <see cref="Address"/>
-        /// to force the addressable interpretation.
+        /// References a scene by name, path or address, settled when the operation starts.
+        /// The build settings win when both match; <see cref="Address"/> forces the other way.
         /// </summary>
         public static SceneRef FromKey(string nameOrPathOrAddress)
         {
@@ -93,11 +68,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// References an Addressables address directly, skipping the build-settings probe.
-        /// <br/>
-        /// This is the override for the precedence rule — a scene present in both the build
-        /// settings and Addressables loads from the build settings unless you say this — and it
-        /// is also the fast path, since it never touches the build-settings map.
+        /// References an address directly, skipping the build-settings probe. The override for
+        /// the precedence rule, and the fast path.
         /// </summary>
         public static SceneRef Address(string address)
         {
@@ -107,9 +79,7 @@ namespace MyGameDevTools.SceneLoading
             return new SceneRef(SceneRefKind.Address, address, -1, default, null);
         }
 
-        /// <summary>
-        /// References a scene by its build index. The scene must be in the build settings.
-        /// </summary>
+        /// <summary>References a scene by its build index.</summary>
         public static SceneRef FromBuildIndex(int buildIndex)
         {
             if (buildIndex < 0)
@@ -118,9 +88,7 @@ namespace MyGameDevTools.SceneLoading
             return new SceneRef(SceneRefKind.BuildIndex, null, buildIndex, default, null);
         }
 
-        /// <summary>
-        /// References an already-loaded scene. Can only be used to unload it.
-        /// </summary>
+        /// <summary>References an already-loaded scene. Can only be used to unload it.</summary>
         public static SceneRef FromScene(Scene scene)
         {
             if (!scene.IsValid())
@@ -130,9 +98,7 @@ namespace MyGameDevTools.SceneLoading
         }
 
 #if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// References a scene by its Addressables <c>AssetReference</c>.
-        /// </summary>
+        /// <summary>References a scene by its Addressables <c>AssetReference</c>.</summary>
         public static SceneRef FromAssetReference(AssetReference assetReference)
         {
             if (assetReference == null)
@@ -145,9 +111,8 @@ namespace MyGameDevTools.SceneLoading
 #endif
 
         /// <summary>
-        /// Produces the build-settings resolution of a <see cref="SceneRefKind.Key"/>: a build
-        /// index that keeps the original string, so the reference can still be matched against
-        /// a loaded scene by name or path.
+        /// The build-settings resolution of a key: a build index that keeps the original string,
+        /// so it can still be matched against a loaded scene by name or path.
         /// </summary>
         internal static SceneRef ResolvedToBuildIndex(string key, int buildIndex)
         {
@@ -162,12 +127,9 @@ namespace MyGameDevTools.SceneLoading
 #endif
 
         /// <summary>
-        /// Whether a loaded <paramref name="scene"/> could be the one this reference names.
-        /// <br/>
-        /// Only meaningful for references the engine can match after the fact. The addressable
-        /// kinds always answer <see langword="false"/>, because an address tells you nothing
-        /// about the resulting scene's name — the addressable backend hands back its
-        /// <see cref="Scene"/> directly instead.
+        /// Whether a loaded <paramref name="scene"/> could be the one this names. The addressable
+        /// kinds always answer <see langword="false"/> — an address says nothing about the
+        /// resulting scene's name, so that backend hands its <see cref="Scene"/> back directly.
         /// </summary>
         public readonly bool CanBeReferenceToScene(Scene scene)
         {

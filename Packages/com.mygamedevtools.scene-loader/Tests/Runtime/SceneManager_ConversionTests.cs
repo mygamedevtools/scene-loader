@@ -6,12 +6,9 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// End-to-end coverage for the conversions that replaced v4's extension layer.
-    /// <br/>
-    /// These were the <c>SceneManagerExtensions</c> tests. The extensions are gone, but the call
-    /// sites they covered still have to work — that was the entire premise of collapsing 64
-    /// methods into 4. So rather than deleting them, each one now reaches the same operation
-    /// through the implicit conversion that replaced its extension method.
+    /// The <c>SceneManagerExtensions</c> tests, kept rather than deleted: the extensions are
+    /// gone, but the call sites they covered still have to work. Each now reaches the same
+    /// operation through the conversion that replaced its extension method.
     /// </summary>
     public partial class SceneManagerTests
     {

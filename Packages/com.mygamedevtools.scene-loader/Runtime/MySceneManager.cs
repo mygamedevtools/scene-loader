@@ -9,12 +9,7 @@ namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// The package's entry point: a static mirror of <see cref="ISceneManager"/> over a
-    /// process-wide default instance.
-    /// <br/><br/>
-    /// This is a thin forwarding layer by design. v4 spent 735 lines here because the API was a
-    /// matrix of operation × arity × reference kind; with <see cref="SceneParameters"/> doing
-    /// the conversions, it is one forwarder per operation and the headline call stays a
-    /// one-liner:
+    /// process-wide default instance, so the headline call stays a one-liner.
     /// <code>
     /// MySceneManager.TransitionAsync("target", "loading");
     /// </code>
@@ -22,11 +17,8 @@ namespace MyGameDevTools.SceneLoading
     public static partial class MySceneManager
     {
         /// <summary>
-        /// The instance every static member here forwards to.
-        /// <br/>
-        /// Settable so tests and dependency-injection setups can substitute their own
-        /// <see cref="ISceneManager"/> rather than finding the static class to be a dead end.
-        /// Assigning <see langword="null"/> restores the package's own instance on next access.
+        /// The instance every static member forwards to. Settable, so tests and DI setups can
+        /// substitute their own rather than finding the static class to be a dead end.
         /// </summary>
         public static ISceneManager Default
         {
@@ -109,11 +101,9 @@ namespace MyGameDevTools.SceneLoading
         public static void SetActiveScene(Scene scene) => Default.SetActiveScene(scene);
 
         /// <summary>
-        /// Loads the target scene or group of scenes.
-        /// <br/>
-        /// The parameter accepts a scene name, path or Addressables address, a build index, a
-        /// <see cref="Scene"/>, an <c>AssetReference</c>, an array of any of those, or a
-        /// <see cref="SceneParameters"/> when you also need to say which one becomes active.
+        /// Loads the target scene or group of scenes. Takes a name, path or address, a build
+        /// index, a <see cref="Scene"/>, an <c>AssetReference</c>, an array of any of those, or
+        /// a <see cref="SceneParameters"/> when you also need to say which becomes active.
         /// </summary>
         /// <param name="sceneParameters">The scene or scenes to load, and optionally which to activate.</param>
         /// <param name="progress">Object to report the loading operations progress to, from 0 to 1.</param>
@@ -121,9 +111,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>A <see cref="Task{TResult}"/> with all scenes loaded.</returns>
         public static Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default) => Default.LoadAsync(sceneParameters, progress, token);
 
-        /// <summary>
-        /// Unloads the target scene or group of scenes.
-        /// </summary>
+        /// <summary>Unloads the target scene or group of scenes.</summary>
         /// <param name="sceneParameters">The scene or scenes to unload.</param>
         /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>
@@ -134,12 +122,9 @@ namespace MyGameDevTools.SceneLoading
         public static Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default) => Default.UnloadAsync(sceneParameters, token);
 
         /// <summary>
-        /// Transitions from the current active scene to the target scene or group of scenes,
-        /// optionally showing a loading scene while it happens.
-        /// <br/>
-        /// Both arguments take a name, path or Addressables address interchangeably — the
-        /// strings resolve themselves, so an addressable transition looks exactly like a
-        /// non-addressable one.
+        /// Transitions from the active scene to the target scene or group, optionally showing a
+        /// loading screen. Strings resolve themselves, so an addressable transition looks exactly
+        /// like a non-addressable one.
         /// </summary>
         /// <param name="sceneParameters">The scene or scenes to transition to. One of them must be marked active.</param>
         /// <param name="loadingScene">The scene to load as the transition intermediate. Leave it unset for a transition with no loading scene.</param>
@@ -147,17 +132,13 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>A <see cref="Task{TResult}"/> with all scenes loaded.</returns>
         public static Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default, CancellationToken token = default) => Default.TransitionAsync(sceneParameters, loadingScene, token);
 
-        /// <summary>
-        /// Reloads the active scene, optionally showing a loading scene while it happens.
-        /// </summary>
+        /// <summary>Reloads the active scene, optionally showing a loading screen.</summary>
         /// <param name="loadingScene">The scene to load as the transition intermediate. Leave it unset for a reload with no loading scene.</param>
         /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>A <see cref="Task{TResult}"/> with all scenes reloaded.</returns>
         public static Task<SceneResult> ReloadActiveSceneAsync(SceneRef loadingScene = default, CancellationToken token = default) => Default.ReloadActiveSceneAsync(loadingScene, token);
 
-        /// <summary>
-        /// Gets the current active scene.
-        /// </summary>
+        /// <summary>Gets the current active scene.</summary>
         /// <returns>The current active scene, or an invalid scene if none of the loaded scenes are enabled as the active scene.</returns>
         public static Scene GetActiveScene() => Default.GetActiveScene();
 
@@ -168,9 +149,7 @@ namespace MyGameDevTools.SceneLoading
         /// <returns>The loaded scene at the <paramref name="index"/> of the loaded scenes list.</returns>
         public static Scene GetLoadedSceneAt(int index) => Default.GetLoadedSceneAt(index);
 
-        /// <summary>
-        /// Gets the last loaded scene.
-        /// </summary>
+        /// <summary>Gets the last loaded scene.</summary>
         /// <returns>The last loaded scene, or an invalid scene if there are no loaded scenes.</returns>
         public static Scene GetLastLoadedScene() => Default.GetLastLoadedScene();
 
