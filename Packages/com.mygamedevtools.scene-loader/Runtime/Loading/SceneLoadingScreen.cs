@@ -3,22 +3,16 @@ using UnityEngine.SceneManagement;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// A loading screen that is a scene, which is what v4 always meant by "loading screen".
-    /// <br/><br/>
-    /// It is the target of every implicit conversion on <see cref="LoadingScreen"/>, so
-    /// <c>TransitionAsync("target", "loading")</c> still means exactly what it used to. That is
-    /// also why it lives in the package rather than in the samples.
+    /// A loading screen that is a scene — what v4 always meant by "loading screen", and the
+    /// target of every implicit conversion on <see cref="LoadingScreen"/>, which is why it is
+    /// core rather than a sample.
     /// </summary>
     public sealed class SceneLoadingScreen : LoadingScreen
     {
-        /// <summary>
-        /// The scene to load as the intermediate.
-        /// </summary>
+        /// <summary>The scene to load as the intermediate.</summary>
         public SceneRef SceneRef => _sceneRef;
 
-        /// <summary>
-        /// The loaded intermediate scene, once the transition has loaded it.
-        /// </summary>
+        /// <summary>The loaded intermediate scene, once the transition has loaded it.</summary>
         public Scene Scene => _scene;
 
         readonly SceneRef _sceneRef;
@@ -26,18 +20,13 @@ namespace MyGameDevTools.SceneLoading
         Scene _scene;
         LoadingProgress _progress;
 
-        /// <summary>
-        /// Uses the scene at <paramref name="sceneRef"/> as the loading screen.
-        /// </summary>
+        /// <summary>Uses the scene at <paramref name="sceneRef"/> as the loading screen.</summary>
         public SceneLoadingScreen(SceneRef sceneRef)
         {
             _sceneRef = sceneRef;
         }
 
-        /// <summary>
-        /// Records the scene the transition loaded for this screen, and finds the
-        /// <see cref="LoadingBehavior"/> in it, if there is one.
-        /// </summary>
+        /// <summary>Records the loaded scene and finds its <see cref="LoadingBehavior"/>, if any.</summary>
         internal void SetLoadedScene(Scene scene)
         {
             _scene = scene;
@@ -52,8 +41,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Waits for the scene's <see cref="LoadingBehavior"/> to report itself fully shown.
-        /// A loading scene without one gates on nothing, which is the v4 behaviour for that case.
+        /// Waits for the scene's <see cref="LoadingBehavior"/> to report itself shown. A scene
+        /// without one gates on nothing, as in v4.
         /// </summary>
         public override SceneOperationPump.ConditionAwaiter ShowAsync(SceneOperation operation)
         {
@@ -74,10 +63,7 @@ namespace MyGameDevTools.SceneLoading
             return _progress.WaitForHideAsync(operation);
         }
 
-        /// <summary>
-        /// Nothing to tear down: the intermediate scene is the transition's to unload, since it
-        /// is the transition that loaded it.
-        /// </summary>
+        /// <summary>Nothing to tear down: the transition loaded the scene, so it unloads it.</summary>
         public override void Dispose()
         {
             _progress = null;

@@ -7,7 +7,7 @@ namespace MyGameDevTools.SceneLoading
     /// Use <see cref="Progress"/> to add listener to scene loading progress events or to control loading screen transitions.
     /// <br/>
     /// It announces itself to <see cref="LoadingBehaviorRegistry"/> in <c>OnEnable</c>, which is
-    /// how a transition finds it — v4 scanned every loaded object instead.
+    /// how a transition finds it.
     /// </summary>
     [AddComponentMenu("Scene Loading/Loading Behavior")]
     public class LoadingBehavior : MonoBehaviour
@@ -31,8 +31,7 @@ namespace MyGameDevTools.SceneLoading
 
         void OnEnable()
         {
-            // Registered here rather than in Awake so `Progress` is guaranteed to exist by the
-            // time anything can look this up.
+            // After Awake, so `Progress` exists by the time anything can look this up.
             LoadingBehaviorRegistry.Register(this);
         }
 

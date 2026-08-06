@@ -3,21 +3,15 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// A loading screen built from a UI Toolkit document, with no scene and no prefab.
-/// <br/><br/>
-/// Another reference implementation — copy it and change the element names, the fade, or the
-/// gating to suit your project.
+/// A loading screen built from a UI Toolkit document, with no scene and no prefab. Copy it and
+/// change the element names, the fade, or the gating to suit your project.
 /// <code>
 /// await MySceneManager.TransitionAsync("target", new UIDocumentLoadingScreen(uxml, panelSettings));
 /// </code>
 /// </summary>
 public class UIDocumentLoadingScreen : LoadingScreen
 {
-    /// <summary>
-    /// The element name this screen drives with progress. Any
-    /// <see cref="UnityEngine.UIElements.ProgressBar"/> or <see cref="Slider"/> by this name is
-    /// bound automatically.
-    /// </summary>
+    /// <summary>The name of the <see cref="ProgressBar"/> this screen drives.</summary>
     public const string ProgressElementName = "progress";
 
     readonly VisualTreeAsset _visualTree;
@@ -48,9 +42,8 @@ public class UIDocumentLoadingScreen : LoadingScreen
     }
 
     /// <summary>
-    /// Shows immediately. Give this a fade by returning a gate that opens when the animation
-    /// finishes — <see cref="LoadingProgress.WaitForShowAsync"/> is what the scene-based screen
-    /// uses for exactly that.
+    /// Shows immediately. For a fade, return a gate that opens when the animation finishes —
+    /// <see cref="LoadingProgress.WaitForShowAsync"/> is what the scene-based screen uses.
     /// </summary>
     public override SceneOperationPump.ConditionAwaiter ShowAsync(SceneOperation operation) => SceneOperationPump.Completed(operation);
 

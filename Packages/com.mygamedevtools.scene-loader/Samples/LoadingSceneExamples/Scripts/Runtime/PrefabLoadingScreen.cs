@@ -2,12 +2,8 @@ using MyGameDevTools.SceneLoading;
 using UnityEngine;
 
 /// <summary>
-/// A loading screen that is a prefab rather than a scene.
-/// <br/><br/>
-/// This is a reference implementation, shipped in the sample rather than in the package so you
-/// can copy it and change it. The hard part — the holder scene that keeps the screen alive while
-/// the outgoing scene unloads, and stops Unity from ever having zero loaded scenes — is
-/// <see cref="LoadingScreenHost"/>, and that is in the package.
+/// A loading screen that is a prefab rather than a scene. A reference implementation — copy it
+/// and change it; the hard part, <see cref="LoadingScreenHost"/>, is in the package.
 /// <code>
 /// await MySceneManager.TransitionAsync("target", new PrefabLoadingScreen(loadingScreenPrefab));
 /// </code>
@@ -20,9 +16,8 @@ public class PrefabLoadingScreen : LoadingScreen
     LoadingProgress _progress;
 
     /// <param name="prefab">
-    /// The prefab to instantiate. A <see cref="LoadingBehavior"/> anywhere on it is picked up
-    /// automatically, and is what gates the transition — without one, the screen appears and
-    /// disappears without holding anything up.
+    /// A <see cref="LoadingBehavior"/> anywhere on it is picked up automatically and gates the
+    /// transition; without one the screen holds nothing up.
     /// </param>
     public PrefabLoadingScreen(GameObject prefab)
     {
