@@ -8,13 +8,9 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// What a bare string means, and how it is decided.
-    /// <br/>
-    /// This is the highest-risk behaviour in v5 (#71 §10.4): it is the one change that can make
-    /// working code keep compiling and start doing something different. The test environment
-    /// happens to be the worst case by construction — every scene name exists both in the build
-    /// settings and in Addressables — so the precedence rule gets exercised for free everywhere
-    /// else, and gets pinned explicitly here.
+    /// What a bare string means, and how it is decided — the one v5 change that can make working
+    /// code keep compiling and start doing something different. Every test scene name exists in
+    /// both the build settings and Addressables, so precedence is exercised everywhere else too.
     /// </summary>
     [PrebuildSetup(typeof(SceneTestEnvironment)), PostBuildCleanup(typeof(SceneTestEnvironment))]
     public class SceneRefResolutionTests
@@ -106,12 +102,6 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
 #if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// The addressable-only case needs a key the build settings genuinely do not have. Every
-        /// test scene <i>name</i> is a double match, but the addressable copies live under
-        /// <c>Assets/_addressables-test</c>, and those paths are not in the build settings — so
-        /// the path form of an addressable scene is addressable-only.
-        /// </summary>
         [UnityTest]
         public IEnumerator AddressOnly_ResolvesToTheAddressableBackend()
         {
@@ -139,16 +129,10 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         /// <summary>
-        /// Half of the documented "adding a scene to the build settings later can change which
-        /// backend a string resolves to" caveat: the map is derived from the live build-settings
-        /// list, not from a snapshot taken once and kept forever. Every entry currently in the
-        /// list resolves, by path and by bare name, to its own index.
-        /// <br/>
-        /// The other half is <see cref="Invalidate_ForcesAReProbe"/>. Together they are the
-        /// mechanism: drop the map, rebuild from the live list, and a newly added scene is
-        /// there. Driving that end to end by actually editing the build settings mid-test is not
-        /// possible in play mode — the test runner owns that list while a run is in flight and
-        /// re-asserts its own entry over any change.
+        /// Half of the "adding a scene later changes the backend" caveat: the map is derived from
+        /// the live build-settings list, not a snapshot. <see cref="Invalidate_ForcesAReProbe"/>
+        /// is the other half. Driving it end to end is not possible in play mode — the test
+        /// runner owns that list during a run and re-asserts its own entry over any change.
         /// </summary>
         [Test]
         public void BuildSettingsMap_CoversEveryLiveEntryByPathAndByName()
@@ -172,10 +156,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         /// <summary>
-        /// The other half of the caveat: a resolution is cached, but the cache is droppable, and
-        /// dropping it makes the next lookup probe again rather than repeat a stale answer.
-        /// The double-match warning is the observable signal, since it fires on the resolution
-        /// that populates the cache and never on a cache hit.
+        /// The other half: the cache is droppable, and dropping it re-probes. The double-match
+        /// warning is the signal — it fires on the resolution that populates the cache, never on a hit.
         /// </summary>
         [UnityTest]
         public IEnumerator Invalidate_ForcesAReProbe()

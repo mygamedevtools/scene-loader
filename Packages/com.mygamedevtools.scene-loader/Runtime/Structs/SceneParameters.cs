@@ -8,36 +8,27 @@ namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// One or more <see cref="SceneRef"/>s, plus which of them should become the active scene.
-    /// <br/><br/>
-    /// The pile of implicit conversions below is what collapsed v4's 64 public async methods
-    /// into four. They exist one-per-source-type rather than chaining through
-    /// <see cref="SceneRef"/> because <b>C# user-defined conversions do not chain</b>:
-    /// <c>string → SceneRef → SceneParameters</c> will not happen implicitly, so every source
-    /// type needs its own operator here.
+    /// <br/>
+    /// The conversions below are what collapsed v4's 64 async methods into four. They exist one
+    /// per source type rather than chaining through <see cref="SceneRef"/> because <b>C#
+    /// user-defined conversions do not chain</b>.
     /// </summary>
     public readonly struct SceneParameters
     {
-        /// <summary>
-        /// How many scenes this refers to.
-        /// </summary>
+        /// <summary>How many scenes this refers to.</summary>
         public readonly int Length => _sceneRefs.Length;
 
         readonly SceneRef[] _sceneRefs;
         readonly int _setIndexActive;
 
-        /// <summary>
-        /// Refers to one or more scenes, activating none of them.
-        /// </summary>
+        /// <summary>Refers to one or more scenes, activating none of them.</summary>
         public SceneParameters(params SceneRef[] sceneRefs)
         {
             _sceneRefs = Validate(sceneRefs);
             _setIndexActive = -1;
         }
 
-        /// <summary>
-        /// Refers to one or more scenes, activating the one at <paramref name="setIndexActive"/>.
-        /// </summary>
-        /// <param name="setIndexActive">Index to activate, or a negative value to activate none.</param>
+        /// <summary>Refers to one or more scenes, activating the one at <paramref name="setIndexActive"/>, or none if negative.</summary>
         public SceneParameters(SceneRef[] sceneRefs, int setIndexActive)
         {
             _sceneRefs = Validate(sceneRefs);
@@ -47,18 +38,15 @@ namespace MyGameDevTools.SceneLoading
             _setIndexActive = setIndexActive;
         }
 
-        /// <summary>
-        /// Refers to a single scene, optionally activating it.
-        /// </summary>
+        /// <summary>Refers to a single scene, optionally activating it.</summary>
         public SceneParameters(SceneRef sceneRef, bool setActive)
         {
             _sceneRefs = new[] { sceneRef };
             _setIndexActive = setActive ? 0 : -1;
         }
 
-        // The implicit conversions cover arrays, but they cannot carry an index to activate.
-        // These four keep "load these scenes and make the second one active" a one-liner for
-        // the array forms users actually hold, without reintroducing a per-operation matrix.
+        // The array conversions cannot carry an index to activate. These four keep "load these
+        // and make the second one active" a one-liner, per array type rather than per operation.
 
         /// <inheritdoc cref="SceneParameters(SceneRef[], int)"/>
         public SceneParameters(string[] namesOrPathsOrAddresses, int setIndexActive) : this(Convert(namesOrPathsOrAddresses, SceneRef.FromKey), setIndexActive) { }
@@ -74,24 +62,16 @@ namespace MyGameDevTools.SceneLoading
         public SceneParameters(AssetReference[] assetReferences, int setIndexActive) : this(Convert(assetReferences, SceneRef.FromAssetReference), setIndexActive) { }
 #endif
 
-        /// <summary>
-        /// The first referenced scene.
-        /// </summary>
+        /// <summary>The first referenced scene.</summary>
         public readonly SceneRef GetSceneRef() => _sceneRefs[0];
 
-        /// <summary>
-        /// Every referenced scene.
-        /// </summary>
+        /// <summary>Every referenced scene.</summary>
         public readonly SceneRef[] GetSceneRefs() => _sceneRefs;
 
-        /// <summary>
-        /// Whether any scene should be activated once loaded.
-        /// </summary>
+        /// <summary>Whether any scene should be activated once loaded.</summary>
         public readonly bool ShouldSetActive() => _setIndexActive >= 0;
 
-        /// <summary>
-        /// Index of the scene to activate, or a negative value if none should be.
-        /// </summary>
+        /// <summary>Index of the scene to activate, or negative if none should be.</summary>
         public readonly int GetIndexToActivate() => _setIndexActive;
 
         static SceneRef[] Validate(SceneRef[] sceneRefs)

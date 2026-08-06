@@ -13,58 +13,30 @@ using UnityEngine.AddressableAssets.ResourceLocators;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// Decides what a bare string means.
+    /// Decides what a bare string means, which is what lets
+    /// <c>TransitionAsync("target", "loading")</c> work for addressable and non-addressable
+    /// scenes alike.
     /// <br/><br/>
-    /// A <see cref="SceneRefKind.Key"/> may be a scene name, a scene path or an Addressables
-    /// address, and this is what settles it — which is what lets
-    /// <c>MySceneManager.TransitionAsync("target", "loading")</c> work for addressable and
-    /// non-addressable scenes alike, with no method-name suffix and no ceremony.
+    /// <b>The build settings win.</b> <see cref="SceneRef.Address"/> is the override.
     /// <br/><br/>
-    /// <b>Precedence: the build settings win.</b> If a scene named <c>Level1</c> exists in the
-    /// build settings <i>and</i> an addressable <c>Level1</c> exists, the build settings one
-    /// loads. <see cref="SceneRef.Address"/> is the override.
-    /// <br/><br/>
-    /// Two consequences worth stating plainly:
-    /// <list type="bullet">
-    /// <item>
-    /// Resolution is observable behaviour. Adding a scene to the build settings later can flip
-    /// a string from the addressable backend to the standard one without any code changing.
-    /// Every first resolution of a key is logged at <see cref="SceneLogLevel.Verbose"/> so that
-    /// is diagnosable rather than mysterious, and a key matching both is reported at
-    /// <see cref="SceneLogLevel.Warning"/>.
-    /// </item>
-    /// <item>
-    /// The first addressable-by-string resolution pays catalog-initialisation latency, since it
-    /// cannot answer without the catalog. Later resolutions of any key hit the cache.
-    /// <see cref="SceneRef.Address"/> and <c>AssetReference</c> skip the build-settings probe
-    /// but still need the catalog.
-    /// </item>
-    /// </list>
+    /// Resolution is observable behaviour: adding a scene to the build settings later can flip a
+    /// string from one backend to the other with no code change. Every first resolution logs at
+    /// <see cref="SceneLogLevel.Verbose"/> and a double match at <see cref="SceneLogLevel.Warning"/>,
+    /// so that is diagnosable rather than mysterious. The first addressable-by-string resolution
+    /// also pays catalog-initialisation latency; later ones hit the cache.
     /// </summary>
     public static partial class SceneRefResolver
     {
-        /// <summary>
-        /// Name and path to build index, built once per session from the build settings.
-        /// </summary>
+        // Name and path to build index, built once per session.
         static Dictionary<string, int> _buildSettingsMap;
-        /// <summary>
-        /// Key to its settled reference, so a key is probed at most once.
-        /// </summary>
+        // Key to its settled reference, so a key is probed at most once.
         static Dictionary<string, SceneRef> _resolutionCache;
-        /// <summary>
-        /// The build-settings size the map was built from. The build settings can change at
-        /// edit time, and the whole point of the "adding a scene later flips the backend"
-        /// caveat is that we notice when they do.
-        /// </summary>
+        // The size the map was built from, so we notice when the build settings change.
         static int _mappedSceneCount = -1;
 
         /// <summary>
-        /// Settles every reference in <paramref name="sceneRefs"/>, returning a new array.
-        /// <br/>
-        /// The common case — build-settings hits, unambiguous kinds, and keys already probed —
-        /// completes synchronously and returns an already-completed task. Only a key that has
-        /// never been seen and is not in the build settings needs the Addressables catalog, and
-        /// only that case actually suspends.
+        /// Settles every reference, returning a new array. Only a never-seen key the build
+        /// settings do not have needs the catalog, and only that case suspends.
         /// </summary>
         public static Task<SceneRef[]> ResolveAllAsync(SceneRef[] sceneRefs)
         {
@@ -83,9 +55,7 @@ namespace MyGameDevTools.SceneLoading
             return Task.FromResult(resolved);
         }
 
-        /// <summary>
-        /// Settles a single reference. See <see cref="ResolveAllAsync"/> for the cost model.
-        /// </summary>
+        /// <summary>Settles a single reference. See <see cref="ResolveAllAsync"/> for the cost model.</summary>
         public static async Task<SceneRef> ResolveAsync(SceneRef sceneRef)
         {
             if (TryResolveImmediate(sceneRef, out SceneRef resolved))
@@ -95,12 +65,9 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Settles a reference without touching the Addressables catalog, which is everything
-        /// except a never-before-seen key that the build settings do not know.
+        /// Settles a reference without touching the catalog.
         /// </summary>
-        /// <returns>
-        /// <see langword="false"/> when the answer needs the catalog, which makes it async.
-        /// </returns>
+        /// <returns><see langword="false"/> when the answer needs the catalog, which makes it async.</returns>
         public static bool TryResolveImmediate(SceneRef sceneRef, out SceneRef resolved)
         {
             resolved = sceneRef;
@@ -134,10 +101,8 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Drops the build-settings map and every cached resolution.
-        /// <br/>
-        /// Called automatically when the build-settings count changes; exposed so tests can
-        /// force a re-probe.
+        /// Drops the build-settings map and every cached resolution. Automatic when the
+        /// build-settings count changes; exposed so tests can force a re-probe.
         /// </summary>
         public static void Invalidate()
         {
@@ -261,12 +226,10 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Reports a key that the build settings answered but Addressables could also have.
-        /// <br/>
-        /// This walks the already-loaded resource locators rather than starting a catalog load,
-        /// so the build-settings fast path stays synchronous. The trade is that a double match
-        /// goes unreported when the catalog has not been initialised yet — a missed warning, not
-        /// a wrong resolution, since the build settings win either way.
+        /// Reports a key the build settings answered that Addressables could also have. Walks
+        /// already-loaded locators rather than starting a catalog load, so the fast path stays
+        /// synchronous — the trade is a missed warning when the catalog is not up yet, never a
+        /// wrong resolution.
         /// </summary>
         static void WarnIfAlsoAddressable(string key)
         {

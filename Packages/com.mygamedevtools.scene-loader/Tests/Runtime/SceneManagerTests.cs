@@ -213,12 +213,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(setActive ? length : 0, _scenesActivated);
         }
 
-        /// <summary>
-        /// Resolution now fails before Unity is ever asked to load, so there is no engine error
-        /// to expect — the exception names every place we looked instead. It is also no longer
-        /// synchronous: deciding a key is not addressable needs the catalog, so the test has to
-        /// wait for the task rather than for the first MoveNext.
-        /// </summary>
+        // Resolution fails before Unity is asked to load, so there is no engine error to expect
+        // — and deciding a key is not addressable needs the catalog, so this now waits.
         [UnityTest]
         public IEnumerator Load_NotInBuild([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {

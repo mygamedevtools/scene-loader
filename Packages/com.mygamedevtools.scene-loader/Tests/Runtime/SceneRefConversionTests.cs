@@ -7,9 +7,8 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// Unit coverage for <see cref="SceneRef"/> and the <see cref="SceneParameters"/>
-    /// conversions. The end-to-end proof that these reach the right operation lives in
-    /// <c>SceneManager_ConversionTests</c>; this file pins the shapes themselves.
+    /// The shapes of <see cref="SceneRef"/> and the <see cref="SceneParameters"/> conversions.
+    /// <c>SceneManager_ConversionTests</c> proves they reach the right operation.
     /// </summary>
     public class SceneRefConversionTests
     {
@@ -162,12 +161,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Throws<System.ArgumentException>(() => _ = new SceneParameters((SceneRef[])null));
         }
 
-        /// <summary>
-        /// v4 stored references behind <c>ILoadSceneInfo</c> with an <c>object</c>-typed payload,
-        /// so a build index boxed on the way in and again on the way out, and every reference
-        /// boxed the moment it entered an array. Removing that category of cost is a headline
-        /// claim of the rewrite, so it gets asserted rather than assumed.
-        /// </summary>
+        // v4 boxed a build index on the way in and again on the way out. Removing that is a
+        // headline claim, so it gets asserted rather than assumed.
         [UnityTest]
         public IEnumerator SceneRef_RoundTripsWithoutAllocating()
         {

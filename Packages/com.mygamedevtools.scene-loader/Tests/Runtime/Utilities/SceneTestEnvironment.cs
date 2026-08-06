@@ -107,12 +107,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         };
 
         /// <summary>
-        /// Forces every key to the addressable interpretation.
-        /// <br/>
-        /// Needed because <see cref="SceneParameters"/>' <c>string[]</c> conversion produces
-        /// unresolved keys, and every test scene name is a double match that the build settings
-        /// would win. Without this, an "addressable, multiple scenes" case would quietly test
-        /// the standard backend instead.
+        /// Forces every key to the addressable interpretation. Without it, an "addressable,
+        /// multiple scenes" case would quietly test the standard backend — every test scene name
+        /// is a double match the build settings win.
         /// </summary>
         public static SceneRef[] Addresses(params string[] addresses)
         {
