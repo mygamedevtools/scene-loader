@@ -8,14 +8,10 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// Cancellation, after the token left the public API.
-    /// <br/><br/>
-    /// These were token tests. They are now state-machine tests, because there is exactly one
-    /// cancellation mechanism: <see cref="SceneOperation.Cancel"/>. The token never cancelled
-    /// the work anyway — Unity scene operations cannot be aborted, which v4's own XML docs said
-    /// on all 64 methods — so what these assert is the honest contract: the operation stops
-    /// reporting and completes in <see cref="SceneOperationState.Canceled"/>, while the engine
-    /// finishes what it started underneath.
+    /// Cancellation, after the token left the public API. These were token tests; they are now
+    /// state-machine tests, asserting the honest contract — the operation stops reporting and
+    /// completes in <see cref="SceneOperationState.Canceled"/> while the engine finishes
+    /// underneath.
     /// </summary>
     public class SceneManager_CancellationTests : SceneTestBase
     {
@@ -32,9 +28,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         /// <summary>
-        /// The half of the contract that is easy to get wrong: cancelling does not undo a load.
-        /// Unity has already been asked to load the scene and there is no way to take that back,
-        /// so the scene still turns up — it is simply no longer this operation's business.
+        /// The half that is easy to get wrong: cancelling does not undo a load. The scene still
+        /// turns up — it is simply no longer this operation's business.
         /// </summary>
         [UnityTest]
         public IEnumerator Cancel_DuringLoad_TheSceneStillFinishesLoading([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
@@ -76,10 +71,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(SceneOperationState.Completed, operation.State);
         }
 
-        /// <summary>
-        /// <see cref="SceneOperation.CancelWith"/> is the opt-in bridge that replaced the
-        /// <c>CancellationToken</c> parameter on every method.
-        /// </summary>
+        /// <summary>The opt-in bridge that replaced the <c>CancellationToken</c> parameter on every method.</summary>
         [UnityTest]
         public IEnumerator CancelWith_CancelsWhenTheTokenDoes([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
