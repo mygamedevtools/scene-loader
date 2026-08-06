@@ -11,50 +11,30 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// A scene the manager is tracking: which backend owns it, what reference asked for it, the
     /// in-flight operation, and — once linking has run — the scene itself.
-    /// <br/><br/>
-    /// The engine-specific operations are held in typed fields rather than behind a common
-    /// interface, so nothing boxes: <c>AsyncOperation</c> is already a class, and Addressables'
-    /// <c>AsyncOperationHandle&lt;SceneInstance&gt;</c> is a struct that would have to be boxed
-    /// to sit behind one. Only the backend that created a handle ever reads its own field, which
-    /// is what makes that safe.
-    /// <br/><br/>
-    /// Immutable, like <see cref="SceneRef"/>. v4's <c>SceneDataStandard</c> and
-    /// <c>SceneDataAddressable</c> were <i>mutable structs implementing an interface</i>, stored
-    /// in <c>List&lt;ISceneData&gt;</c> — every creation boxed, and every mutation mutated the
-    /// boxed copy. It worked only because callers always reached them through the box. The
-    /// category is gone here: <see cref="WithScene"/> returns a new value.
+    /// <br/>
+    /// The engine operations are held in typed fields rather than behind a common interface, so
+    /// nothing boxes; only the backend that created a handle reads its own field. Immutable, so
+    /// v4's mutable-struct-behind-an-interface footgun is gone.
     /// </summary>
     public readonly struct SceneBackendHandle : IEquatable<SceneBackendHandle>
     {
-        /// <summary>
-        /// The backend that owns this handle, or <see langword="null"/> for a default handle.
-        /// </summary>
+        /// <summary>The backend that owns this handle, or <see langword="null"/> for a default handle.</summary>
         public readonly ISceneBackend Backend => _backend;
 
-        /// <summary>
-        /// The reference the scene was requested by, already resolved.
-        /// </summary>
+        /// <summary>The reference the scene was requested by, already resolved.</summary>
         public readonly SceneRef SceneRef => _sceneRef;
 
-        /// <summary>
-        /// The loaded scene, once it has been linked. Invalid before that.
-        /// </summary>
+        /// <summary>The loaded scene, once linked. Invalid before that.</summary>
         public readonly Scene Scene => _scene;
 
-        /// <summary>
-        /// Whether this handle refers to anything at all.
-        /// </summary>
+        /// <summary>Whether this handle refers to anything at all.</summary>
         public readonly bool IsValid => _backend != null;
 
-        /// <summary>
-        /// The non-addressable operation. Only <see cref="StandardSceneBackend"/> reads this.
-        /// </summary>
+        /// <summary>Only <see cref="StandardSceneBackend"/> reads this.</summary>
         internal readonly AsyncOperation StandardOperation => _standardOperation;
 
 #if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// The addressable operation. Only <see cref="AddressablesSceneBackend"/> reads this.
-        /// </summary>
+        /// <summary>Only <see cref="AddressablesSceneBackend"/> reads this.</summary>
         internal readonly AsyncOperationHandle<SceneInstance> AddressableOperation => _addressableOperation;
 #endif
 
@@ -81,9 +61,7 @@ namespace MyGameDevTools.SceneLoading
 #endif
         }
 
-        /// <summary>
-        /// A handle over a non-addressable <see cref="AsyncOperation"/>.
-        /// </summary>
+        /// <summary>A handle over a non-addressable <see cref="AsyncOperation"/>.</summary>
         internal static SceneBackendHandle ForStandard(ISceneBackend backend, SceneRef sceneRef, Scene scene, AsyncOperation operation)
         {
             return new SceneBackendHandle(backend, sceneRef, scene, operation
@@ -94,18 +72,14 @@ namespace MyGameDevTools.SceneLoading
         }
 
 #if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// A handle over an Addressables scene operation.
-        /// </summary>
+        /// <summary>A handle over an Addressables scene operation.</summary>
         internal static SceneBackendHandle ForAddressable(ISceneBackend backend, SceneRef sceneRef, Scene scene, AsyncOperationHandle<SceneInstance> operation)
         {
             return new SceneBackendHandle(backend, sceneRef, scene, null, operation);
         }
 #endif
 
-        /// <summary>
-        /// The same handle with its scene filled in, which is what linking produces.
-        /// </summary>
+        /// <summary>The same handle with its scene filled in, which is what linking produces.</summary>
         public readonly SceneBackendHandle WithScene(Scene scene)
         {
             return new SceneBackendHandle(_backend, _sceneRef, scene, _standardOperation
@@ -115,9 +89,7 @@ namespace MyGameDevTools.SceneLoading
                 );
         }
 
-        /// <summary>
-        /// The same handle carrying a different operation, which is what an unload produces.
-        /// </summary>
+        /// <summary>The same handle carrying a different operation, which an unload produces.</summary>
         internal readonly SceneBackendHandle WithStandardOperation(AsyncOperation operation)
         {
             return new SceneBackendHandle(_backend, _sceneRef, _scene, operation
@@ -128,9 +100,7 @@ namespace MyGameDevTools.SceneLoading
         }
 
 #if ENABLE_ADDRESSABLES
-        /// <summary>
-        /// The same handle carrying a different addressable operation.
-        /// </summary>
+        /// <summary>The same handle carrying a different addressable operation.</summary>
         internal readonly SceneBackendHandle WithAddressableOperation(AsyncOperationHandle<SceneInstance> operation)
         {
             return new SceneBackendHandle(_backend, _sceneRef, _scene, null, operation);

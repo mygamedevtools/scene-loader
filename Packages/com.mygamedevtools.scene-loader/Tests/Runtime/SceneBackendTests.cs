@@ -9,13 +9,10 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// The backend contract, and the linking layer built on it.
-    /// <br/>
-    /// The point of <see cref="ISceneBackend"/> is that the branch happens once, at selection,
-    /// and every method is meaningful on every implementation afterwards. These tests pin both
-    /// halves of that: that selection routes correctly, and that the one method whose answer
-    /// legitimately differs per backend — <see cref="ISceneBackend.TryResolveScene"/> — differs
-    /// by returning <see langword="false"/> rather than by warning and handing back a default.
+    /// The backend contract and the linking layer built on it: that selection routes correctly,
+    /// and that the one method whose answer differs per backend —
+    /// <see cref="ISceneBackend.TryResolveScene"/> — differs by returning <see langword="false"/>
+    /// rather than by warning and handing back a default.
     /// </summary>
     [PrebuildSetup(typeof(SceneTestEnvironment)), PostBuildCleanup(typeof(SceneTestEnvironment))]
     public class SceneBackendTests : SceneTestBase
@@ -48,11 +45,8 @@ namespace MyGameDevTools.SceneLoading.Tests
 #endif
         }
 
-        /// <summary>
-        /// An unresolved key has no backend by design — reaching selection with one means
-        /// <see cref="SceneRefResolver"/> was skipped, which is a bug worth an explicit error
-        /// rather than a silently-wrong backend.
-        /// </summary>
+        // Reaching selection with an unresolved key means the resolver was skipped — worth an
+        // explicit error rather than a silently-wrong backend.
         [Test]
         public void BackendSelection_RejectsAnUnresolvedKey()
         {
@@ -110,10 +104,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 #endif
 
-        /// <summary>
-        /// The case the v4 test environment deliberately built: two references pointing at the
-        /// same source scene must link to two <i>different</i> loaded scenes.
-        /// </summary>
+        /// <summary>Two references to the same source scene must link to two different loaded scenes.</summary>
         [UnityTest]
         public IEnumerator Linking_HandlesTwoReferencesToTheSameSourceScene()
         {
@@ -126,10 +117,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreNotEqual(manager.GetLoadedSceneAt(0), manager.GetLoadedSceneAt(1));
         }
 
-        /// <summary>
-        /// A handle whose reference cannot match anything must fail loudly and say what did not
-        /// link — this is the layer where v4's remaining sharp edges lived.
-        /// </summary>
+        /// <summary>A handle that cannot match anything must fail loudly and say what did not link.</summary>
         [Test]
         public void Linking_Failure_LogsAnErrorAndThrowsNamingTheReference()
         {
@@ -160,18 +148,14 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(1f, backend.GetProgress(handle), 0.001f, "Progress should reach 1 once the operation is done.");
         }
 
-        /// <summary>
-        /// These tests drive backends directly rather than through a manager, so the scenes they
-        /// load are nobody's to clean up but theirs.
-        /// </summary>
+        // These drive backends directly rather than through a manager, so the scenes they load
+        // are nobody's to clean up but theirs.
         static IEnumerator UnloadEverythingLoaded()
         {
             yield return SceneTestUtilities.UnloadRemainingScenes();
         }
 
-        /// <summary>
-        /// Claims every kind, to prove registration order decides precedence.
-        /// </summary>
+        /// <summary>Claims every kind, to prove registration order decides precedence.</summary>
         class EverythingBackend : ISceneBackend
         {
             public bool CanHandle(SceneRefKind kind) => true;

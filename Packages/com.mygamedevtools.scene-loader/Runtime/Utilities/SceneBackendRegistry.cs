@@ -7,21 +7,15 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// Picks the backend for a resolved reference kind — once per scene, at the start of an
     /// operation, rather than at every call site.
-    /// <br/><br/>
-    /// This replaces v4's <c>SceneDataBuilder</c> and, with it, the <c>LoadSceneInfoType</c>
-    /// switches that were scattered across four files.
     /// </summary>
     public static partial class SceneBackendRegistry
     {
         static List<ISceneBackend> _backends;
 
-        /// <summary>
-        /// The backend that handles <paramref name="kind"/>.
-        /// </summary>
+        /// <summary>The backend that handles <paramref name="kind"/>.</summary>
         /// <exception cref="ArgumentException">
-        /// No registered backend handles the kind. <see cref="SceneRefKind.Key"/> lands here by
-        /// design: an unresolved key has no backend until <see cref="SceneRefResolver"/> settles
-        /// it.
+        /// No backend handles the kind. An unresolved <see cref="SceneRefKind.Key"/> lands here
+        /// by design — it has no backend until the resolver settles it.
         /// </exception>
         public static ISceneBackend GetBackend(SceneRefKind kind)
         {
@@ -39,10 +33,7 @@ namespace MyGameDevTools.SceneLoading
                     : $"No registered {nameof(ISceneBackend)} handles a {nameof(SceneRefKind)} of '{kind}'.", nameof(kind));
         }
 
-        /// <summary>
-        /// Adds a backend, which takes precedence over anything registered before it for the
-        /// kinds it claims.
-        /// </summary>
+        /// <summary>Adds a backend, taking precedence over earlier ones for the kinds it claims.</summary>
         public static void Register(ISceneBackend backend)
         {
             if (backend == null)
