@@ -7,8 +7,8 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests
 {
     /// <summary>
-    /// The loading-screen abstraction: the conversions that keep v4's call sites compiling, the
-    /// registry that replaced the scan, and the holder scene that replaced the temp scene.
+    /// The conversions that keep v4's call sites compiling, the registry that replaced the scan,
+    /// and the holder scene that replaced the temp scene.
     /// </summary>
     public class LoadingScreenTests : SceneTestBase
     {
@@ -27,10 +27,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             static void AssertSceneScreen(LoadingScreen screen) => Assert.IsInstanceOf<SceneLoadingScreen>(screen);
         }
 
-        /// <summary>
-        /// <c>default(SceneRef)</c> is how "no loading screen" is spelled, so it must convert to
-        /// null rather than to a screen pointing at nothing.
-        /// </summary>
+        /// <summary>"No loading screen" must convert to null, not to a screen pointing at nothing.</summary>
         [Test]
         public void Conversion_FromAnEmptySceneRef_IsNull()
         {
@@ -38,10 +35,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.IsNull(screen);
         }
 
-        /// <summary>
-        /// The other half of why <see cref="LoadingScreen"/> is a class: a subclass needs no
-        /// conversion at all.
-        /// </summary>
+        /// <summary>The other half of why <see cref="LoadingScreen"/> is a class.</summary>
         [UnityTest]
         public IEnumerator CustomScreen_PassesThroughWithoutConversion()
         {
@@ -57,9 +51,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Greater(screen.ProgressReports, 0, "The screen should have received progress.");
         }
 
-        /// <summary>
-        /// Whatever the transition does, a screen that created something has to get it back.
-        /// </summary>
+        /// <summary>Whatever the transition does, a screen that created something gets it back.</summary>
         [UnityTest]
         public IEnumerator CustomScreen_IsDisposed_EvenWhenTheTransitionFaults()
         {
@@ -98,10 +90,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.False(LoadingBehaviorRegistry.TryGet(SceneManager.GetActiveScene(), out _));
         }
 
-        /// <summary>
-        /// The reason the holder scene exists at all: Unity cannot have zero loaded scenes, and a
-        /// transition from a single scene unloads the only one there is before loading the next.
-        /// </summary>
+        /// <summary>Why the holder scene exists: Unity cannot have zero loaded scenes.</summary>
         [UnityTest]
         public IEnumerator Transition_FromASingleScene_NeverDropsToZeroLoadedScenes()
         {
@@ -137,10 +126,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             }
         }
 
-        /// <summary>
-        /// A loading scene with no <see cref="LoadingBehavior"/> gates on nothing and the
-        /// transition still completes — the v4 <c>TransitionWithIntermediateNoLoadingAsync</c> path.
-        /// </summary>
+        /// <summary>A loading scene with no <see cref="LoadingBehavior"/> gates on nothing.</summary>
         [UnityTest]
         public IEnumerator Transition_WithALoadingSceneThatHasNoBehavior_StillCompletes()
         {
@@ -153,9 +139,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(1, Manager.LoadedSceneCount);
         }
 
-        /// <summary>
-        /// A screen that records what the transition asked of it, and gates on nothing.
-        /// </summary>
+        /// <summary>Records what the transition asked of it, and gates on nothing.</summary>
         class RecordingLoadingScreen : LoadingScreen
         {
             public bool Prepared;

@@ -5,24 +5,14 @@ using UnityEngine.SceneManagement;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// Which <see cref="LoadingBehavior"/> lives in which scene.
+    /// Which <see cref="LoadingBehavior"/> lives in which scene. Replaces the full scene-graph
+    /// scan v4 ran on every transition, to find something that could just announce itself.
     /// </summary>
-    /// <remarks>
-    /// This replaces the scan v4 ran on <b>every</b> transition:
-    /// <code>
-    /// var behaviors = Object.FindObjectsByType&lt;LoadingBehavior&gt;(...);
-    /// var behavior  = behaviors.FirstOrDefault(l =&gt; l.gameObject.scene == loadingScene);
-    /// </code>
-    /// A full scene-graph walk, an allocated array and a LINQ closure, to find something that
-    /// could have announced itself. Now it does, in <c>OnEnable</c>.
-    /// </remarks>
     public static partial class LoadingBehaviorRegistry
     {
         static Dictionary<int, LoadingBehavior> _behaviorsBySceneHandle;
 
-        /// <summary>
-        /// Finds the behaviour registered for a scene.
-        /// </summary>
+        /// <summary>Finds the behaviour registered for a scene.</summary>
         public static bool TryGet(Scene scene, out LoadingBehavior behavior)
         {
             behavior = null;
@@ -32,9 +22,7 @@ namespace MyGameDevTools.SceneLoading
                 && behavior != null;
         }
 
-        /// <summary>
-        /// Announces a behaviour. Called from <see cref="LoadingBehavior.OnEnable"/>.
-        /// </summary>
+        /// <summary>Announces a behaviour, from <c>OnEnable</c>.</summary>
         public static void Register(LoadingBehavior behavior)
         {
             if (behavior == null)
@@ -47,9 +35,7 @@ namespace MyGameDevTools.SceneLoading
                 SceneManagerLog.Verbose($"Registered a {nameof(LoadingBehavior)} for scene '{behavior.gameObject.scene.name}'.");
         }
 
-        /// <summary>
-        /// Withdraws a behaviour. Called from <see cref="LoadingBehavior.OnDisable"/>.
-        /// </summary>
+        /// <summary>Withdraws a behaviour, from <c>OnDisable</c>.</summary>
         public static void Deregister(LoadingBehavior behavior)
         {
             if (behavior == null || _behaviorsBySceneHandle == null)
@@ -60,8 +46,8 @@ namespace MyGameDevTools.SceneLoading
                 _behaviorsBySceneHandle.Remove(key);
         }
 
-        // Statics survive a disabled Domain Reload, so a previous session's entries would point
-        // at destroyed behaviours in scenes that no longer exist.
+        // Statics survive a disabled Domain Reload, and these point at behaviours in scenes that
+        // would no longer exist.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #if UNITY_6000_5_OR_NEWER
         [OnExitingPlayMode]
