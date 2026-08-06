@@ -9,53 +9,27 @@ using UnityEngine;
 namespace MyGameDevTools.SceneLoading.Tests.Performance
 {
     /// <summary>
-    /// Measurement helper and the single home for every allocation ceiling.
-    /// <br/><br/>
-    /// Allocations are read through a <see cref="ProfilerRecorder"/> on the engine's
-    /// <c>GC Allocated In Frame</c> counter, not through <c>GC.GetTotalAllocatedBytes</c>.
-    /// Two reasons, both found by trying: this project targets .NET Standard 2.1, which does
-    /// not carry <c>GetTotalAllocatedBytes</c> at all, and Mono's
-    /// <c>GC.GetAllocatedBytesForCurrentThread</c> — the netstandard-legal alternative — is
-    /// unimplemented on this runtime and returns a flat zero.
-    /// <br/><br/>
-    /// Despite the counter's name, <see cref="ProfilerRecorder.CurrentValue"/> accumulates
-    /// monotonically for the lifetime of the recorder rather than resetting per frame, so a
-    /// before/after delta covers an operation spanning any number of frames. The delta does
-    /// include whatever else the frame allocated, but the measured idle floor in batchmode
-    /// playmode is around 330 bytes per frame — small enough that the operations below stay
-    /// legible against it.
-    /// <br/><br/>
-    /// The ceilings are <b>regression bounds measured in editor playmode</b>, not
-    /// "allocations per transition in a shipped game". The editor allocates incidental
-    /// per-frame garbage and its accounting differs from a release IL2CPP build, so an
-    /// absolute claim needs a built-player run. What these numbers buy is a failing test the
-    /// moment a change makes an operation meaningfully more expensive.
-    /// <br/><br/>
-    /// Keeping them together means a step that improves allocations ratchets them down in one
-    /// diff instead of hunting through test files.
+    /// Measurement helper, and the single home for every allocation ceiling.
+    /// <br/>
+    /// The ceilings are editor-playmode <b>regression bounds</b>, not "allocations in a shipped
+    /// game" — an absolute claim needs a built-player run.
     /// </summary>
+    /// <remarks>
+    /// The counter is used because the alternatives do not work here: .NET Standard 2.1 has no
+    /// <c>GC.GetTotalAllocatedBytes</c>, and Mono's <c>GC.GetAllocatedBytesForCurrentThread</c>
+    /// returns a flat zero. Despite its name, <see cref="ProfilerRecorder.CurrentValue"/>
+    /// accumulates for the recorder's lifetime rather than resetting per frame, so a before/after
+    /// delta spans any number of frames. The idle floor is ~330 B/frame.
+    /// </remarks>
     public static class AllocationGate
     {
-        /// <summary>
-        /// The engine counter reporting managed allocation bytes.
-        /// </summary>
         const string GcAllocCounter = "GC Allocated In Frame";
 
-        /// <summary>
-        /// Iterations thrown away before measuring. The first call through any path pays JIT,
-        /// static constructors and <see cref="RuntimeInitializeOnLoadMethodAttribute"/> hooks,
-        /// which swamps the signal we are actually after.
-        /// </summary>
+        /// <summary>Discarded before measuring, so JIT and static init stay out of the signal.</summary>
         public const int WarmupIterations = 2;
-        /// <summary>
-        /// Iterations averaged into the reported figure.
-        /// </summary>
+        /// <summary>Iterations averaged into the reported figure.</summary>
         public const int MeasurementIterations = 5;
-
-        /// <summary>
-        /// Playmode tests here run many sequential scene operations, so they need far more
-        /// than <see cref="SceneTestEnvironment.DefaultTimeout"/>.
-        /// </summary>
+        /// <summary>These run many sequential scene operations, so the default timeout is far too short.</summary>
         public const int TestTimeout = 300000;
 
         #region Ceilings
@@ -72,41 +46,31 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         //   Load_Single_Addressable       avg 10,323 B  (10,010 – 10,532)   report only
         //   Transition_..._Addressable    avg 43,662 B  (43,558 – 44,080)   report only
 
-        /// <summary>Transition to a single scene through a loading scene: the README path.</summary>
+        /// <summary>The README path.</summary>
         public const long TransitionWithLoadingScreen = 41_600;
-        /// <summary>Transition with no loading scene, which exercises the temp-transition-scene branch.</summary>
+        /// <summary>Exercises the temp-transition-scene branch.</summary>
         public const long TransitionDirect = 24_500;
-        /// <summary>Load a single scene: the simplest path.</summary>
+        /// <summary>The simplest path.</summary>
         public const long LoadSingle = 10_500;
-        /// <summary>Load four scenes at once, which exercises the linking layer.</summary>
+        /// <summary>Four scenes at once, which exercises the linking layer.</summary>
         public const long LoadMultiple = 24_000;
-        /// <summary>Unload a single scene.</summary>
+        /// <summary>A single unload.</summary>
         public const long UnloadSingle = 5_600;
 
         /// <summary>
-        /// Opts a case out of the assertion, leaving it as a reported trend only.
-        /// <br/>
-        /// The addressable cases use this. CI runs a detected Unity matrix and the three
-        /// manifests pin different Addressables majors — 1.19.19, 2.8.0 and 2.9.1 — whose
-        /// internal allocation behaviour differs. One ceiling across all three would be either
-        /// so loose it catches nothing or so tight it fails on one major. Gating them properly
-        /// needs a per-major ceiling; until then they are recorded, not enforced.
+        /// Reports a case without asserting on it. The addressable cases use this: the three
+        /// manifests pin Addressables 1.19.19, 2.8.0 and 2.9.1, and one ceiling across all
+        /// three would be either useless or flaky. Gating them needs a per-major ceiling.
         /// </summary>
         public const long NotGated = long.MaxValue;
 
         #endregion
 
         /// <summary>
-        /// Runs <paramref name="operation"/> <see cref="MeasurementIterations"/> times after
-        /// <see cref="WarmupIterations"/> discarded warmups, reports the allocation and
-        /// duration of each measured run to the performance framework, and asserts the average
-        /// stays under <paramref name="ceiling"/>.
+        /// Measures <paramref name="operation"/> after discarded warmups, reports each run to the
+        /// performance framework, and asserts the average stays under <paramref name="ceiling"/>.
+        /// <paramref name="setup"/> and <paramref name="teardown"/> run outside the measurement.
         /// </summary>
-        /// <param name="label">Sample group prefix, also used in the console report.</param>
-        /// <param name="setup">Optional per-iteration preparation, excluded from the measurement.</param>
-        /// <param name="operation">The measured work.</param>
-        /// <param name="teardown">Optional per-iteration cleanup, excluded from the measurement.</param>
-        /// <param name="ceiling">Byte ceiling for the average, or <see cref="NotGated"/> to report only.</param>
         public static IEnumerator Measure(string label, Func<IEnumerator> setup, Func<IEnumerator> operation, Func<IEnumerator> teardown, long ceiling)
         {
             for (int i = 0; i < WarmupIterations; i++)
