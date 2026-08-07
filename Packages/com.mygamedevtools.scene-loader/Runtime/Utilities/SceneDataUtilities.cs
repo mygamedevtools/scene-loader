@@ -14,7 +14,7 @@ namespace MyGameDevTools.SceneLoading
         /// <br/>
         /// First, the <paramref name="sceneDatasToExclude"/> removes scenes already linked from the possible match list.
         /// Then, the <see cref="ISceneData"/> that have a direct reference to their loaded scenes (in <see cref="IAsyncSceneOperation.HasDirectReferenceToScene"/>) are linked.
-        /// Finally, the remaining <see cref="ISceneData"/> are linked through indirect reference via their <see cref="ILoadSceneInfo"/> (by <see cref="ILoadSceneInfo.IsReferenceToScene(Scene)"/>).
+        /// Finally, the remaining <see cref="ISceneData"/> are linked through indirect reference via their <see cref="SceneRef"/> (by <see cref="SceneRef.CanBeReferenceToScene(Scene)"/>).
         /// </summary>
         public static void LinkLoadedScenesWithSceneDataArray(ISceneData[] sceneDataArray, IList<ISceneData> sceneDatasToExclude)
         {
@@ -72,24 +72,24 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Gets an array of <see cref="ISceneData"/>, from a list of loaded <see cref="ISceneData"/>, that have been loaded through the given array of <see cref="ILoadSceneInfo"/>.
+        /// Gets an array of <see cref="ISceneData"/>, from a list of loaded <see cref="ISceneData"/>, that have been loaded through the given array of <see cref="SceneRef"/>.
         /// </summary>
-        public static ISceneData[] GetLoadedSceneDatasWithLoadSceneInfos(ILoadSceneInfo[] sourceSceneInfos, IList<ISceneData> loadedSceneDataList)
+        public static ISceneData[] GetLoadedSceneDatasWithSceneRefs(SceneRef[] sourceSceneRefs, IList<ISceneData> loadedSceneDataList)
         {
-            int sceneCount = sourceSceneInfos.Length;
+            int sceneCount = sourceSceneRefs.Length;
             ISceneData[] sceneDataArray = new ISceneData[sceneCount];
 
             List<ISceneData> unmatchedSceneDatas = new(loadedSceneDataList);
             for (int i = sceneCount - 1; i >= 0; i--)
             {
-                if (TryGetSceneDataByLoadSceneInfo(sourceSceneInfos[i], unmatchedSceneDatas, out ISceneData matchedSceneData))
+                if (TryGetSceneDataBySceneRef(sourceSceneRefs[i], unmatchedSceneDatas, out ISceneData matchedSceneData))
                 {
                     sceneDataArray[i] = matchedSceneData;
                     unmatchedSceneDatas.Remove(matchedSceneData);
                 }
                 else
                 {
-                    throw new Exception($"Unable to match scene data with load scene info {sourceSceneInfos[i]}");
+                    throw new Exception($"Unable to match scene data with {sourceSceneRefs[i]}");
                 }
             }
 
@@ -141,7 +141,7 @@ namespace MyGameDevTools.SceneLoading
             int sceneDataCount = sceneDataList.Count;
             for (int i = sceneDataCount - 1; i >= 0; i--)
             {
-                if (sceneDataList[i].LoadSceneInfo.CanBeReferenceToScene(scene))
+                if (sceneDataList[i].SceneRef.CanBeReferenceToScene(scene))
                 {
                     matchedData = sceneDataList[i];
                     return true;
@@ -155,16 +155,16 @@ namespace MyGameDevTools.SceneLoading
         }
 
         /// <summary>
-        /// Tries to get an <see cref="ISceneData"/> from a collection of <see cref="ISceneData"/>s that match the given <see cref="ILoadSceneInfo"/>.
+        /// Tries to get an <see cref="ISceneData"/> from a collection of <see cref="ISceneData"/>s that match the given <see cref="SceneRef"/>.
         /// </summary>
-        public static bool TryGetSceneDataByLoadSceneInfo(ILoadSceneInfo loadSceneInfo, IEnumerable<ISceneData> sceneDataList, out ISceneData sceneData)
+        public static bool TryGetSceneDataBySceneRef(SceneRef sceneRef, IEnumerable<ISceneData> sceneDataList, out ISceneData sceneData)
         {
-            if (loadSceneInfo == null)
-                throw new ArgumentNullException(nameof(loadSceneInfo));
+            if (!sceneRef.IsValid)
+                throw new ArgumentException($"Cannot match an {nameof(ISceneData)} against an empty {nameof(SceneRef)}.", nameof(sceneRef));
 
             foreach (ISceneData tempSceneData in sceneDataList)
             {
-                if (tempSceneData.MatchesLoadSceneInfo(loadSceneInfo))
+                if (tempSceneData.Matches(sceneRef))
                 {
                     sceneData = tempSceneData;
                     return true;
@@ -172,7 +172,7 @@ namespace MyGameDevTools.SceneLoading
             }
 
             if (SceneManagerLog.IsEnabled(SceneLogLevel.Error))
-                SceneManagerLog.Error($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}. Is the scene loaded?");
+                SceneManagerLog.Error($"Unable to get an {nameof(ISceneData)} with the {sceneRef}. Is the scene loaded?");
             sceneData = default;
             return false;
         }

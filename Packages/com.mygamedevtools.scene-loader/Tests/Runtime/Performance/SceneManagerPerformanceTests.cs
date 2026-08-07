@@ -11,22 +11,22 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
     /// </summary>
     public class SceneManagerPerformanceTests : SceneTestBase
     {
-        static readonly ILoadSceneInfo _targetScene = new LoadSceneInfoName(SceneBuilder.SceneNames[1]);
-        static readonly ILoadSceneInfo _loadingScene = new LoadSceneInfoName(SceneBuilder.SceneNames[0]);
+        static readonly SceneRef _targetScene = SceneBuilder.SceneNames[1];
+        static readonly SceneRef _loadingScene = SceneBuilder.SceneNames[0];
 
         // Four references that resolve to distinct scenes, so the linking layer has real work
         // to do rather than matching a single operation.
-        static readonly ILoadSceneInfo[] _multipleScenes = new ILoadSceneInfo[]
+        static readonly SceneRef[] _multipleScenes = new SceneRef[]
         {
-            new LoadSceneInfoName(SceneBuilder.SceneNames[1]),
-            new LoadSceneInfoIndex(2),
-            new LoadSceneInfoName(SceneBuilder.ScenePaths[3]),
-            new LoadSceneInfoName(SceneBuilder.SceneNames[0]),
+            SceneBuilder.SceneNames[1],
+            2,
+            SceneBuilder.ScenePaths[3],
+            SceneBuilder.SceneNames[0],
         };
 
 #if ENABLE_ADDRESSABLES
-        static readonly ILoadSceneInfo _addressableTargetScene = new LoadSceneInfoAddress(SceneBuilder.SceneNames[1]);
-        static readonly ILoadSceneInfo _addressableLoadingScene = new LoadSceneInfoAddress(SceneBuilder.SceneNames[0]);
+        static readonly SceneRef _addressableTargetScene = SceneRef.Address(SceneBuilder.SceneNames[1]);
+        static readonly SceneRef _addressableLoadingScene = SceneRef.Address(SceneBuilder.SceneNames[0]);
 #endif
 
         ISceneManager Manager => SceneTestEnvironment.SceneManagers[0];
