@@ -19,11 +19,14 @@ namespace MyGameDevTools.SceneLoading
         public int LoadedSceneCount => _loadedScenes.Count;
         public int TotalSceneCount => _loadedScenes.Count + _unloadingScenes.Count;
 
-        readonly List<ISceneData> _unloadingScenes = new();
-        readonly List<ISceneData> _loadedScenes = new();
+        readonly List<SceneBackendHandle> _unloadingScenes = new();
+        readonly List<SceneBackendHandle> _loadedScenes = new();
         readonly CancellationTokenSource _lifetimeTokenSource = new();
 
-        ISceneData _activeScene;
+        // The active scene is identified by the Scene itself rather than by a tracked object.
+        // Handles are values now, so there is no reference to compare — and the scene handle is
+        // the identity the engine itself uses.
+        Scene _activeScene;
 
         /// <summary>
         /// Creates a <see cref="CoreSceneManager"/> with no initial scene references.
@@ -47,15 +50,17 @@ namespace MyGameDevTools.SceneLoading
                 Scene scene = SceneManager.GetSceneAt(i);
                 if (scene.IsValid() && scene.isLoaded)
                 {
-                    _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
+                    _loadedScenes.Add(CreateHandleForLoadedScene(scene));
                 }
             }
 
-            if (loadedSceneCount > 0 && SceneDataUtilities.TryGetSceneDataByLoadedScene(SceneManager.GetActiveScene(), _loadedScenes, out ISceneData sceneData))
+            if (loadedSceneCount > 0)
             {
-                _activeScene = sceneData;
+                Scene activeScene = SceneManager.GetActiveScene();
+                if (IsTracked(activeScene))
+                    _activeScene = activeScene;
             }
-            else if (loadedSceneCount == 0 && SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
+            else if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
             {
                 SceneManagerLog.Warning("Tried to create a Scene Manager with all loaded scenes, but encoutered none. Did you create the Scene Manager on `Awake()`? If so, try moving the call to `Start()` instead.");
             }
@@ -78,12 +83,12 @@ namespace MyGameDevTools.SceneLoading
                 Scene scene = initializationScenes[i];
                 if (scene.IsValid() && scene.isLoaded)
                 {
-                    _loadedScenes.Add(SceneDataBuilder.BuildFromScene(scene));
+                    _loadedScenes.Add(CreateHandleForLoadedScene(scene));
                 }
             }
-            if (loadedSceneCount > 0)
+            if (_loadedScenes.Count > 0)
             {
-                _activeScene = _loadedScenes[0];
+                _activeScene = _loadedScenes[0].Scene;
             }
         }
 
@@ -98,40 +103,44 @@ namespace MyGameDevTools.SceneLoading
 
         public void SetActiveScene(Scene scene)
         {
-            ISceneData sceneData = null;
             bool isTargetSceneValid = scene.IsValid();
-            if (isTargetSceneValid && !SceneDataUtilities.TryGetSceneDataByLoadedScene(scene, _loadedScenes, out sceneData))
-                throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+            if (isTargetSceneValid && !IsTracked(scene))
+            {
+                if (SceneManagerLog.IsEnabled(SceneLogLevel.Error))
+                    SceneManagerLog.Error($"Cannot set active the scene '{scene.name}' ({scene.handle}), which was not loaded through this {GetType().Name}.");
 
-            ISceneData previousScene = _activeScene;
-            _activeScene = sceneData;
+                throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+            }
+
+            Scene previousScene = _activeScene;
+            _activeScene = isTargetSceneValid ? scene : default;
             if (isTargetSceneValid)
                 SceneManager.SetActiveScene(scene);
 
-            ActiveSceneChanged?.Invoke(previousScene != null ? previousScene.SceneReference : default, scene);
+            ActiveSceneChanged?.Invoke(previousScene, scene);
         }
 
-        public Scene GetActiveScene() => _activeScene != null ? _activeScene.SceneReference : default;
+        public Scene GetActiveScene() => _activeScene;
 
         public Scene GetLastLoadedScene()
         {
-            if (LoadedSceneCount == 0)
-                return default;
-
-            for (int i = LoadedSceneCount - 1; i >= 0; i--)
-                if (!_unloadingScenes.Contains(_loadedScenes[i]) && _loadedScenes[i].SceneReference.isLoaded)
-                    return _loadedScenes[i].SceneReference;
+            for (int i = _loadedScenes.Count - 1; i >= 0; i--)
+            {
+                SceneBackendHandle handle = _loadedScenes[i];
+                if (!_unloadingScenes.Contains(handle) && handle.Scene.isLoaded)
+                    return handle.Scene;
+            }
 
             return default;
         }
 
-        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index].SceneReference;
+        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index].Scene;
 
         public Scene GetLoadedSceneByName(string name)
         {
-            foreach (ISceneData sceneData in _loadedScenes)
-                if (sceneData.SceneReference.name == name)
-                    return sceneData.SceneReference;
+            foreach (SceneBackendHandle handle in _loadedScenes)
+                if (handle.Scene.name == name)
+                    return handle.Scene;
             throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
@@ -152,16 +161,16 @@ namespace MyGameDevTools.SceneLoading
 
         public Task<SceneResult> ReloadActiveSceneAsync(SceneRef loadingScene = default, CancellationToken token = default)
         {
-            if (_activeScene == null || !_activeScene.SceneReference.IsValid() || !_activeScene.SceneReference.isLoaded)
+            if (!_activeScene.IsValid() || !_activeScene.isLoaded || !TryGetTrackedHandle(_activeScene, out SceneBackendHandle activeHandle))
                 throw new InvalidOperationException($"[{GetType().Name}] Cannot reload the active scene because it is null or not loaded. Make sure to load a scene before trying to reload it.");
 
-            SceneRef targetScene = _activeScene.SceneRef;
+            SceneRef targetScene = activeHandle.SceneRef;
             if (targetScene.Kind == SceneRefKind.Scene)
             {
                 // The active scene was handed to this manager already loaded, so its reference
                 // can only unload. Fall back to its asset path, which resolves like any other
                 // key — this is what makes reloading the very first scene work at all.
-                targetScene = SceneRef.FromKey(_activeScene.SceneReference.path);
+                targetScene = SceneRef.FromKey(activeHandle.Scene.path);
             }
 
             return TransitionAsync(new SceneParameters(targetScene, true), loadingScene, token);
@@ -183,36 +192,35 @@ namespace MyGameDevTools.SceneLoading
         {
             // Settle what every bare string actually means before anything is loaded. This is
             // the only place resolution happens on the load path, so backend selection below is
-            // a single switch on an already-decided kind.
+            // a single lookup on an already-decided kind.
             SceneRef[] sceneRefs = await SceneRefResolver.ResolveAllAsync(sceneParameters.GetSceneRefs());
 
             int setIndexActive = sceneParameters.GetIndexToActivate();
             int scenesToLoad = sceneRefs.Length;
 
-            ISceneData[] sceneDataArray = new ISceneData[scenesToLoad];
+            SceneBackendHandle[] handles = new SceneBackendHandle[scenesToLoad];
             int i;
             for (i = 0; i < scenesToLoad; i++)
             {
-                sceneDataArray[i] = SceneDataBuilder.BuildFromSceneRef(sceneRefs[i]);
-                sceneDataArray[i].LoadSceneAsync();
+                handles[i] = SceneBackendRegistry.GetBackend(sceneRefs[i].Kind).Load(sceneRefs[i]);
             }
 
-            await PollProgressAsync(sceneDataArray, progress, token);
+            await PollProgressAsync(handles, progress, token);
 
             token.ThrowIfCancellationRequested();
 
-            SceneDataUtilities.LinkLoadedScenesWithSceneDataArray(sceneDataArray, _loadedScenes);
+            SceneLinker.Link(handles, _loadedScenes);
 
-            _loadedScenes.AddRange(sceneDataArray);
+            _loadedScenes.AddRange(handles);
             for (i = 0; i < scenesToLoad; i++)
             {
-                SceneLoaded?.Invoke(sceneDataArray[i].SceneReference);
+                SceneLoaded?.Invoke(handles[i].Scene);
             }
 
             if (setIndexActive >= 0)
-                SetActiveScene(sceneDataArray[setIndexActive].SceneReference);
+                SetActiveScene(handles[setIndexActive].Scene);
 
-            return new SceneResult(SceneDataUtilities.GetScenesFromSceneDataArray(sceneDataArray));
+            return new SceneResult(SceneLinker.GetScenes(handles));
         }
 
         async Task<SceneResult> UnloadScenesAsync_Internal(SceneRef[] sceneRefs, CancellationToken token)
@@ -225,17 +233,20 @@ namespace MyGameDevTools.SceneLoading
             sceneRefs = await ResolveForUnloadAsync(sceneRefs);
 
             int sceneCount = sceneRefs.Length;
-            ISceneData[] sceneDataArray = SceneDataUtilities.GetLoadedSceneDatasWithSceneRefs(sceneRefs, _loadedScenes);
+            SceneBackendHandle[] handles = SceneLinker.GetTrackedHandles(sceneRefs, _loadedScenes);
             Task[] unloadTasks = new Task[sceneCount];
 
-            ISceneData tempSceneData;
             int i;
             for (i = 0; i < sceneCount; i++)
             {
-                tempSceneData = sceneDataArray[i];
-                _loadedScenes.Remove(tempSceneData);
-                _unloadingScenes.Add(tempSceneData);
-                unloadTasks[i] = UnityTaskUtilities.FromAsyncOperation(sceneDataArray[i].UnloadSceneAsync(), token);
+                SceneBackendHandle handle = handles[i];
+                _loadedScenes.Remove(handle);
+
+                handle = handle.Backend.Unload(handle);
+                handles[i] = handle;
+                _unloadingScenes.Add(handle);
+
+                unloadTasks[i] = UnityTaskUtilities.FromBackendHandle(handle, token);
             }
 
             try
@@ -249,9 +260,8 @@ namespace MyGameDevTools.SceneLoading
                 // successful path does, otherwise it keeps pointing at a scene no longer managed.
                 for (i = 0; i < sceneCount; i++)
                 {
-                    tempSceneData = sceneDataArray[i];
-                    _unloadingScenes.Remove(tempSceneData);
-                    if (_activeScene == tempSceneData)
+                    _unloadingScenes.Remove(handles[i]);
+                    if (_activeScene == handles[i].Scene)
                         SetActiveScene(GetLastLoadedScene());
                 }
                 throw;
@@ -259,14 +269,13 @@ namespace MyGameDevTools.SceneLoading
 
             for (i = 0; i < sceneCount; i++)
             {
-                tempSceneData = sceneDataArray[i];
-                _unloadingScenes.Remove(tempSceneData);
-                SceneUnloaded?.Invoke(tempSceneData.SceneReference);
-                if (_activeScene == tempSceneData)
+                _unloadingScenes.Remove(handles[i]);
+                SceneUnloaded?.Invoke(handles[i].Scene);
+                if (_activeScene == handles[i].Scene)
                     SetActiveScene(GetLastLoadedScene());
             }
 
-            return new SceneResult(SceneDataUtilities.GetScenesFromSceneDataArray(sceneDataArray));
+            return new SceneResult(SceneLinker.GetScenes(handles));
         }
 
         /// <summary>
@@ -302,8 +311,8 @@ namespace MyGameDevTools.SceneLoading
 
             if (tempScene.IsValid())
             {
-                IAsyncSceneOperation unloadOperation = new AsyncSceneOperationStandard(SceneManager.UnloadSceneAsync(tempScene));
-                await UnityTaskUtilities.FromAsyncOperation(unloadOperation, token);
+                SceneBackendHandle tempHandle = CreateHandleForLoadedScene(tempScene);
+                await UnityTaskUtilities.FromBackendHandle(tempHandle.Backend.Unload(tempHandle), token);
             }
             return new SceneResult(loadedScenes);
         }
@@ -346,14 +355,14 @@ namespace MyGameDevTools.SceneLoading
             return new SceneResult(loadedScenes);
         }
 
-        async Task PollProgressAsync(ISceneData[] sceneDataArray, IProgress<float> progress, CancellationToken token = default)
+        async Task PollProgressAsync(SceneBackendHandle[] handles, IProgress<float> progress, CancellationToken token = default)
         {
             bool isDone = false;
             while (!isDone && !token.IsCancellationRequested)
             {
                 await Task.Yield();
-                isDone = SceneDataUtilities.HasCompletedAllSceneLoadOperations(sceneDataArray);
-                progress?.Report(SceneDataUtilities.GetAverageSceneLoadOperationProgress(sceneDataArray));
+                isDone = SceneLinker.HasCompletedAll(handles);
+                progress?.Report(SceneLinker.GetAverageProgress(handles));
             }
         }
 
@@ -364,6 +373,33 @@ namespace MyGameDevTools.SceneLoading
                 return Task.FromResult<SceneResult>(default);
 
             return UnloadAsync(new SceneParameters(SceneRef.FromScene(sourceScene), false), token);
+        }
+
+        /// <summary>
+        /// Wraps an already-loaded scene the manager did not load itself: a scene handed to a
+        /// constructor, or the temporary scene a direct transition creates.
+        /// </summary>
+        static SceneBackendHandle CreateHandleForLoadedScene(Scene scene)
+        {
+            SceneRef sceneRef = SceneRef.FromScene(scene);
+            return SceneBackendHandle.ForStandard(SceneBackendRegistry.GetBackend(sceneRef.Kind), sceneRef, scene, null);
+        }
+
+        bool IsTracked(Scene scene) => TryGetTrackedHandle(scene, out _);
+
+        bool TryGetTrackedHandle(Scene scene, out SceneBackendHandle handle)
+        {
+            foreach (SceneBackendHandle tracked in _loadedScenes)
+            {
+                if (tracked.Scene != scene)
+                    continue;
+
+                handle = tracked;
+                return true;
+            }
+
+            handle = default;
+            return false;
         }
     }
 }
