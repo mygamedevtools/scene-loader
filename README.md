@@ -35,12 +35,27 @@ SceneManager.UnloadSceneAsync("my-loading-scene");
 SceneManager.UnloadSceneAsync("my-previous-scene");
 ```
 
+That same line works whether the scenes come from your Build Settings or from Addressables — the
+strings resolve themselves, so there is no separate addressable API to learn.
+
+Every operation hands back a handle you can watch, drive and cancel:
+
+```cs
+SceneOperation op = MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
+
+op.Progressed   += progress => bar.value = progress;
+op.StateChanged += o => { if (o.State == SceneOperationState.ScreenOut) BeginIntro(); };
+
+SceneResult result = await op;   // or op.Cancel(), or yield return op.ToCoroutine()
+```
+
 ## 🚀 Features
 
-- **Seamless Scene Transitions**: Transition between scenes with ease, with optional loading scenes for a smooth user experience.
-- **Addressable and Non-Addressable Scene Support**: Manage both addressable and non-addressable scenes through a unified API.
-- **Async/Await Support**: Fully compatible with _async/await_ for smooth, non-blocking scene operations.
-- **Loading Screens**: Easily build loading screens with built-in components.
+- **Seamless Scene Transitions**: Transition between scenes with ease, with optional loading screens for a smooth user experience.
+- **Addressable and Non-Addressable Scene Support**: One API for both — a plain string finds your scene wherever it lives.
+- **A Handle For Every Operation**: Progress, phase, per-scene events and cancellation, all after the call rather than before it.
+- **Await It Any Way You Like**: `await` directly, bridge to `Task`, or `yield return` it from a coroutine.
+- **Loading Screens Beyond Scenes**: Scenes, prefabs or UI Toolkit documents, with built-in components for each.
 - **Modular Design** — Use only the components you need, fully customizable.
 
 ## 📦 Installation
@@ -97,6 +112,8 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 ## 📚 Documentation
 
 The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://scene-loader.mygamedevtools.com/).
+
+Upgrading from 4.x? Start with the [upgrade guide](./docs/upgrades/from-4-to-5.md) — the headline call is unchanged, and most of the rest is find-and-replace.
 
 ## 🤝 Contributing
 
