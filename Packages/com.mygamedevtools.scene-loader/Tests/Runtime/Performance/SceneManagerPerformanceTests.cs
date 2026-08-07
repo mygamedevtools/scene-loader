@@ -6,8 +6,8 @@ using UnityEngine.TestTools;
 namespace MyGameDevTools.SceneLoading.Tests.Performance
 {
     /// <summary>
-    /// The allocation and timing baseline the v5 rework is measured against. Non-addressable
-    /// cases assert against a ceiling; addressable ones report only — see <see cref="AllocationGate"/>.
+    /// The allocation and timing baseline the v5 rework is measured against. Every case reports
+    /// its figures without asserting on them — see <see cref="AllocationProbe"/>.
     /// </summary>
     public class SceneManagerPerformanceTests : SceneTestBase
     {
@@ -37,90 +37,83 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             SceneTestEnvironment.ValidateSceneEnvironment();
         }
 
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Transition_WithLoadingScreen()
         {
             yield return LoadSourceScene();
 
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Transition_WithLoadingScreen),
                 setup: null,
                 operation: () => Manager.TransitionAsync(new SceneParameters(_targetScene, true), _loadingScene).ToWaitTask(),
-                teardown: null,
-                AllocationGate.TransitionWithLoadingScreen);
+                teardown: null);
         }
 
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Transition_Direct()
         {
             yield return LoadSourceScene();
 
             // With a single loaded scene and no intermediate, this takes the branch that
             // creates and destroys the "temp-transition-scene" every time.
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Transition_Direct),
                 setup: null,
                 operation: () => Manager.TransitionAsync(new SceneParameters(_targetScene, true)).ToWaitTask(),
-                teardown: null,
-                AllocationGate.TransitionDirect);
+                teardown: null);
         }
 
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Load_Single()
         {
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Load_Single),
                 setup: null,
                 operation: () => Manager.LoadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
-                teardown: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
-                AllocationGate.LoadSingle);
+                teardown: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToWaitTask());
         }
 
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Load_Multiple()
         {
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Load_Multiple),
                 setup: null,
                 operation: () => Manager.LoadAsync(new SceneParameters(_multipleScenes)).ToWaitTask(),
-                teardown: () => Manager.UnloadAsync(new SceneParameters(_multipleScenes)).ToWaitTask(),
-                AllocationGate.LoadMultiple);
+                teardown: () => Manager.UnloadAsync(new SceneParameters(_multipleScenes)).ToWaitTask());
         }
 
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Unload_Single()
         {
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Unload_Single),
                 setup: () => Manager.LoadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
                 operation: () => Manager.UnloadAsync(new SceneParameters(_targetScene)).ToWaitTask(),
-                teardown: null,
-                AllocationGate.UnloadSingle);
+                teardown: null);
         }
 
 #if ENABLE_ADDRESSABLES
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Load_Single_Addressable()
         {
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Load_Single_Addressable),
                 setup: null,
                 operation: () => Manager.LoadAsync(new SceneParameters(_addressableTargetScene)).ToWaitTask(),
-                teardown: () => Manager.UnloadAsync(new SceneParameters(_addressableTargetScene)).ToWaitTask(),
-                AllocationGate.NotGated);
+                teardown: () => Manager.UnloadAsync(new SceneParameters(_addressableTargetScene)).ToWaitTask());
         }
 
-        [UnityTest, Performance, Timeout(AllocationGate.TestTimeout)]
+        [UnityTest, Performance, Timeout(AllocationProbe.TestTimeout)]
         public IEnumerator Transition_WithLoadingScreen_Addressable()
         {
             yield return LoadSourceScene();
 
-            yield return AllocationGate.Measure(
+            yield return AllocationProbe.Measure(
                 nameof(Transition_WithLoadingScreen_Addressable),
                 setup: null,
                 operation: () => Manager.TransitionAsync(new SceneParameters(_addressableTargetScene, true), _addressableLoadingScene).ToWaitTask(),
-                teardown: null,
-                AllocationGate.NotGated);
+                teardown: null);
         }
 #endif
 
