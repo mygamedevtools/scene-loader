@@ -6,7 +6,8 @@ namespace MyGameDevTools.SceneLoading
     /// Component responsible for handling the loading progress report through its <see cref="Progress"/> property.
     /// Use <see cref="Progress"/> to add listener to scene loading progress events or to control loading screen transitions.
     /// <br/>
-    /// This component is located by the <see cref="ISceneLoader"/> during a scene transition.
+    /// It announces itself to <see cref="LoadingBehaviorRegistry"/> in <c>OnEnable</c>, which is
+    /// how a transition finds it.
     /// </summary>
     [AddComponentMenu("Scene Loading/Loading Behavior")]
     public class LoadingBehavior : MonoBehaviour
@@ -26,6 +27,17 @@ namespace MyGameDevTools.SceneLoading
                 OwnerDescription = $"'{name}' in scene '{gameObject.scene.name}'",
             };
             Progress.LoadingCompleted += OnLoadingCompleted;
+        }
+
+        void OnEnable()
+        {
+            // After Awake, so `Progress` exists by the time anything can look this up.
+            LoadingBehaviorRegistry.Register(this);
+        }
+
+        void OnDisable()
+        {
+            LoadingBehaviorRegistry.Deregister(this);
         }
 
         void Start()
