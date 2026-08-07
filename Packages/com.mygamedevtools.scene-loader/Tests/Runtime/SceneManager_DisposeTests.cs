@@ -1,12 +1,14 @@
-using NUnit.Framework;
 using System;
 using System.Collections;
-using System.Threading.Tasks;
-using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.TestTools;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
+    /// <summary>
+    /// Disposing a manager cancels everything in flight — same behaviour as v4, with none of the
+    /// token machinery.
+    /// </summary>
     public class SceneManager_DisposeTests : SceneTestBase
     {
         // Note: These functions must create new Scene Managers to correctly test the dispose flow
@@ -26,49 +28,40 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator Dispose_DuringLoad([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             ISceneManager manager = managerCreateFunc();
-            WaitTask<SceneResult> waitTask = manager.LoadAsync(sceneParameters).ToWaitTask();
+            SceneOperation operation = manager.LoadAsync(sceneParameters);
             manager.Dispose();
-            yield return waitTask;
-            Assert.True(waitTask.Task.IsCanceled);
+
+            yield return operation.ToCoroutine();
+
+            Assert.AreEqual(SceneOperationState.Canceled, operation.State);
         }
 
         [UnityTest]
-        public IEnumerator Dipose_DuringUnload([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
+        public IEnumerator Dispose_DuringUnload([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
         {
             ISceneManager manager = managerCreateFunc();
-            WaitTask<SceneResult> waitTask = manager.LoadAsync(sceneParameters).ToWaitTask();
-            yield return waitTask;
+            yield return manager.LoadAsync(sceneParameters).ToCoroutine();
 
-            waitTask = new(manager.UnloadAsync(sceneParameters));
+            SceneOperation operation = manager.UnloadAsync(sceneParameters);
             manager.Dispose();
-            yield return waitTask;
-            Assert.True(waitTask.Task.IsCanceled);
+
+            yield return operation.ToCoroutine();
+
+            Assert.AreEqual(SceneOperationState.Canceled, operation.State);
         }
 
         [UnityTest]
         public IEnumerator Dispose_DuringTransition([ValueSource(nameof(_sceneManagerCreateFuncs))] Func<ISceneManager> managerCreateFunc, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.TransitionSceneParametersList))] SceneParameters sceneParameters, [ValueSource(typeof(SceneManagerTests), nameof(SceneManagerTests.LoadingScenes))] SceneRef loadingScene)
         {
-            async Task<bool> Test()
-            {
-                ISceneManager manager = managerCreateFunc();
-                await SceneManagerTests.LoadFirstScene(manager).Task;
+            ISceneManager manager = managerCreateFunc();
+            yield return SceneManagerTests.LoadFirstScene(manager);
 
-                var task = manager.TransitionAsync(sceneParameters, loadingScene);
-                manager.Dispose();
+            SceneOperation operation = manager.TransitionAsync(sceneParameters, loadingScene);
+            manager.Dispose();
 
-                bool canceled = false;
-                try
-                {
-                    await task;
-                }
-                catch (OperationCanceledException)
-                {
-                    canceled = true;
-                }
-                Assert.True(canceled);
-                return true;
-            }
-            return new WaitTask<bool>(Test());
+            yield return operation.ToCoroutine();
+
+            Assert.AreEqual(SceneOperationState.Canceled, operation.State);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             progress.Report(1);
             progress.SetLoadingCompleted();
 
-            Assert.True(progress.TransitionOutTask.Task.Result);
+            Assert.True(progress.IsHidden);
         }
 
         [UnityTest]
@@ -48,7 +48,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return null;
 
             progress.StartTransition();
-            Assert.True(progress.TransitionInTask.Task.Result);
+            Assert.True(progress.IsShown);
 
             progress.Report(1);
             progress.SetLoadingCompleted();
@@ -57,7 +57,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.True(completed);
 
             progress.EndTransition();
-            Assert.True(progress.TransitionOutTask.Task.Result);
+            Assert.True(progress.IsHidden);
         }
     }
 }

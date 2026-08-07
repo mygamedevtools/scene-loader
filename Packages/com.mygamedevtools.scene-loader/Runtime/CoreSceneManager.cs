@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
@@ -15,17 +14,19 @@ namespace MyGameDevTools.SceneLoading
         public event Action<Scene, Scene> ActiveSceneChanged;
         public event Action<Scene> SceneUnloaded;
         public event Action<Scene> SceneLoaded;
+        public event Action<SceneOperation> OperationStarted;
 
         public int LoadedSceneCount => _loadedScenes.Count;
         public int TotalSceneCount => _loadedScenes.Count + _unloadingScenes.Count;
 
         readonly List<SceneBackendHandle> _unloadingScenes = new();
         readonly List<SceneBackendHandle> _loadedScenes = new();
-        readonly CancellationTokenSource _lifetimeTokenSource = new();
+        // Live operations, so Dispose can cancel them — replacing v4's lifetime
+        // CancellationTokenSource and the linked source, closure and registration per call.
+        readonly List<SceneOperation> _liveOperations = new();
 
-        // The active scene is identified by the Scene itself rather than by a tracked object.
-        // Handles are values now, so there is no reference to compare — and the scene handle is
-        // the identity the engine itself uses.
+        // Identified by the Scene itself: handles are values now, so there is no reference to
+        // compare, and the scene handle is the identity the engine uses.
         Scene _activeScene;
 
         /// <summary>
@@ -77,8 +78,7 @@ namespace MyGameDevTools.SceneLoading
                 throw new ArgumentException($"Trying to create an {nameof(CoreSceneManager)} with a null or empty array of initialization scenes. If you want to create it without any scenes, use the empty constructor instead.", nameof(initializationScenes));
             }
 
-            int loadedSceneCount = initializationScenes.Length;
-            for (int i = 0; i < loadedSceneCount; i++)
+            for (int i = 0; i < initializationScenes.Length; i++)
             {
                 Scene scene = initializationScenes[i];
                 if (scene.IsValid() && scene.isLoaded)
@@ -92,11 +92,16 @@ namespace MyGameDevTools.SceneLoading
             }
         }
 
+        /// <summary>
+        /// Cancels everything in flight and forgets every tracked scene. The Unity operations keep
+        /// running — they simply stop being this manager's.
+        /// </summary>
         public void Dispose()
         {
-            _lifetimeTokenSource.Cancel();
-            _lifetimeTokenSource.Dispose();
+            for (int i = _liveOperations.Count - 1; i >= 0; i--)
+                _liveOperations[i].Cancel();
 
+            _liveOperations.Clear();
             _unloadingScenes.Clear();
             _loadedScenes.Clear();
         }
@@ -144,7 +149,21 @@ namespace MyGameDevTools.SceneLoading
             throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
         }
 
-        public Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default, CancellationToken token = default)
+        public SceneOperation LoadAsync(SceneParameters sceneParameters)
+        {
+            SceneOperation operation = StartOperation(SceneOperationKind.Load);
+            _ = RunAsync(operation, LoadInternalAsync(operation, sceneParameters));
+            return operation;
+        }
+
+        public SceneOperation UnloadAsync(SceneParameters sceneParameters)
+        {
+            SceneOperation operation = StartOperation(SceneOperationKind.Unload);
+            _ = RunAsync(operation, UnloadInternalAsync(operation, sceneParameters.GetSceneRefs()));
+            return operation;
+        }
+
+        public SceneOperation TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default)
         {
             // A transition always has to activate something — it unloads the scene you came
             // from. Every v4 transition overload defaulted its `setIndexActive` to 0 for that
@@ -153,13 +172,12 @@ namespace MyGameDevTools.SceneLoading
             if (!sceneParameters.ShouldSetActive())
                 sceneParameters = new SceneParameters(sceneParameters.GetSceneRefs(), 0);
 
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return loadingScene.IsValid
-                ? TransitionWithIntermediateAsync(sceneParameters, loadingScene, linkedSource.Token).RunAndDisposeToken(linkedSource)
-                : TransitionDirectlyAsync(sceneParameters, linkedSource.Token).RunAndDisposeToken(linkedSource);
+            SceneOperation operation = StartOperation(SceneOperationKind.Transition);
+            _ = RunAsync(operation, TransitionInternalAsync(operation, sceneParameters, loadingScene));
+            return operation;
         }
 
-        public Task<SceneResult> ReloadActiveSceneAsync(SceneRef loadingScene = default, CancellationToken token = default)
+        public SceneOperation ReloadActiveSceneAsync(SceneRef loadingScene = default)
         {
             if (!_activeScene.IsValid() || !_activeScene.isLoaded || !TryGetTrackedHandle(_activeScene, out SceneBackendHandle activeHandle))
                 throw new InvalidOperationException($"[{GetType().Name}] Cannot reload the active scene because it is null or not loaded. Make sure to load a scene before trying to reload it.");
@@ -173,71 +191,190 @@ namespace MyGameDevTools.SceneLoading
                 targetScene = SceneRef.FromKey(activeHandle.Scene.path);
             }
 
-            return TransitionAsync(new SceneParameters(targetScene, true), loadingScene, token);
+            SceneOperation operation = StartOperation(SceneOperationKind.Reload);
+            _ = RunAsync(operation, TransitionInternalAsync(operation, new SceneParameters(targetScene, true), loadingScene));
+            return operation;
         }
 
-        public Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default)
+        SceneOperation StartOperation(SceneOperationKind kind)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return LoadScenesAsync_Internal(sceneParameters, progress, linkedSource.Token).RunAndDisposeToken(linkedSource);
+            SceneOperation operation = new(kind);
+            _liveOperations.Add(operation);
+            operation.Completed += RemoveLiveOperation;
+
+            if (SceneManagerLog.IsEnabled(SceneLogLevel.Info))
+                SceneManagerLog.Info($"{kind} operation started.");
+
+            OperationStarted?.Invoke(operation);
+            return operation;
         }
 
-        public Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default)
+        void RemoveLiveOperation(SceneOperation operation) => _liveOperations.Remove(operation);
+
+        /// <summary>
+        /// Runs an operation's body, funnelling anything it throws into the handle. Nothing awaits
+        /// the returned task, so an unobserved exception would otherwise vanish.
+        /// </summary>
+        static async Task RunAsync(SceneOperation operation, Task body)
         {
-            CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeTokenSource.Token, token);
-            return UnloadScenesAsync_Internal(sceneParameters.GetSceneRefs(), linkedSource.Token).RunAndDisposeToken(linkedSource);
-        }
-
-        async Task<SceneResult> LoadScenesAsync_Internal(SceneParameters sceneParameters, IProgress<float> progress, CancellationToken token)
-        {
-            // Settle what every bare string actually means before anything is loaded. This is
-            // the only place resolution happens on the load path, so backend selection below is
-            // a single lookup on an already-decided kind.
-            SceneRef[] sceneRefs = await SceneRefResolver.ResolveAllAsync(sceneParameters.GetSceneRefs());
-
-            int setIndexActive = sceneParameters.GetIndexToActivate();
-            int scenesToLoad = sceneRefs.Length;
-
-            SceneBackendHandle[] handles = new SceneBackendHandle[scenesToLoad];
-            int i;
-            for (i = 0; i < scenesToLoad; i++)
+            try
             {
-                handles[i] = SceneBackendRegistry.GetBackend(sceneRefs[i].Kind).Load(sceneRefs[i]);
+                await body;
+            }
+            catch (Exception exception)
+            {
+                operation.Fault(exception);
+            }
+        }
+
+        async Task LoadInternalAsync(SceneOperation operation, SceneParameters sceneParameters)
+        {
+            SceneRef[] sceneRefs = await ResolveAsync(operation, sceneParameters.GetSceneRefs());
+            if (operation.IsCancellationRequested)
+                return;
+
+            SceneBackendHandle[] handles = await LoadScenesAsync(operation, sceneRefs, sceneParameters.GetIndexToActivate());
+            if (operation.IsCancellationRequested)
+                return;
+
+            operation.Complete(new SceneResult(SceneLinker.GetScenes(handles)));
+        }
+
+        async Task UnloadInternalAsync(SceneOperation operation, SceneRef[] sceneRefs)
+        {
+            if (sceneRefs == null || sceneRefs.Length == 0)
+                throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneRefs));
+
+            SceneBackendHandle[] handles = await UnloadScenesAsync(operation, sceneRefs);
+            if (operation.IsCancellationRequested)
+                return;
+
+            operation.Complete(new SceneResult(SceneLinker.GetScenes(handles)));
+        }
+
+        async Task TransitionInternalAsync(SceneOperation operation, SceneParameters sceneParameters, SceneRef loadingScene)
+        {
+            // Resolve everything first, so a bad reference fails before any scene moves.
+            SceneRef[] targetRefs = await ResolveAsync(operation, sceneParameters.GetSceneRefs());
+            if (operation.IsCancellationRequested)
+                return;
+
+            LoadingProgress screen = null;
+            SceneBackendHandle[] loadingSceneHandles = null;
+
+            if (loadingScene.IsValid)
+            {
+                loadingSceneHandles = await LoadScenesAsync(operation, await ResolveAsync(operation, new[] { loadingScene }));
+                if (operation.IsCancellationRequested)
+                    return;
+
+                screen = FindLoadingProgress(loadingSceneHandles[0].Scene);
             }
 
-            await PollProgressAsync(handles, progress, token);
+            // Unity cannot have zero loaded scenes, so a transition with no loading screen and a
+            // single loaded scene needs somewhere to stand while the swap happens.
+            Scene tempScene = default;
+            if (loadingSceneHandles == null && LoadedSceneCount <= 1)
+                tempScene = SceneManager.CreateScene("temp-transition-scene");
 
-            token.ThrowIfCancellationRequested();
+            if (screen != null)
+            {
+                operation.SetState(SceneOperationState.ScreenIn);
+                await screen.WaitForShowAsync(operation);
+                if (operation.IsCancellationRequested)
+                    return;
+            }
 
+            await UnloadSourceSceneAsync(operation);
+            if (operation.IsCancellationRequested)
+                return;
+
+            SceneBackendHandle[] handles = await LoadScenesAsync(operation, targetRefs, sceneParameters.GetIndexToActivate(), screen);
+            if (operation.IsCancellationRequested)
+                return;
+
+            if (screen != null)
+            {
+                screen.SetLoadingCompleted();
+                operation.SetState(SceneOperationState.ScreenOut);
+                await screen.WaitForHideAsync(operation);
+                if (operation.IsCancellationRequested)
+                    return;
+            }
+
+            if (loadingSceneHandles != null)
+            {
+                await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(loadingSceneHandles[0].Scene) });
+                if (operation.IsCancellationRequested)
+                    return;
+            }
+
+            if (tempScene.IsValid())
+            {
+                SceneBackendHandle tempHandle = CreateHandleForLoadedScene(tempScene);
+                SceneBackendHandle[] tempHandles = { tempHandle.Backend.Unload(tempHandle) };
+                await SceneOperationPump.WaitForAll(tempHandles, null);
+            }
+
+            operation.Complete(new SceneResult(SceneLinker.GetScenes(handles)));
+        }
+
+        async Task<SceneRef[]> ResolveAsync(SceneOperation operation, SceneRef[] sceneRefs)
+        {
+            if (SceneRefResolver.TryResolveAllImmediate(sceneRefs, out SceneRef[] immediate))
+                return immediate;
+
+            operation.SetState(SceneOperationState.Resolving);
+            return await SceneRefResolver.ResolveAllAsync(sceneRefs);
+        }
+
+        async Task<SceneBackendHandle[]> LoadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs, int setIndexActive = -1, LoadingProgress screen = null)
+        {
+            int scenesToLoad = sceneRefs.Length;
+            SceneBackendHandle[] handles = new SceneBackendHandle[scenesToLoad];
+
+            operation.SetState(SceneOperationState.Loading);
+            for (int i = 0; i < scenesToLoad; i++)
+                handles[i] = SceneBackendRegistry.GetBackend(sceneRefs[i].Kind).Load(sceneRefs[i]);
+
+            if (screen != null)
+                operation.Progressed += screen.Report;
+
+            await SceneOperationPump.WaitForAll(handles, operation);
+
+            if (screen != null)
+                operation.Progressed -= screen.Report;
+
+            if (operation.IsCancellationRequested)
+                return handles;
+
+            operation.SetState(SceneOperationState.Activating);
             SceneLinker.Link(handles, _loadedScenes);
 
             _loadedScenes.AddRange(handles);
-            for (i = 0; i < scenesToLoad; i++)
+            for (int i = 0; i < scenesToLoad; i++)
             {
                 SceneLoaded?.Invoke(handles[i].Scene);
+                operation.ReportSceneLoaded(handles[i].Scene);
             }
 
             if (setIndexActive >= 0)
                 SetActiveScene(handles[setIndexActive].Scene);
 
-            return new SceneResult(SceneLinker.GetScenes(handles));
+            return handles;
         }
 
-        async Task<SceneResult> UnloadScenesAsync_Internal(SceneRef[] sceneRefs, CancellationToken token)
+        async Task<SceneBackendHandle[]> UnloadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs)
         {
-            if (sceneRefs == null || sceneRefs.Length == 0)
-                throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneRefs));
-
-            // Unload resolves too, so that unloading by the same string that loaded a scene
-            // matches it — an address and the scene's name are not required to be the same word.
-            sceneRefs = await ResolveForUnloadAsync(sceneRefs);
+            // Unload resolves too, so unloading by the same string that loaded a scene matches
+            // it — an address and the scene's name need not be the same word.
+            sceneRefs = await ResolveForUnloadAsync(operation, sceneRefs);
 
             int sceneCount = sceneRefs.Length;
             SceneBackendHandle[] handles = SceneLinker.GetTrackedHandles(sceneRefs, _loadedScenes);
-            Task[] unloadTasks = new Task[sceneCount];
 
-            int i;
-            for (i = 0; i < sceneCount; i++)
+            operation.SetState(SceneOperationState.Unloading);
+            for (int i = 0; i < sceneCount; i++)
             {
                 SceneBackendHandle handle = handles[i];
                 _loadedScenes.Remove(handle);
@@ -245,51 +382,31 @@ namespace MyGameDevTools.SceneLoading
                 handle = handle.Backend.Unload(handle);
                 handles[i] = handle;
                 _unloadingScenes.Add(handle);
-
-                unloadTasks[i] = UnityTaskUtilities.FromBackendHandle(handle, token);
             }
 
-            try
-            {
-                await Task.WhenAll(unloadTasks);
-            }
-            catch (OperationCanceledException)
-            {
-                // The scenes were already removed from `_loadedScenes` and their unload operations
-                // cannot be cancelled, so they are gone either way. Clear the active scene as the
-                // successful path does, otherwise it keeps pointing at a scene no longer managed.
-                for (i = 0; i < sceneCount; i++)
-                {
-                    _unloadingScenes.Remove(handles[i]);
-                    if (_activeScene == handles[i].Scene)
-                        SetActiveScene(GetLastLoadedScene());
-                }
-                throw;
-            }
+            await SceneOperationPump.WaitForAll(handles, null);
 
-            for (i = 0; i < sceneCount; i++)
+            for (int i = 0; i < sceneCount; i++)
             {
                 _unloadingScenes.Remove(handles[i]);
                 SceneUnloaded?.Invoke(handles[i].Scene);
+                operation.ReportSceneUnloaded(handles[i].Scene);
                 if (_activeScene == handles[i].Scene)
                     SetActiveScene(GetLastLoadedScene());
             }
 
-            return new SceneResult(SceneLinker.GetScenes(handles));
+            return handles;
         }
 
         /// <summary>
-        /// Resolves references for an unload, leaving unresolvable keys as they are.
-        /// <br/>
-        /// A key that matches nothing is a caller error on the load path and throws there. Here
-        /// it is only a failed match, and the "no loaded scene matches this" error further down
-        /// says far more about what went wrong than "not in the build settings" would.
+        /// Resolves references for an unload, leaving unresolvable keys alone — the "no loaded
+        /// scene matches this" error below says more than "not in the build settings" would.
         /// </summary>
-        async Task<SceneRef[]> ResolveForUnloadAsync(SceneRef[] sceneRefs)
+        async Task<SceneRef[]> ResolveForUnloadAsync(SceneOperation operation, SceneRef[] sceneRefs)
         {
             try
             {
-                return await SceneRefResolver.ResolveAllAsync(sceneRefs);
+                return await ResolveAsync(operation, sceneRefs);
             }
             catch (ArgumentException)
             {
@@ -297,88 +414,27 @@ namespace MyGameDevTools.SceneLoading
             }
         }
 
-        async Task<SceneResult> TransitionDirectlyAsync(SceneParameters sceneParameters, CancellationToken token)
+        async Task UnloadSourceSceneAsync(SceneOperation operation)
         {
-            // If only one scene is loaded, create a temporary scene for transition.
-            Scene tempScene = default;
-            if (LoadedSceneCount <= 1)
-            {
-                tempScene = SceneManager.CreateScene("temp-transition-scene");
-            }
-            await UnloadSourceSceneAsync(token);
+            Scene sourceScene = GetActiveScene();
+            if (!sourceScene.IsValid())
+                return;
 
-            Scene[] loadedScenes = await LoadAsync(sceneParameters, token: token);
-
-            if (tempScene.IsValid())
-            {
-                SceneBackendHandle tempHandle = CreateHandleForLoadedScene(tempScene);
-                await UnityTaskUtilities.FromBackendHandle(tempHandle.Backend.Unload(tempHandle), token);
-            }
-            return new SceneResult(loadedScenes);
+            await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(sourceScene) });
         }
 
-        async Task<SceneResult> TransitionWithIntermediateAsync(SceneParameters sceneParameters, SceneRef loadingSceneRef, CancellationToken token)
+        static LoadingProgress FindLoadingProgress(Scene loadingScene)
         {
-            Scene loadingScene = await LoadAsync(new SceneParameters(loadingSceneRef, false), token: token);
-            loadingSceneRef = SceneRef.FromScene(loadingScene);
-
 #if UNITY_6000_5_OR_NEWER
             LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>();
 #else
             LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None);
 #endif
             LoadingBehavior loadingBehavior = loadingBehaviors.FirstOrDefault(l => l.gameObject.scene == loadingScene);
-            return loadingBehavior
-                ? await TransitionWithIntermediateLoadingAsync(sceneParameters, loadingSceneRef, loadingBehavior, token)
-                : await TransitionWithIntermediateNoLoadingAsync(sceneParameters, loadingSceneRef, token);
+            return loadingBehavior ? loadingBehavior.Progress : null;
         }
 
-        async Task<SceneResult> TransitionWithIntermediateLoadingAsync(SceneParameters sceneParameters, SceneRef loadingSceneRef, LoadingBehavior loadingBehavior, CancellationToken token)
-        {
-            LoadingProgress progress = loadingBehavior.Progress;
-            await progress.TransitionInTask.Task;
-            await UnloadSourceSceneAsync(token);
-
-            Scene[] loadedScenes = await LoadAsync(sceneParameters, progress, token);
-            progress.SetLoadingCompleted();
-
-            await progress.TransitionOutTask.Task;
-            await UnloadAsync(new SceneParameters(loadingSceneRef, false), token);
-            return new SceneResult(loadedScenes);
-        }
-
-        async Task<SceneResult> TransitionWithIntermediateNoLoadingAsync(SceneParameters sceneParameters, SceneRef loadingSceneRef, CancellationToken token)
-        {
-            await UnloadSourceSceneAsync(token);
-            Scene[] loadedScenes = await LoadAsync(sceneParameters, token: token);
-            await UnloadAsync(new SceneParameters(loadingSceneRef, false), token);
-            return new SceneResult(loadedScenes);
-        }
-
-        async Task PollProgressAsync(SceneBackendHandle[] handles, IProgress<float> progress, CancellationToken token = default)
-        {
-            bool isDone = false;
-            while (!isDone && !token.IsCancellationRequested)
-            {
-                await Task.Yield();
-                isDone = SceneLinker.HasCompletedAll(handles);
-                progress?.Report(SceneLinker.GetAverageProgress(handles));
-            }
-        }
-
-        Task<SceneResult> UnloadSourceSceneAsync(CancellationToken token)
-        {
-            Scene sourceScene = GetActiveScene();
-            if (!sourceScene.IsValid())
-                return Task.FromResult<SceneResult>(default);
-
-            return UnloadAsync(new SceneParameters(SceneRef.FromScene(sourceScene), false), token);
-        }
-
-        /// <summary>
-        /// Wraps an already-loaded scene the manager did not load itself: a scene handed to a
-        /// constructor, or the temporary scene a direct transition creates.
-        /// </summary>
+        /// <summary>Wraps an already-loaded scene the manager did not load itself.</summary>
         static SceneBackendHandle CreateHandleForLoadedScene(Scene scene)
         {
             SceneRef sceneRef = SceneRef.FromScene(scene);

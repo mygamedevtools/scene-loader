@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -10,7 +8,9 @@ namespace MyGameDevTools.SceneLoading
     /// The Scene Manager is responsible for scene loading operations, keeping track of its loaded scene stack and dispatching scene load events.
     /// <br/>
     /// Four async operations, where v4 had 64 — every reference kind and arity is reachable
-    /// through <see cref="SceneParameters"/>' implicit conversions instead.
+    /// through <see cref="SceneParameters"/>' implicit conversions instead. Each returns a
+    /// <see cref="SceneOperation"/>, which is what let <c>IProgress&lt;float&gt;</c> and
+    /// <c>CancellationToken</c> leave every signature: you attach them to the handle now.
     /// </summary>
     public interface ISceneManager : IDisposable
     {
@@ -30,6 +30,13 @@ namespace MyGameDevTools.SceneLoading
         /// Reports when a scene gets loaded.
         /// </summary>
         event Action<Scene> SceneLoaded;
+        /// <summary>
+        /// Reports every operation this manager starts, before it runs.
+        /// <br/>
+        /// One null-checked delegate invocation per operation, with no allocation when nobody is
+        /// listening — and the natural attach point for global instrumentation.
+        /// </summary>
+        event Action<SceneOperation> OperationStarted;
 
         /// <summary>
         /// The amount of scenes loaded through this <see cref="ISceneManager"/>.
@@ -67,9 +74,8 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="loadingScene">
         /// The scene to load as the transition intermediate. Leave it unset for a transition with no loading scene.
         /// </param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
-        Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default, CancellationToken token = default);
+        /// <returns>A <see cref="SceneOperation"/> handle on the transition.</returns>
+        SceneOperation TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default);
 
         /// <summary>
         /// Reloads the active scene with an optional intermediate loading scene.
@@ -77,26 +83,20 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="loadingScene">
         /// The scene to load as the transition intermediate. Leave it unset for a reload with no loading scene.
         /// </param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes reloaded.</returns>
-        Task<SceneResult> ReloadActiveSceneAsync(SceneRef loadingScene = default, CancellationToken token = default);
+        /// <returns>A <see cref="SceneOperation"/> handle on the reload.</returns>
+        SceneOperation ReloadActiveSceneAsync(SceneRef loadingScene = default);
 
         /// <summary>
         /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
         /// You may also provide the desired index to set as the active scene.
-        /// Also, you can pass an <see cref="IProgress{T}"/> object to receive the average progress of all loading operations, from 0 to 1.
+        /// Subscribe to <see cref="SceneOperation.Progressed"/> on the returned handle for the
+        /// average progress of all loading operations, from 0 to 1.
         /// </summary>
         /// <param name="sceneParameters">
         /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
         /// </param>
-        /// <param name="progress">
-        /// Object to report the loading operations progress to, from 0 to 1.
-        /// </param>
-        /// <param name="token">
-        /// Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.
-        /// </param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task{TResult}"/> with all scenes loaded.</returns>
-        Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default);
+        /// <returns>A <see cref="SceneOperation"/> handle on the load.</returns>
+        SceneOperation LoadAsync(SceneParameters sceneParameters);
 
         /// <summary>
         /// Unloads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.
@@ -104,13 +104,12 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneParameters">
         /// A <see cref="SceneParameters"/> struct that may hold one or more scenes.
         /// </param>
-        /// <param name="token">Optional token to manually cancel the operation. Note that Unity Scene Manager operations cannot be manually canceled and will continue to run.</param>
         /// <returns>
-        /// A <see cref="System.Threading.Tasks.Task{TResult}"/> with all the unloaded scenes.
+        /// A <see cref="SceneOperation"/> handle on the unload, whose result is the unloaded scenes.
         /// <br/>
         /// Note that in some cases, the returned scenes might no longer have a reference to its native representation, which means its <see cref="Scene.handle"/> will not point anywhere and you won't be able to perform equal comparisons between scenes.
         /// </returns>
-        Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default);
+        SceneOperation UnloadAsync(SceneParameters sceneParameters);
 
         /// <summary>
         /// Gets the current active scene in this <see cref="ISceneManager"/> instance.

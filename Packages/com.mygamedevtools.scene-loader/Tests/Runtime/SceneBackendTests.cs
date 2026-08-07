@@ -99,8 +99,9 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.True(scene.IsValid());
             Assert.AreEqual(SceneBuilder.SceneNames[1], scene.name);
 
-            System.Threading.Tasks.Task unload = UnityTaskUtilities.FromBackendHandle(backend.Unload(handle.WithScene(scene)));
-            yield return new WaitUntil(() => unload.IsCompleted);
+            SceneBackendHandle[] unloadHandles = { backend.Unload(handle.WithScene(scene)) };
+            while (!SceneLinker.HasCompletedAll(unloadHandles))
+                yield return null;
         }
 #endif
 
@@ -111,7 +112,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             ISceneManager manager = SceneTestEnvironment.SceneManagers[0];
             SceneRef[] sceneRefs = { SceneBuilder.SceneNames[1], SceneBuilder.ScenePaths[1] };
 
-            yield return manager.LoadAsync(new SceneParameters(sceneRefs)).ToWaitTask();
+            yield return manager.LoadAsync(new SceneParameters(sceneRefs)).ToCoroutine();
 
             Assert.AreEqual(2, manager.LoadedSceneCount);
             Assert.AreNotEqual(manager.GetLoadedSceneAt(0), manager.GetLoadedSceneAt(1));

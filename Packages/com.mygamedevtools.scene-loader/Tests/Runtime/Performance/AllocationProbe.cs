@@ -38,14 +38,14 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         // Averaged over five iterations, updated as each step lands; nothing reads them.
         // The v4.1.3 baseline is on #72.
         //
-        //                                  v4.1.3    ISceneBackend (#75)
-        //   Transition_WithLoadingScreen   33,610 B  →  29,551 B   -12%
-        //   Transition_Direct              19,501 B  →  16,479 B   -15%
-        //   Load_Single                     8,400 B  →   7,990 B    -5%
-        //   Load_Multiple                  19,968 B  →  17,500 B   -12%
-        //   Unload_Single                   4,662 B  →   3,174 B   -32%
-        //   Load_Single_Addressable        10,323 B  →   9,788 B
-        //   Transition_..._Addressable     43,662 B  →  37,880 B
+        //                                  v4.1.3     #75        #76      total
+        //   Transition_WithLoadingScreen   33,610 B → 29,551 B → 23,340 B  -31%
+        //   Transition_Direct              19,501 B → 16,479 B → 13,854 B  -29%
+        //   Load_Single                     8,400 B →  7,990 B →  7,434 B  -11%
+        //   Load_Multiple                  19,968 B → 17,500 B → 16,380 B  -18%
+        //   Unload_Single                   4,662 B →  3,174 B →  3,654 B  -22%
+        //   Load_Single_Addressable        10,323 B →  9,788 B →  8,918 B
+        //   Transition_..._Addressable     43,662 B → 37,880 B → 31,402 B
 
         /// <summary>
         /// Measures <paramref name="operation"/> after discarded warmups and reports each run to

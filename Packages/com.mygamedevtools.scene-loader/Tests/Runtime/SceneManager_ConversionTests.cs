@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 
@@ -17,58 +16,50 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator Load_ByIndex([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters((SceneRef)1, true), progress), progress, 1, 0);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters((SceneRef)1, true)), 1, 0);
         }
 
         [UnityTest]
         public IEnumerator Load_ByIndex_Multiple([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(_buildIndexes, 1), progress), progress, _buildIndexes.Length, 1);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(_buildIndexes, 1)), _buildIndexes.Length, 1);
         }
 
         [UnityTest]
         public IEnumerator Load_ByName([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters((SceneRef)SceneBuilder.SceneNames[1], true), progress), progress, 1, 0);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters((SceneRef)SceneBuilder.SceneNames[1], true)), 1, 0);
         }
 
         [UnityTest]
         public IEnumerator Load_ByName_Multiple([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 1), progress), progress, SceneBuilder.SceneNames.Length, 1);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 1)), SceneBuilder.SceneNames.Length, 1);
         }
 
 #if ENABLE_ADDRESSABLES
         [UnityTest]
         public IEnumerator Load_ByAddress([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(SceneRef.Address(SceneBuilder.SceneNames[1]), true), progress), progress, 1, 0);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(SceneRef.Address(SceneBuilder.SceneNames[1]), true)), 1, 0);
         }
 
         [UnityTest]
         public IEnumerator Load_ByAddress_Multiple([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(SceneTestEnvironment.Addresses(SceneBuilder.SceneNames), 1), progress), progress, SceneBuilder.SceneNames.Length, 1);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(SceneTestEnvironment.Addresses(SceneBuilder.SceneNames), 1)), SceneBuilder.SceneNames.Length, 1);
         }
 
         [UnityTest]
         public IEnumerator Load_ByAssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters((SceneRef)_assetReferences[1], true), progress), progress, 1, 0);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters((SceneRef)_assetReferences[1], true)), 1, 0);
         }
 
         [UnityTest]
         public IEnumerator Load_ByAssetReference_Multiple([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            var progress = new SimpleProgress();
-            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(_assetReferences, 1), progress), progress, _assetReferences.Length, 1);
+            yield return Load_Template(manager, () => manager.LoadAsync(new SceneParameters(_assetReferences, 1)), _assetReferences.Length, 1);
         }
 #endif
 
@@ -175,14 +166,14 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator Unload_ByScene_Multiple([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            Task<SceneResult> loadTask = Task.FromResult<SceneResult>(default);
+            SceneOperation loadOperation = null;
             yield return Unload_Template(manager, () =>
             {
-                loadTask = manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 0));
-                return loadTask;
+                loadOperation = manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 0));
+                return loadOperation;
             }, () =>
             {
-                SceneResult result = loadTask.GetAwaiter().GetResult();
+                SceneResult result = loadOperation.Result;
                 return manager.UnloadAsync(result.GetScenes());
             }, SceneBuilder.SceneNames.Length);
         }
