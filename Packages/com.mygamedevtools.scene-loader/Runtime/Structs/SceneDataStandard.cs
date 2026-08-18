@@ -75,10 +75,12 @@ namespace MyGameDevTools.SceneLoading
             switch (_loadSceneInfo.Type)
             {
                 case LoadSceneInfoType.BuildIndex:
-                    _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.LoadSceneAsync((int)_loadSceneInfo.Reference, LoadSceneMode.Additive));
+                    using (SceneProfilerMarkers.EngineLoad.Auto())
+                        _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.LoadSceneAsync((int)_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     break;
                 case LoadSceneInfoType.Name:
-                    _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.LoadSceneAsync((string)_loadSceneInfo.Reference, LoadSceneMode.Additive));
+                    using (SceneProfilerMarkers.EngineLoad.Auto())
+                        _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.LoadSceneAsync((string)_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     break;
                 default:
                     Debug.LogWarning($"[{nameof(SceneDataStandard)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
@@ -89,7 +91,9 @@ namespace MyGameDevTools.SceneLoading
 
         public IAsyncSceneOperation UnloadSceneAsync()
         {
-            _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.UnloadSceneAsync(_sceneReference));
+            using (SceneProfilerMarkers.EngineUnload.Auto())
+                _asyncSceneOperation = new AsyncSceneOperationStandard(SceneManager.UnloadSceneAsync(_sceneReference));
+
             return _asyncSceneOperation;
         }
     }

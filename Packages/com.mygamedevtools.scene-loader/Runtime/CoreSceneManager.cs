@@ -170,23 +170,34 @@ namespace MyGameDevTools.SceneLoading
 
         async Task<SceneResult> LoadScenesAsync_Internal(SceneParameters sceneParameters, IProgress<float> progress, CancellationToken token)
         {
-            ILoadSceneInfo[] sceneInfos = sceneParameters.GetLoadSceneInfos();
-            int setIndexActive = sceneParameters.GetIndexToActivate();
-            int scenesToLoad = sceneInfos.Length;
-
-            ISceneData[] sceneDataArray = new ISceneData[scenesToLoad];
+            ILoadSceneInfo[] sceneInfos;
+            int setIndexActive;
+            int scenesToLoad;
+            ISceneData[] sceneDataArray;
             int i;
-            for (i = 0; i < scenesToLoad; i++)
+
+            using (SceneProfilerMarkers.Load.Auto())
             {
-                sceneDataArray[i] = SceneDataBuilder.BuildFromLoadSceneInfo(sceneInfos[i]);
-                sceneDataArray[i].LoadSceneAsync();
+                sceneInfos = sceneParameters.GetLoadSceneInfos();
+                setIndexActive = sceneParameters.GetIndexToActivate();
+                scenesToLoad = sceneInfos.Length;
+
+                sceneDataArray = new ISceneData[scenesToLoad];
+                for (i = 0; i < scenesToLoad; i++)
+                {
+                    using (SceneProfilerMarkers.BuildSceneData.Auto())
+                        sceneDataArray[i] = SceneDataBuilder.BuildFromLoadSceneInfo(sceneInfos[i]);
+
+                    sceneDataArray[i].LoadSceneAsync();
+                }
             }
 
             await PollProgressAsync(sceneDataArray, progress, token);
 
             token.ThrowIfCancellationRequested();
 
-            SceneDataUtilities.LinkLoadedScenesWithSceneDataArray(sceneDataArray, _loadedScenes);
+            using (SceneProfilerMarkers.Link.Auto())
+                SceneDataUtilities.LinkLoadedScenesWithSceneDataArray(sceneDataArray, _loadedScenes);
 
             _loadedScenes.AddRange(sceneDataArray);
             for (i = 0; i < scenesToLoad; i++)
@@ -206,17 +217,23 @@ namespace MyGameDevTools.SceneLoading
                 throw new ArgumentException($"[{GetType().Name}] Provided scene group is null or empty.", nameof(sceneInfos));
 
             int sceneCount = sceneInfos.Length;
-            ISceneData[] sceneDataArray = SceneDataUtilities.GetLoadedSceneDatasWithLoadSceneInfos(sceneInfos, _loadedScenes);
-            Task[] loadTasks = new Task[sceneCount];
-
+            ISceneData[] sceneDataArray;
+            Task[] loadTasks;
             ISceneData tempSceneData;
             int i;
-            for (i = 0; i < sceneCount; i++)
+
+            using (SceneProfilerMarkers.Unload.Auto())
             {
-                tempSceneData = sceneDataArray[i];
-                _loadedScenes.Remove(tempSceneData);
-                _unloadingScenes.Add(tempSceneData);
-                loadTasks[i] = UnityTaskUtilities.FromAsyncOperation(sceneDataArray[i].UnloadSceneAsync(), token);
+                sceneDataArray = SceneDataUtilities.GetLoadedSceneDatasWithLoadSceneInfos(sceneInfos, _loadedScenes);
+                loadTasks = new Task[sceneCount];
+
+                for (i = 0; i < sceneCount; i++)
+                {
+                    tempSceneData = sceneDataArray[i];
+                    _loadedScenes.Remove(tempSceneData);
+                    _unloadingScenes.Add(tempSceneData);
+                    loadTasks[i] = UnityTaskUtilities.FromAsyncOperation(sceneDataArray[i].UnloadSceneAsync(), token);
+                }
             }
 
             try
@@ -314,8 +331,14 @@ namespace MyGameDevTools.SceneLoading
             while (!isDone && !token.IsCancellationRequested)
             {
                 await Task.Yield();
-                isDone = SceneDataUtilities.HasCompletedAllSceneLoadOperations(sceneDataArray);
-                progress?.Report(SceneDataUtilities.GetAverageSceneLoadOperationProgress(sceneDataArray));
+
+                // Everything the async machinery allocates on resume lands here, which is what
+                // makes the per-frame cost of a load visible separately from its setup.
+                using (SceneProfilerMarkers.PollProgress.Auto())
+                {
+                    isDone = SceneDataUtilities.HasCompletedAllSceneLoadOperations(sceneDataArray);
+                    progress?.Report(SceneDataUtilities.GetAverageSceneLoadOperationProgress(sceneDataArray));
+                }
             }
         }
 

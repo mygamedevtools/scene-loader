@@ -1,0 +1,80 @@
+name: 📊 Refresh Allocation Baseline
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/allocation-baseline.yml'
+      - '!**.md'
+  workflow_dispatch:
+
+# Deliberately its own workflow rather than a step in test.yml: refreshing the baseline
+# needs write access to a protected branch, and a failure here must not be able to take
+# the test suite red.
+#
+# It runs the whole suite rather than filtering to the report tests. The figures depend on
+# how warm the editor is by the time each case runs, so a baseline recorded from a filtered
+# run would not be comparable with the full-suite run that every PR produces.
+jobs:
+  detect-versions:
+    name: Detect Unity Versions
+    uses: ./.github/workflows/detect-unity-versions.yml
+
+  refresh:
+    name: Refresh baseline
+    runs-on: ubuntu-latest
+    needs: detect-versions
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+          # The push below targets a protected branch, which the default GITHUB_TOKEN
+          # cannot do — same reason the release workflow takes a PAT.
+          token: ${{ secrets.GH_TOKEN }}
+
+      - uses: actions/cache@v5
+        with:
+          path: Library
+          key: Library-${{ needs.detect-versions.outputs.latest }}-playmode
+          restore-keys: |
+            Library-${{ needs.detect-versions.outputs.latest }}-
+
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ./
+          unityVersion: ${{ needs.detect-versions.outputs.latest }}
+          testMode: playmode
+          artifactsPath: baseline-artifacts
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          # The suite already ran on the PR that produced this commit; this run exists
+          # only to regenerate the report, so it does not publish a second check.
+          checkName: ''
+
+      - name: Commit the refreshed baseline
+        run: |
+          if [ ! -f allocation-report.json ]; then
+            echo "::error::The run produced no allocation-report.json"
+            exit 1
+          fi
+
+          mv allocation-report.json allocation-baseline.json
+
+          if git diff --quiet -- allocation-baseline.json; then
+            echo "Baseline unchanged."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add allocation-baseline.json
+          git commit -m "chore: refresh the allocation baseline [skip ci]"
+          git push

@@ -1,0 +1,110 @@
+{
+  "unityVersion": "6000.5.5f1",
+  "addressablesVersion": "2.9.1",
+  "ambientPerFrameBytes": 290,
+  "cases": {
+    "Load_Single": {
+      "workBytes": 7302,
+      "frames": 6,
+      "ambientBytes": 1740,
+      "unattributedBytes": 6700,
+      "packageBytes": 410,
+      "packageInclusiveBytes": 602,
+      "engineBytes": 192,
+      "totalBytes": 9042,
+      "scopes": {
+        "MSM.BuildSceneData": 40,
+        "MSM.Engine.Load": 192,
+        "MSM.Link": 330,
+        "MSM.Load": 272,
+        "MSM.PollProgress": 0
+      }
+    },
+    "Load_Multiple": {
+      "workBytes": 18052,
+      "frames": 7,
+      "ambientBytes": 2030,
+      "unattributedBytes": 15368,
+      "packageBytes": 1896,
+      "packageInclusiveBytes": 2684,
+      "engineBytes": 788,
+      "totalBytes": 20082,
+      "scopes": {
+        "MSM.BuildSceneData": 160,
+        "MSM.Engine.Load": 788,
+        "MSM.Link": 1672,
+        "MSM.Load": 1012,
+        "MSM.PollProgress": 0
+      }
+    },
+    "Unload_Single": {
+      "workBytes": 4228,
+      "frames": 2,
+      "ambientBytes": 580,
+      "unattributedBytes": 2130,
+      "packageBytes": 1906,
+      "packageInclusiveBytes": 2098,
+      "engineBytes": 192,
+      "totalBytes": 4808,
+      "scopes": {
+        "MSM.Engine.Unload": 192,
+        "MSM.Unload": 2098
+      }
+    },
+    "Transition_Direct": {
+      "workBytes": 17634,
+      "frames": 6,
+      "ambientBytes": 1740,
+      "unattributedBytes": 13018,
+      "packageBytes": 2290,
+      "packageInclusiveBytes": 4616,
+      "engineBytes": 2326,
+      "totalBytes": 19374,
+      "scopes": {
+        "MSM.BuildSceneData": 40,
+        "MSM.Engine.Load": 192,
+        "MSM.Engine.Unload": 2134,
+        "MSM.Link": 338,
+        "MSM.Load": 272,
+        "MSM.PollProgress": 0,
+        "MSM.Unload": 4006
+      }
+    },
+    "Transition_WithLoadingScreen": {
+      "workBytes": 30068,
+      "frames": 11,
+      "ambientBytes": 3190,
+      "unattributedBytes": 22664,
+      "packageBytes": 4694,
+      "packageInclusiveBytes": 7404,
+      "engineBytes": 2710,
+      "totalBytes": 33258,
+      "scopes": {
+        "MSM.BuildSceneData": 80,
+        "MSM.Engine.Load": 384,
+        "MSM.Engine.Unload": 2326,
+        "MSM.Link": 774,
+        "MSM.Load": 544,
+        "MSM.PollProgress": 0,
+        "MSM.Unload": 6086
+      }
+    },
+    "Load_Single_Addressable": {
+      "workBytes": 8516,
+      "frames": 5,
+      "ambientBytes": 1450,
+      "unattributedBytes": 6756,
+      "packageBytes": 424,
+      "packageInclusiveBytes": 1760,
+      "engineBytes": 1336,
+      "totalBytes": 9966,
+      "scopes": {
+        "MSM.BuildSceneData": 40,
+        "MSM.Engine.Load": 1336,
+        "MSM.Link": 344,
+        "MSM.Load": 1416,
+        "MSM.PollProgress": 0
+      }
+    }
+  }
+}

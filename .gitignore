@@ -87,3 +87,6 @@ crashlytics-build.properties
 # Website
 .docusaurus
 node_modules/
+# Produced by the allocation report on every playmode run; only the baseline is committed.
+allocation-report.json
+allocation-summary.md

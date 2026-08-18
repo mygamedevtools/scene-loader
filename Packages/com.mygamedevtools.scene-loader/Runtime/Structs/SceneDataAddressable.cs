@@ -67,7 +67,8 @@ namespace MyGameDevTools.SceneLoading
             {
                 case LoadSceneInfoType.AssetReference:
                 case LoadSceneInfoType.Address:
-                    _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(_loadSceneInfo.Reference, LoadSceneMode.Additive));
+                    using (SceneProfilerMarkers.EngineLoad.Auto())
+                        _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     return _asyncSceneOperation;
                 default:
                     Debug.LogWarning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
@@ -77,7 +78,8 @@ namespace MyGameDevTools.SceneLoading
 
         public IAsyncSceneOperation UnloadSceneAsync()
         {
-            _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.UnloadSceneAsync(_asyncSceneOperation.AsyncOperationHandle));
+            using (SceneProfilerMarkers.EngineUnload.Auto())
+                _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.UnloadSceneAsync(_asyncSceneOperation.AsyncOperationHandle));
             return _asyncSceneOperation;
         }
     }
