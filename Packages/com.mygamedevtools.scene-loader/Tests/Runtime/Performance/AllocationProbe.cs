@@ -12,6 +12,11 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
     /// Measures what a scene operation allocates and reports it. Nothing here fails a run.
     /// </summary>
     /// <remarks>
+    /// <b>The number is <c>work</c>: the frame total minus ambient.</b> Every case spans several
+    /// frames and an idle frame allocates a few hundred bytes on its own, so a raw total partly
+    /// measures how long an operation took rather than what it did. Ambient is measured in the
+    /// same run rather than assumed.
+    /// <br/><br/>
     /// Deliberately not a gate. These are editor-playmode figures, and the suite runs across a
     /// Unity version matrix against three pinned Addressables majors — a single threshold over
     /// that spread is either loose enough to catch nothing or tight enough to fail on noise.
@@ -34,16 +39,36 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         /// <summary>These run many sequential scene operations, so the default timeout is far too short.</summary>
         public const int TestTimeout = 300000;
 
-        // Reference figures, Unity 6000.5.5f1, editor batchmode playmode, Addressables 2.9.1.
-        // Recorded on #72 so a run can be eyeballed against them; nothing reads them.
-        //
-        //   Transition_WithLoadingScreen  avg 33,610 B  (32,566 – 34,654)
-        //   Transition_Direct             avg 19,501 B  (19,188 – 20,232)
-        //   Load_Single                   avg  8,400 B  ( 8,192 –  8,714)
-        //   Load_Multiple                 avg 19,968 B  (19,968 – 19,968)
-        //   Unload_Single                 avg  4,662 B  ( 4,662 –  4,662)
-        //   Load_Single_Addressable       avg 10,323 B  (10,010 – 10,532)
-        //   Transition_..._Addressable    avg 43,662 B  (43,558 – 44,080)
+        /// <summary>Bytes an idle frame costs, measured in this run rather than assumed.</summary>
+        public static long AmbientPerFrameBytes { get; private set; }
+
+        /// <summary>
+        /// Measures what an idle frame costs, so every later case can have that subtracted. Run
+        /// this before any case that reports a <c>work</c> figure.
+        /// </summary>
+        public static IEnumerator MeasureAmbient(int frames)
+        {
+            ProfilerRecorder recorder = ProfilerRecorder.StartNew(ProfilerCategory.Memory, GcAllocCounter);
+            if (!recorder.Valid)
+            {
+                recorder.Dispose();
+                UnityEngine.Debug.LogWarning($"[{nameof(AllocationProbe)}] the GC allocation counter is unavailable, so ambient is treated as zero.");
+                yield break;
+            }
+
+            // Settle first, so the counter is not still publishing the previous test's frame.
+            yield return null;
+
+            long before = recorder.CurrentValue;
+            for (int i = 0; i < frames; i++)
+                yield return null;
+
+            long total = recorder.CurrentValue - before;
+            recorder.Dispose();
+
+            AmbientPerFrameBytes = total / frames;
+            UnityEngine.Debug.Log($"[{nameof(AllocationProbe)}] ambient: {AmbientPerFrameBytes:N0} B per idle frame, over {frames} frames.");
+        }
 
         /// <summary>
         /// Measures <paramref name="operation"/> after discarded warmups and reports each run to
@@ -74,6 +99,7 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
             long total = 0;
             long min = long.MaxValue;
             long max = 0;
+            int totalFrames = 0;
             Stopwatch stopwatch = new();
 
             for (int i = 0; i < MeasurementIterations; i++)
@@ -87,14 +113,22 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
                 long before = recorder.CurrentValue;
                 stopwatch.Restart();
 
-                yield return operation();
+                int frames = 0;
+                IEnumerator inner = operation();
+                while (inner.MoveNext())
+                {
+                    frames++;
+                    yield return inner.Current;
+                }
 
                 stopwatch.Stop();
 
                 // One more frame so the counter has published the frame the operation finished in.
+                frames++;
                 yield return null;
                 long allocated = recorder.CurrentValue - before;
 
+                totalFrames += frames;
                 total += allocated;
                 min = Math.Min(min, allocated);
                 max = Math.Max(max, allocated);
@@ -108,9 +142,15 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
 
             recorder.Dispose();
 
+            long average = total / MeasurementIterations;
+            int averageFrames = totalFrames / MeasurementIterations;
+            long ambient = averageFrames * AmbientPerFrameBytes;
+            long work = Math.Max(0, average - ambient);
+
             UnityEngine.Debug.Log(
-                $"[{nameof(AllocationProbe)}] {label}: avg {total / MeasurementIterations:N0} B " +
-                $"(min {min:N0} B, max {max:N0} B) over {MeasurementIterations} iterations");
+                $"[{nameof(AllocationProbe)}] {label}: work {work:N0} B " +
+                $"(total {average:N0} B over {averageFrames} frames, ambient {ambient:N0} B, " +
+                $"range {min:N0}–{max:N0}) over {MeasurementIterations} iterations");
         }
     }
 }
