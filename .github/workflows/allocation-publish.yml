@@ -1,0 +1,87 @@
+name: 📊 Publish Allocation Report
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach the report to. Defaults to the latest release.'
+        required: false
+        type: string
+
+# Attaches the allocation report to a release, which is what every PR then diffs against.
+#
+# Triggered by `release: published` rather than living inside the release workflow: producing
+# the report needs a full playmode run, and a diagnostic must never be able to fail a release.
+# By the time this fires the release already exists, so the worst case is a release without a
+# report attached — which the comparison handles by reporting every case as new.
+#
+# Uploading an asset needs only the default GITHUB_TOKEN. Nothing here writes to a protected
+# branch, which is the whole reason this replaced a committed baseline file.
+jobs:
+  detect-versions:
+    name: Detect Unity Versions
+    uses: ./.github/workflows/detect-unity-versions.yml
+
+  publish:
+    name: Publish report
+    runs-on: ubuntu-latest
+    needs: detect-versions
+    permissions:
+      contents: write
+    steps:
+      - name: Resolve the target tag
+        id: target
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ inputs.tag || github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release view --repo ${{ github.repository }} --json tagName -q .tagName)
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Attaching the report to $TAG"
+
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+          ref: ${{ steps.target.outputs.tag }}
+
+      - uses: actions/cache@v5
+        with:
+          path: Library
+          key: Library-${{ needs.detect-versions.outputs.latest }}-playmode
+          restore-keys: |
+            Library-${{ needs.detect-versions.outputs.latest }}-
+
+      # The whole suite, not just the report cases: these figures depend on how warm the
+      # editor is by the time each case runs, so a filtered run would not be comparable
+      # with the full-suite run every PR produces.
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ./
+          unityVersion: ${{ needs.detect-versions.outputs.latest }}
+          testMode: playmode
+          artifactsPath: allocation-artifacts
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          # The suite already ran on the commit this release was cut from; this run exists
+          # only to produce the report, so it does not publish a second check.
+          checkName: ''
+
+      - name: Attach the report to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f allocation-report.json ]; then
+            echo "::error::The run produced no allocation-report.json"
+            exit 1
+          fi
+
+          gh release upload "${{ steps.target.outputs.tag }}" allocation-report.json \
+            --repo ${{ github.repository }} --clobber
+
+          echo "Attached allocation-report.json to ${{ steps.target.outputs.tag }}" >> $GITHUB_STEP_SUMMARY

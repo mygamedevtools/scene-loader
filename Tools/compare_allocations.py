@@ -5,7 +5,12 @@ Informational only: this never exits non-zero for a regression, because these ar
 editor-playmode figures from a shared CI runner and a threshold tight enough to catch a
 real change would fire constantly on noise. Exit codes signal a broken run, not a slow one.
 
-    compare_allocations.py --baseline allocation-baseline.json --current allocation-report.json
+The baseline is whatever report is attached to a release, so any two versions can be
+compared by downloading their assets:
+
+    gh release download 4.1.3 --pattern allocation-report.json --output old.json
+    gh release download 5.0.0 --pattern allocation-report.json --output new.json
+    compare_allocations.py --baseline old.json --current new.json
 """
 
 import argparse
@@ -76,6 +81,11 @@ def scope_table(name, base_case, current_case):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline", required=True)
+    parser.add_argument(
+        "--baseline-label",
+        default="",
+        help="Where the baseline came from, e.g. a release tag. Shown in the summary.",
+    )
     parser.add_argument("--current", required=True)
     parser.add_argument("--output", help="write markdown here instead of stdout")
     args = parser.parse_args()
@@ -91,6 +101,16 @@ def main():
     current_cases = current.get("cases", {})
 
     lines = ["## Allocation report", ""]
+
+    if not base_cases:
+        lines.append(
+            "> No release carries an allocation report yet, so every case reads as new. "
+            "This settles once a release has been published with one attached."
+        )
+        lines.append("")
+    elif args.baseline_label:
+        lines.append(f"Compared against release **{args.baseline_label}**.")
+        lines.append("")
 
     if baseline.get("unityVersion") and baseline["unityVersion"] != current.get("unityVersion"):
         lines.append(

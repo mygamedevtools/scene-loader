@@ -14,9 +14,8 @@ on:
       # The workflows that decide what gets tested and how.
       - '.github/workflows/test.yml'
       - '.github/workflows/detect-unity-versions.yml'
-      # The allocation report's comparison script and the baseline it diffs against.
+      # The allocation report's comparison script.
       - 'Tools/**'
-      - 'allocation-baseline.json'
       # Docs never change behaviour, including docs shipped inside a package.
       - '!**.md'
   pull_request:
@@ -29,7 +28,6 @@ on:
       - '.github/workflows/test.yml'
       - '.github/workflows/detect-unity-versions.yml'
       - 'Tools/**'
-      - 'allocation-baseline.json'
       - '!**.md'
   schedule:
     # Run on the 1st of every month at 2 AM UTC
@@ -107,6 +105,28 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '## Allocation report'
 
+      # The baseline lives as a release asset rather than a file in the repo, so nothing
+      # here needs write access and there is no refresh commit on main. Walks back through
+      # recent releases because a release only gets the asset once its publish workflow has
+      # run, and the newest one may not have it yet.
+      - name: Fetch the baseline from the latest release
+        id: baseline
+        if: matrix.unityVersion == needs.detect-versions.outputs.latest
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for TAG in $(gh release list --repo ${{ github.repository }} --limit 10 \
+                        --json tagName -q '.[].tagName'); do
+            if gh release download "$TAG" --repo ${{ github.repository }} \
+                 --pattern allocation-report.json --output allocation-baseline.json 2>/dev/null; then
+              echo "baseline-tag=$TAG" >> $GITHUB_OUTPUT
+              echo "Baseline taken from $TAG"
+              exit 0
+            fi
+          done
+          echo "::notice::No release carries an allocation report yet; every case will read as new."
+
       # Informational only, and only on the newest leg: one threshold across three editor
       # versions and three Addressables majors would be either useless or constantly wrong.
       - name: Compare allocations
@@ -115,6 +135,7 @@ jobs:
         run: |
           python3 Tools/compare_allocations.py \
             --baseline allocation-baseline.json \
+            --baseline-label "${{ steps.baseline.outputs.baseline-tag }}" \
             --current allocation-report.json \
             --output allocation-summary.md
           cat allocation-summary.md >> $GITHUB_STEP_SUMMARY
