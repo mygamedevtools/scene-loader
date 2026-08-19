@@ -108,8 +108,6 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return SceneManager.LoadSceneAsync(SceneBuilder.SceneNames[1], LoadSceneMode.Additive);
             yield return new WaitUntil(() => loadedScene.IsValid());
 
-            // The lookup that fails before the throw reports itself as a link failure.
-            LogAssert.Expect(LogType.Error, new Regex("Unable to get an ISceneData with the loaded scene"));
             Assert.Throws<InvalidOperationException>(() => manager.SetActiveScene(loadedScene));
 
             yield return SceneManager.UnloadSceneAsync(loadedScene);
@@ -233,8 +231,6 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void Unload_NotLoaded([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
             var sceneName = "not-a-real-scene";
-            if (manager is not SceneManager)
-                LogAssert.Expect(LogType.Error, new Regex("Unable to get an ISceneData with the load scene info"));
             var wait = manager.UnloadAsync(sceneName).ToWaitTask();
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
