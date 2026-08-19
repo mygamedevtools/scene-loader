@@ -108,8 +108,7 @@ namespace MyGameDevTools.SceneLoading
 
             IsCancellationRequested = true;
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Info))
-                SceneManagerLog.Info($"{Kind} operation cancelled during {State}. The underlying Unity operations will still run to completion.");
+            SceneManagerLog.Info($"{Kind} operation cancelled during {State}. The underlying Unity operations will still run to completion.");
 
             SetState(SceneOperationState.Canceled);
             Finish();
@@ -264,7 +263,9 @@ namespace MyGameDevTools.SceneLoading
 
             State = state;
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Verbose))
+            // Checked here, unlike the cold sites: every state transition passes through
+            // this, and Verbose is off by default.
+            if (SceneManagerLog.Level >= SceneLogLevel.Verbose)
                 SceneManagerLog.Verbose($"{Kind} operation entered {state}.");
 
             StateChanged?.Invoke(this);
@@ -301,8 +302,7 @@ namespace MyGameDevTools.SceneLoading
 
             Exception = exception ?? new Exception("The operation faulted without an exception.");
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Error))
-                SceneManagerLog.Error($"{Kind} operation faulted during {State}: {Exception.Message}");
+            SceneManagerLog.Error($"{Kind} operation faulted during {State}: {Exception.Message}");
 
             SetState(SceneOperationState.Faulted);
             Finish();

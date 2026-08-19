@@ -197,7 +197,9 @@ namespace MyGameDevTools.SceneLoading
             _liveOperations.Add(operation);
             operation.Completed += RemoveLiveOperation;
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Info))
+            // Checked here, unlike the cold sites: this runs once per operation with Info
+            // off by default, so the message would be built and dropped on the measured path.
+            if (SceneManagerLog.Level >= SceneLogLevel.Info)
                 SceneManagerLog.Info($"{kind} operation started.");
 
             OperationStarted?.Invoke(operation);

@@ -153,8 +153,7 @@ namespace MyGameDevTools.SceneLoading
                     if (!entry.Warned && entry.Waited >= GateWarningSeconds && Debug.isDebugBuild)
                     {
                         entry.Warned = true;
-                        if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
-                            SceneManagerLog.Warning($"A transition has been waiting {GateWarningSeconds:0} seconds for {entry.Description}. It will keep waiting, but something is expected to release it.");
+                        SceneManagerLog.Warning($"A transition has been waiting {GateWarningSeconds:0} seconds for {entry.Description}. It will keep waiting, but something is expected to release it.");
                     }
 
                     _conditionEntries[i] = entry;
@@ -189,8 +188,7 @@ namespace MyGameDevTools.SceneLoading
                         if (!entry.Warned && entry.Waited >= GateWarningSeconds && Debug.isDebugBuild)
                         {
                             entry.Warned = true;
-                            if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
-                                SceneManagerLog.Warning($"A {entry.Operation?.Kind.ToString() ?? "scene"} operation has been waiting {GateWarningSeconds:0} seconds on {Describe(entry.Handles)}.");
+                            SceneManagerLog.Warning($"A {entry.Operation?.Kind.ToString() ?? "scene"} operation has been waiting {GateWarningSeconds:0} seconds on {Describe(entry.Handles)}.");
                         }
 
                         _entries[i] = entry;
