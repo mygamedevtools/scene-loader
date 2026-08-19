@@ -31,8 +31,7 @@ namespace MyGameDevTools.SceneLoading
             _behaviorsBySceneHandle ??= new Dictionary<int, LoadingBehavior>(4);
             _behaviorsBySceneHandle[behavior.gameObject.scene.handle.GetHashCode()] = behavior;
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Verbose))
-                SceneManagerLog.Verbose($"Registered a {nameof(LoadingBehavior)} for scene '{behavior.gameObject.scene.name}'.");
+            SceneManagerLog.Verbose($"Registered a {nameof(LoadingBehavior)} for scene '{behavior.gameObject.scene.name}'.");
         }
 
         /// <summary>Withdraws a behaviour, from <c>OnDisable</c>.</summary>

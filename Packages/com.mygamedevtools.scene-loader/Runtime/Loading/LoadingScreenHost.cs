@@ -41,8 +41,7 @@ namespace MyGameDevTools.SceneLoading
 
             _scene = SceneManager.CreateScene(SceneName);
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Verbose))
-                SceneManagerLog.Verbose($"Created the loading screen host scene ({_scene.handle}).");
+            SceneManagerLog.Verbose($"Created the loading screen host scene ({_scene.handle}).");
         }
 
         /// <summary>
