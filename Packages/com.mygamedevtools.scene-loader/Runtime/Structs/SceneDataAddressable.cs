@@ -39,8 +39,7 @@ namespace MyGameDevTools.SceneLoading
 
         public void SetSceneReferenceManually(Scene scene)
         {
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
-                SceneManagerLog.Warning($"[{GetType().Name}] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling {nameof(ISceneData.UpdateSceneReference)}.");
+            SceneManagerLog.Warning("[" + nameof(SceneDataAddressable) + "] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling " + nameof(ISceneData.UpdateSceneReference) + ".");
             _sceneReference = scene;
         }
 
@@ -70,8 +69,7 @@ namespace MyGameDevTools.SceneLoading
                     _asyncSceneOperation = new AsyncSceneOperationAddressable(Addressables.LoadSceneAsync(_loadSceneInfo.Reference, LoadSceneMode.Additive));
                     return _asyncSceneOperation;
                 default:
-                    if (SceneManagerLog.IsEnabled(SceneLogLevel.Warning))
-                        SceneManagerLog.Warning($"[{GetType().Name}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
+                    SceneManagerLog.Warning($"[{nameof(SceneDataAddressable)}] Unexpected {nameof(ILoadSceneInfo.Reference)} type: {_loadSceneInfo.Reference}");
                     return default;
             }
         }

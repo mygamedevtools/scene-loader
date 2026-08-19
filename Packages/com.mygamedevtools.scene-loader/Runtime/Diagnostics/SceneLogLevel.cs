@@ -8,13 +8,13 @@ namespace MyGameDevTools.SceneLoading
     {
         /// <summary>Emits nothing.</summary>
         Off = 0,
-        /// <summary>Link failures, faulted operations, inferred standard-path load failures.</summary>
+        /// <summary>An operation failed, or state the manager depends on is inconsistent.</summary>
         Error = 1,
-        /// <summary>Double-matched keys, overrun transition gates, unloads of unmanaged scenes.</summary>
+        /// <summary>Something recoverable, or an API used in a way that will not do what the caller expects.</summary>
         Warning = 2,
-        /// <summary>Operation start and completion.</summary>
+        /// <summary>Coarse progress through an operation.</summary>
         Info = 3,
-        /// <summary>Every state transition, resolution and scene link. Where the linking layer narrates itself.</summary>
+        /// <summary>Step-by-step detail, for diagnosing a specific failure.</summary>
         Verbose = 4,
     }
 }

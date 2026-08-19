@@ -148,8 +148,7 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Error))
-                SceneManagerLog.Error($"Unable to link the loaded scene {scene.name} ({scene.handle}) with any of the provided {nameof(ISceneData)}.");
+            SceneManagerLog.Error($"Unable to link the loaded scene {scene.name} ({scene.handle}) with any of the provided {nameof(ISceneData)}.");
             matchedData = null;
             return false;
         }
@@ -171,8 +170,7 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Error))
-                SceneManagerLog.Error($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}. Is the scene loaded?");
+            SceneManagerLog.Error($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}. Is the scene loaded?");
             sceneData = default;
             return false;
         }
@@ -196,8 +194,7 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            if (SceneManagerLog.IsEnabled(SceneLogLevel.Error))
-                SceneManagerLog.Error($"Unable to get an {nameof(ISceneData)} with the loaded scene {scene.name} ({scene.handle}).");
+            SceneManagerLog.Error($"Unable to get an {nameof(ISceneData)} with the loaded scene {scene.name} ({scene.handle}).");
             sceneData = default;
             return false;
         }
