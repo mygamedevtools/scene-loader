@@ -40,7 +40,10 @@ namespace MyGameDevTools.SceneLoading
                     handles[i] = handle.WithScene(scene);
                     RemoveCandidate(scene, ref candidateCount);
 
-                    if (SceneManagerLog.IsEnabled(SceneLogLevel.Verbose))
+                    // Checked here, unlike everywhere else: this runs once per scene per
+                    // operation, and Verbose is off by default, so the message would
+                    // otherwise be built and dropped on the measured load path.
+                    if (SceneManagerLog.Level >= SceneLogLevel.Verbose)
                         SceneManagerLog.Verbose($"Linked '{scene.name}' ({scene.handle}) to {handle.SceneRef} directly.");
                 }
                 else
@@ -65,7 +68,7 @@ namespace MyGameDevTools.SceneLoading
                     SwapRemove(_candidateScenes, c, --candidateCount);
                     SwapRemove(_unlinkedHandles, i, --unlinkedCount);
 
-                    if (SceneManagerLog.IsEnabled(SceneLogLevel.Verbose))
+                    if (SceneManagerLog.Level >= SceneLogLevel.Verbose)
                         SceneManagerLog.Verbose($"Linked '{candidate.name}' ({candidate.handle}) to {handle.SceneRef} by matching.");
                     break;
                 }

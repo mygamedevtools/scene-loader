@@ -119,16 +119,18 @@ namespace MyGameDevTools.SceneLoading.Tests
 
         /// <summary>A handle that cannot match anything must fail loudly and say what did not link.</summary>
         [Test]
-        public void Linking_Failure_LogsAnErrorAndThrowsNamingTheReference()
+        public void Linking_Failure_ThrowsNamingTheReference()
         {
             ISceneBackend backend = SceneBackendRegistry.GetBackend(SceneRefKind.BuildIndex);
             SceneRef unmatchable = SceneRef.FromBuildIndex(int.MaxValue);
             SceneBackendHandle[] handles = { SceneBackendHandle.ForStandard(backend, unmatchable, default, null) };
 
-            LogAssert.Expect(LogType.Error, new Regex("Unable to link"));
-
             Exception exception = Assert.Throws<Exception>(() => SceneLinker.Link(handles, Array.Empty<SceneBackendHandle>()));
             Assert.That(exception.Message, Does.Contain(int.MaxValue.ToString()));
+
+            // The throw is the only report: logging it here too would duplicate the error that
+            // SceneOperation.Fault emits once this exception reaches it.
+            LogAssert.NoUnexpectedReceived();
         }
 
         static IEnumerator AssertProgressStaysNormalized(ISceneBackend backend, SceneBackendHandle handle)
