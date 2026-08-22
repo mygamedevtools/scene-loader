@@ -316,7 +316,7 @@ namespace MyGameDevTools.SceneLoading
 #if UNITY_6000_5_OR_NEWER
             LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>();
 #else
-            LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(FindObjectsSortMode.None);
+            LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(UnityEngine.FindObjectsSortMode.None);
 #endif
             LoadingBehavior loadingBehavior = loadingBehaviors.FirstOrDefault(l => l.gameObject.scene == loadingScene);
             return loadingBehavior
