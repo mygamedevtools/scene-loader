@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -149,7 +148,6 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            Debug.LogWarning($"Unable to link the loaded scene {scene.name} ({scene.handle}) with any of the provided {nameof(ISceneData)}.");
             matchedData = null;
             return false;
         }
@@ -171,7 +169,6 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            Debug.LogWarning($"Unable to get an {nameof(ISceneData)} with the load scene info {loadSceneInfo}. Is the scene loaded?");
             sceneData = default;
             return false;
         }
@@ -195,7 +192,6 @@ namespace MyGameDevTools.SceneLoading
                 }
             }
 
-            Debug.LogWarning($"Unable to get an {nameof(ISceneData)} with the loaded scene {scene.name} ({scene.handle}).");
             sceneData = default;
             return false;
         }
