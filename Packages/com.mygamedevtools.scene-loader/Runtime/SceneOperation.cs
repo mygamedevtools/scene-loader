@@ -87,6 +87,7 @@ namespace MyGameDevTools.SceneLoading
         Action<SceneOperation> _completed;
         Action _continuations;
         CancellationTokenRegistration _cancellationRegistration;
+        bool _reportedProgressThrow;
 
         internal SceneOperation(SceneOperationKind kind)
         {
@@ -268,7 +269,7 @@ namespace MyGameDevTools.SceneLoading
             if (SceneManagerLog.Level >= SceneLogLevel.Verbose)
                 SceneManagerLog.Verbose($"{Kind} operation entered {state}.");
 
-            StateChanged?.Invoke(this);
+            Raise(StateChanged, nameof(StateChanged));
         }
 
         internal void ReportProgress(float progress)
@@ -277,12 +278,31 @@ namespace MyGameDevTools.SceneLoading
                 return;
 
             Progress = progress;
-            Progressed?.Invoke(progress);
+
+            if (Progressed == null)
+                return;
+
+            try
+            {
+                Progressed(progress);
+            }
+            catch (Exception exception)
+            {
+                // Once per operation, unlike the other events: this one fires every frame the
+                // value moves, and a subscriber that throws once throws every time. Reporting
+                // each would bury the first — the only one that says anything new — under a
+                // frame-rate flood.
+                if (_reportedProgressThrow)
+                    return;
+
+                _reportedProgressThrow = true;
+                Report(nameof(Progressed), exception);
+            }
         }
 
-        internal void ReportSceneLoaded(Scene scene) => SceneLoaded?.Invoke(scene);
+        internal void ReportSceneLoaded(Scene scene) => Raise(SceneLoaded, scene, nameof(SceneLoaded));
 
-        internal void ReportSceneUnloaded(Scene scene) => SceneUnloaded?.Invoke(scene);
+        internal void ReportSceneUnloaded(Scene scene) => Raise(SceneUnloaded, scene, nameof(SceneUnloaded));
 
         internal void Complete(SceneResult result)
         {
@@ -341,11 +361,63 @@ namespace MyGameDevTools.SceneLoading
 
             Action<SceneOperation> completed = _completed;
             _completed = null;
-            completed?.Invoke(this);
+            Raise(completed, nameof(Completed));
 
             Action continuations = _continuations;
             _continuations = null;
-            continuations?.Invoke();
+            if (continuations == null)
+                return;
+
+            try
+            {
+                continuations();
+            }
+            catch (Exception exception)
+            {
+                Report("continuation", exception);
+            }
         }
+
+        /// <summary>
+        /// Raises a subscriber without letting it take the operation down with it. A handler that
+        /// throws would otherwise escape into whichever frame happened to call this — the pump,
+        /// or a discarded task — and skip everything after it, which for
+        /// <see cref="Completed"/> means the awaiter continuations never run and
+        /// <c>await operation</c> hangs for good.
+        /// </summary>
+        void Raise(Action<SceneOperation> handlers, string eventName)
+        {
+            if (handlers == null)
+                return;
+
+            try
+            {
+                handlers(this);
+            }
+            catch (Exception exception)
+            {
+                Report(eventName, exception);
+            }
+        }
+
+        void Raise(Action<Scene> handlers, Scene scene, string eventName)
+        {
+            if (handlers == null)
+                return;
+
+            try
+            {
+                handlers(scene);
+            }
+            catch (Exception exception)
+            {
+                Report(eventName, exception);
+            }
+        }
+
+        // Reported, never rethrown: the throw came from the subscriber, so faulting the operation
+        // over it would blame the scene load for someone else's bug.
+        void Report(string eventName, Exception exception) =>
+            SceneManagerLog.Error($"A {Kind} operation's {eventName} subscriber threw, and was contained: {exception}");
     }
 }

@@ -211,6 +211,55 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Throws<ArgumentException>(() => SceneOperation.WhenAll());
             Assert.Throws<ArgumentException>(() => SceneOperation.WhenAny());
         }
+
+        /// <summary>
+        /// A subscriber that throws is the subscriber's bug, but it used to become everyone's:
+        /// the throw escaped through <c>Finish</c> before the awaiter continuations ran, so
+        /// <c>await operation</c> never resumed — and because nothing awaits the manager's
+        /// internal task, not a single line was logged about it.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ThrowingSubscriber_IsReported_AndDoesNotStrandAwaiters()
+        {
+            LogAssert.Expect(LogType.Error, new Regex("Completed subscriber threw"));
+
+            SceneOperation operation = Manager.LoadAsync(SceneBuilder.SceneNames[1]);
+
+            // Subscribed before the awaiter so it runs first inside Finish().
+            operation.Completed += _ => throw new InvalidOperationException("thrown by a subscriber");
+
+            bool resumed = false;
+            Task awaiting = Resume();
+
+            yield return operation.ToCoroutine();
+            yield return null;
+
+            Assert.IsTrue(resumed, "The awaiter never resumed: a throwing subscriber stranded it.");
+            Assert.AreEqual(SceneOperationState.Completed, operation.State, "The operation itself succeeded, so a subscriber's throw must not change its outcome.");
+            Assert.IsNull(operation.Exception, "A subscriber's throw is not the operation's failure.");
+            Assert.IsTrue(awaiting.IsCompleted);
+
+            async Task Resume()
+            {
+                await operation;
+                resumed = true;
+            }
+        }
+
+        /// <summary>The same containment on the per-frame progress callback, which the pump drives.</summary>
+        [UnityTest]
+        public IEnumerator ThrowingProgressSubscriber_DoesNotWedgeTheOperation()
+        {
+            LogAssert.Expect(LogType.Error, new Regex("Progressed subscriber threw"));
+
+            SceneOperation operation = Manager.LoadAsync(SceneBuilder.SceneNames[1]);
+            operation.Progressed += _ => throw new InvalidOperationException("thrown by a subscriber");
+
+            yield return operation.ToCoroutine();
+
+            Assert.AreEqual(SceneOperationState.Completed, operation.State);
+            Assert.AreEqual(1, Manager.LoadedSceneCount);
+        }
     }
 
     static class TaskTestExtensions

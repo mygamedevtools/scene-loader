@@ -220,7 +220,12 @@ namespace MyGameDevTools.SceneLoading
             }
             catch (Exception exception)
             {
-                operation.Fault(exception);
+                // Fault is a no-op once the operation has finished, so an exception thrown after
+                // that point would leave no trace at all — nothing awaits this task.
+                if (operation.IsDone)
+                    SceneManagerLog.Error($"{operation.Kind} operation threw after it had already finished as {operation.State}: {exception}");
+                else
+                    operation.Fault(exception);
             }
         }
 
