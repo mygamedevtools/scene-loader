@@ -246,6 +246,53 @@ namespace MyGameDevTools.SceneLoading.Tests
             }
         }
 
+        /// <summary>
+        /// The containment reports through <see cref="SceneManagerLog"/>, from inside a catch
+        /// block — so a substituted handler that throws used to escape it and strand the awaiter
+        /// all over again, which is exactly the failure the containment exists to prevent.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ThrowingSubscriber_IsStillContained_WhenTheLogHandlerAlsoThrows()
+        {
+            LogAssert.Expect(LogType.Error, new Regex("threw, so this went to the console instead"));
+
+            ILogHandler original = SceneManagerLog.Handler;
+            SceneManagerLog.Handler = new ThrowingLogHandler();
+
+            bool resumed = false;
+            SceneOperation operation;
+            try
+            {
+                operation = Manager.LoadAsync(SceneBuilder.SceneNames[1]);
+                operation.Completed += _ => throw new InvalidOperationException("thrown by a subscriber");
+                _ = Resume();
+
+                yield return operation.ToCoroutine();
+                yield return null;
+            }
+            finally
+            {
+                SceneManagerLog.Handler = original;
+            }
+
+            Assert.IsTrue(resumed, "A broken log handler must not turn a contained subscriber throw back into a stranded awaiter.");
+
+            async Task Resume()
+            {
+                await operation;
+                resumed = true;
+            }
+        }
+
+        class ThrowingLogHandler : ILogHandler
+        {
+            public void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args) =>
+                throw new InvalidOperationException("thrown by the log handler");
+
+            public void LogException(Exception exception, UnityEngine.Object context) =>
+                throw new InvalidOperationException("thrown by the log handler");
+        }
+
         /// <summary>The same containment on the per-frame progress callback, which the pump drives.</summary>
         [UnityTest]
         public IEnumerator ThrowingProgressSubscriber_DoesNotWedgeTheOperation()
