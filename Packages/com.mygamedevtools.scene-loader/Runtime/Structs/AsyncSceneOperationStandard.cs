@@ -27,7 +27,7 @@ namespace MyGameDevTools.SceneLoading
 
         public Scene GetResult()
         {
-            SceneManagerLog.Warning(nameof(AsyncSceneOperationStandard) + " cannot link directly to the loaded scene due to SceneManager API limitations.");
+            SceneManagerLog.Warning($"{nameof(AsyncSceneOperationStandard)} cannot link directly to the loaded scene due to SceneManager API limitations.");
             return default;
         }
 

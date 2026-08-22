@@ -61,7 +61,7 @@ namespace MyGameDevTools.SceneLoading
 
         public void UpdateSceneReference()
         {
-            SceneManagerLog.Warning("[" + nameof(SceneDataStandard) + "] This type of scene data should not have its scene set automatically. Instead, it is expected to set it by calling " + nameof(ISceneData.SetSceneReferenceManually) + ".");
+            SceneManagerLog.Warning($"[{nameof(SceneDataStandard)}] This type of scene data should not have its scene set automatically. Instead, it is expected to set it by calling {nameof(ISceneData.SetSceneReferenceManually)}.");
         }
 
         public bool MatchesLoadSceneInfo(ILoadSceneInfo loadSceneInfo)

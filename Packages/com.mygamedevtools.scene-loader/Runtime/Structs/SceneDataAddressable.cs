@@ -39,7 +39,7 @@ namespace MyGameDevTools.SceneLoading
 
         public void SetSceneReferenceManually(Scene scene)
         {
-            SceneManagerLog.Warning("[" + nameof(SceneDataAddressable) + "] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling " + nameof(ISceneData.UpdateSceneReference) + ".");
+            SceneManagerLog.Warning($"[{nameof(SceneDataAddressable)}] This type of scene data should not have its scene set manually. Instead, it is expected to set it by calling {nameof(ISceneData.UpdateSceneReference)}.");
             _sceneReference = scene;
         }
 
