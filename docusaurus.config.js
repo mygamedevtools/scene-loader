@@ -144,6 +144,10 @@ const config = {
             title: 'Upgrade',
             items: [
               {
+                label: 'From 4.x to 5.x',
+                to: 'docs/upgrades/from-4-to-5'
+              },
+              {
                 label: 'From 3.x to 4.x',
                 to: 'docs/upgrades/from-3-to-4'
               },
