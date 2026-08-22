@@ -302,6 +302,27 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Zero(manager.LoadedSceneCount);
         }
 
+        /// <summary>
+        /// Unloading by the <see cref="Scene"/> array a load handed back. The only end-to-end
+        /// cover for the <c>Scene[]</c> conversion — every other source type is asserted at the
+        /// shape level in <c>SceneRefConversionTests</c>, but a <see cref="Scene"/> has to be
+        /// loaded before it can be converted.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Load_ByInfo_UnloadBySceneArray([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        {
+            Task<SceneResult> loadTask = Task.FromResult<SceneResult>(default);
+            yield return Unload_Template(manager, () =>
+            {
+                loadTask = manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 0));
+                return loadTask;
+            }, () =>
+            {
+                SceneResult result = loadTask.GetAwaiter().GetResult();
+                return manager.UnloadAsync(result.GetScenes());
+            }, SceneBuilder.SceneNames.Length);
+        }
+
         [UnityTest]
         public IEnumerator Load_ByInfo_UnloadByName([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleSceneRefList_NoAddressable))] SceneRef sceneRef)
         {

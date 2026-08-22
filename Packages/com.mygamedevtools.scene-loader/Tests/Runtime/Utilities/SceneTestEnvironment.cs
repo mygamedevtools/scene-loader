@@ -106,20 +106,6 @@ namespace MyGameDevTools.SceneLoading.Tests
             new CoreSceneManager(),
         };
 
-        /// <summary>
-        /// Forces every key to the addressable interpretation. Without it, an "addressable,
-        /// multiple scenes" case would quietly test the standard backend — every test scene name
-        /// is a double match the build settings win.
-        /// </summary>
-        public static SceneRef[] Addresses(params string[] addresses)
-        {
-            SceneRef[] sceneRefs = new SceneRef[addresses.Length];
-            for (int i = 0; i < addresses.Length; i++)
-                sceneRefs[i] = SceneRef.Address(addresses[i]);
-
-            return sceneRefs;
-        }
-
 #if UNITY_EDITOR
 #if ENABLE_ADDRESSABLES
         public const string AddressableScenePathBase = "Assets/_addressables-test";

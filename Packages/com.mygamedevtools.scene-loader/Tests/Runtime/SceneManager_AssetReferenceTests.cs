@@ -52,6 +52,31 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             yield return Unload(manager, new SceneParameters(_assetReferenceScenes));
         }
+
+        [UnityTest]
+        public IEnumerator Transition_AssetReference([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(nameof(LoadingScenes))] SceneRef loadingScene)
+        {
+            yield return Transition(manager, new SceneParameters(_assetReferenceScenes, 0), loadingScene);
+        }
+
+        /// <summary>
+        /// The conversion shapes for <see cref="AssetReference"/>, which
+        /// <c>SceneRefConversionTests</c> covers for every other source type. They live here
+        /// because an <see cref="AssetReference"/> cannot be built statically.
+        /// </summary>
+        [Test]
+        public void SceneParameters_ConvertsFromAssetReference()
+        {
+            SceneParameters single = _assetReferences[1];
+            Assert.AreEqual(1, single.Length);
+            Assert.AreEqual(SceneRefKind.AssetReference, single.GetSceneRef().Kind);
+            Assert.False(single.ShouldSetActive(), "A bare conversion must not silently activate the scene.");
+
+            SceneParameters array = _assetReferences;
+            Assert.AreEqual(_assetReferences.Length, array.Length);
+            Assert.AreEqual(SceneRefKind.AssetReference, array.GetSceneRefs()[0].Kind);
+            Assert.False(array.ShouldSetActive());
+        }
     }
 }
 #endif
