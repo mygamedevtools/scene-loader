@@ -317,14 +317,14 @@ namespace MyGameDevTools.SceneLoading.Tests
         [UnityTest]
         public IEnumerator Load_ByInfo_UnloadBySceneArray([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            Task<SceneResult> loadTask = Task.FromResult<SceneResult>(default);
+            SceneOperation loadOperation = null;
             yield return Unload_Template(manager, () =>
             {
-                loadTask = manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 0));
-                return loadTask;
+                loadOperation = manager.LoadAsync(new SceneParameters(SceneBuilder.SceneNames, 0));
+                return loadOperation;
             }, () =>
             {
-                SceneResult result = loadTask.GetAwaiter().GetResult();
+                SceneResult result = loadOperation.Result;
                 return manager.UnloadAsync(result.GetScenes());
             }, SceneBuilder.SceneNames.Length);
         }
