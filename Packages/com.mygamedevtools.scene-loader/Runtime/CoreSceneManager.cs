@@ -58,7 +58,7 @@ namespace MyGameDevTools.SceneLoading
             }
             else if (loadedSceneCount == 0)
             {
-                Debug.LogWarning("Tried to create a Scene Manager with all loaded scenes, but encoutered none. Did you create the Scene Manager on `Awake()`? If so, try moving the call to `Start()` instead.");
+                SceneManagerLog.Warning("Tried to create a Scene Manager with all loaded scenes, but encoutered none. Did you create the Scene Manager on `Awake()`? If so, try moving the call to `Start()` instead.");
             }
         }
         /// <summary>
@@ -102,7 +102,7 @@ namespace MyGameDevTools.SceneLoading
             ISceneData sceneData = null;
             bool isTargetSceneValid = scene.IsValid();
             if (isTargetSceneValid && !SceneDataUtilities.TryGetSceneDataByLoadedScene(scene, _loadedScenes, out sceneData))
-                throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" that has not been loaded through this {GetType().Name}.");
+                throw new InvalidOperationException($"[{GetType().Name}] Cannot set active the scene \"{scene.name}\" ({scene.handle}) that has not been loaded through this {GetType().Name}.");
 
             ISceneData previousScene = _activeScene;
             _activeScene = sceneData;

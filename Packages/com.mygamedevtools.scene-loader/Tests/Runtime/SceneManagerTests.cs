@@ -231,8 +231,6 @@ namespace MyGameDevTools.SceneLoading.Tests
         public void Unload_NotLoaded([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
             var sceneName = "not-a-real-scene";
-            if (manager is not SceneManager)
-                LogAssert.Expect(LogType.Warning, new Regex("Unable to get an ISceneData with the load scene info"));
             var wait = manager.UnloadAsync(sceneName).ToWaitTask();
             Assert.Throws<AggregateException>(() => wait.MoveNext());
         }
