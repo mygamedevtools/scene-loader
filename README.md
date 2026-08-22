@@ -113,7 +113,7 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 
 The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://scene-loader.mygamedevtools.com/).
 
-Upgrading from 4.x? Start with the [upgrade guide](./docs/upgrades/from-4-to-5.md) — the headline call is unchanged, and most of the rest is find-and-replace.
+Upgrading from 4.x? Start with the [upgrade guide](https://scene-loader.mygamedevtools.com/docs/upgrades/from-4-to-5) — the headline call is unchanged, and most of the rest is find-and-replace.
 
 ## 🤝 Contributing
 
