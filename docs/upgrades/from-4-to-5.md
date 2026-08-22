@@ -239,7 +239,7 @@ the token only ever cancelled the *await*. `Cancel()` stops progress reporting, 
 remaining phases and completes the operation in `Canceled`; the underlying load still finishes.
 :::
 
-## Watching a transition {#watching-a-transition}
+## Watching a transition
 
 A `SceneOperation` reports which phase it is in, which is what previously required reaching into
 a `LoadingBehavior` and calling `ContinueWith` on a publicly exposed `TaskCompletionSource`:
