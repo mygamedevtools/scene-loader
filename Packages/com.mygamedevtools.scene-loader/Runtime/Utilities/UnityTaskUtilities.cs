@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,27 +6,42 @@ using UnityEngine.LowLevel;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// A player-loop hook that turns backend operations into awaitable tasks.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="ISceneBackend"/> deliberately has no completion event, so this polls once per
+    /// frame instead of bridging through one — which drops a delegate, a <c>token.Register</c>
+    /// closure and a queued <c>Action</c> closure per scene.
+    /// </remarks>
     public static partial class UnityTaskUtilities
     {
-        static Queue<Action> Actions;
+        struct PendingOperation
+        {
+            public SceneBackendHandle Handle;
+            public TaskCompletionSource<bool> Completion;
+            public CancellationToken Token;
+        }
 
-        // Statics survive a disabled Domain Reload, so don't reuse the previous session's queue.
+        static List<PendingOperation> Pending;
+
+        // Statics survive a disabled Domain Reload, so don't reuse the previous session's list.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #if UNITY_6000_5_OR_NEWER
         [OnExitingPlayMode]
 #endif
         static void ResetStatics()
         {
-            Actions = null;
+            Pending = null;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void HookToPlayerLoop()
         {
-            if (Actions != null)
+            if (Pending != null)
                 return;
 
-            Actions = new Queue<Action>(16);
+            Pending = new List<PendingOperation>(16);
 
             PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             List<PlayerLoopSystem> updatedSystems = new(playerLoop.subSystemList);
@@ -36,65 +50,63 @@ namespace MyGameDevTools.SceneLoading
             updatedSystems.Add(new PlayerLoopSystem
             {
                 type = typeof(UnityTaskUtilities),
-                updateDelegate = ProcessMainThreadQueue
+                updateDelegate = Tick
             });
 
             playerLoop.subSystemList = updatedSystems.ToArray();
             PlayerLoop.SetPlayerLoop(playerLoop);
         }
 
-        public static Task FromAsyncOperation(IAsyncSceneOperation asyncSceneOperation, CancellationToken token = default)
+        /// <summary>Completes when the handle's operation finishes, or cancels with the token.</summary>
+        public static Task FromBackendHandle(SceneBackendHandle handle, CancellationToken token = default)
         {
-            TaskCompletionSource<bool> tcs = new();
+            TaskCompletionSource<bool> completion = new();
 
-            token.Register(() =>
+            if (token.IsCancellationRequested)
             {
-                if (!tcs.Task.IsCompleted)
-                {
-                    tcs.TrySetCanceled(token);
-                }
-            });
-
-            Enqueue(() =>
-            {
-                if (tcs.Task.IsCanceled || tcs.Task.IsFaulted)
-                    return;
-
-                if (asyncSceneOperation.IsDone)
-                {
-                    tcs.SetResult(true);
-                    return;
-                }
-
-                asyncSceneOperation.Completed += () =>
-                {
-                    tcs.TrySetResult(true);
-                };
-            });
-
-            return tcs.Task;
-        }
-
-        static void Enqueue(Action action)
-        {
-            lock (Actions)
-            {
-                Actions.Enqueue(action);
+                completion.SetCanceled();
+                return completion.Task;
             }
+
+            if (handle.Backend.IsDone(handle))
+            {
+                completion.SetResult(true);
+                return completion.Task;
+            }
+
+            Pending ??= new List<PendingOperation>(16);
+            Pending.Add(new PendingOperation
+            {
+                Handle = handle,
+                Completion = completion,
+                Token = token,
+            });
+
+            return completion.Task;
         }
 
-        static void ProcessMainThreadQueue()
+        static void Tick()
         {
-            // A previous session's system can tick before the queue is rebuilt.
-            if (Actions == null)
+            // A previous session's player-loop system can tick before the list is rebuilt.
+            if (Pending == null || Pending.Count == 0)
                 return;
 
-            lock (Actions)
+            for (int i = Pending.Count - 1; i >= 0; i--)
             {
-                while (Actions.TryDequeue(out Action action))
+                PendingOperation pending = Pending[i];
+
+                if (pending.Token.IsCancellationRequested)
                 {
-                    action.Invoke();
+                    Pending.RemoveAt(i);
+                    pending.Completion.TrySetCanceled(pending.Token);
+                    continue;
                 }
+
+                if (!pending.Handle.Backend.IsDone(pending.Handle))
+                    continue;
+
+                Pending.RemoveAt(i);
+                pending.Completion.TrySetResult(true);
             }
         }
     }
