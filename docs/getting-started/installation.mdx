@@ -10,11 +10,16 @@ import TabItem from '@theme/TabItem';
 
 You can install the package via **OpenUPM**, **Git**, **Tarball** or the **Unity Asset Store**:
 
-:::info[Package Signing]
-Release tarballs are signed with [UPM package signing](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), which the **Package Manager** verifies from **Unity 6.3** onwards.
-The **OpenUPM** and **Tarball** installations keep the signature, while **Git** installations are always unsigned.
+Releases are signed with [UPM package signing](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), which the **Package Manager** verifies from **Unity 6.3** onwards. Which method you pick decides whether you get that signature:
+
+| Method | Signature |
+|---|---|
+| **OpenUPM** | Signed — republishes the release tarball unchanged |
+| **Tarball** | Signed |
+| **Git** | Unsigned, always |
+| **Asset Store** | Not applicable — imported into `Assets/` rather than managed by the Package Manager |
+
 Releases published before signing was introduced (`4.1.1` and earlier) are unsigned.
-:::
 
 <Tabs defaultValue={(() => {
           if (typeof window !== "undefined") {
@@ -25,20 +30,13 @@ Releases published before signing was introduced (`4.1.1` and earlier) are unsig
       })()}>
 <TabItem value="openupm" label="OpenUPM" default>
 
-:::note[Signed]
-OpenUPM republishes the signed tarball from each GitHub release unchanged, so the signature is preserved.
-Versions published before signing was introduced remain unsigned.
-:::
-
 This package is available on the [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader) registry.
 You can install an **OpenUPM** package either via [openupm-cli](https://github.com/openupm/openupm-cli) or manually via the **Package Manager**.
 
 <Tabs>
 <TabItem value="openupm-cli" label="openupm-cli" default>
 
-:::info[Required]
 Requires [openupm-cli](https://github.com/openupm/openupm-cli) and [nodejs 18 or above](https://nodejs.org/en/download/).
-:::
 
 In your Unity project folder, open the terminal and type:
 
@@ -69,14 +67,7 @@ This will automatically update your **Scoped Registries** and install the packag
 
 <TabItem value="git" label="Git">
 
-:::info[Required]
-Requires [Git](https://git-scm.com/) installed and added to the PATH
-:::
-
-:::warning[Unsigned]
-Packages installed from a Git URL are not signed, so the **Package Manager** displays them as unsigned on **Unity 6.3** and above.
-Install via **OpenUPM** or **Tarball** if you need a signed package.
-:::
+Requires [Git](https://git-scm.com/) installed and added to the PATH.
 
 1. Open `Window/Package Manager`.
 2. Click <kbd>+</kbd>.
@@ -86,10 +77,6 @@ Install via **OpenUPM** or **Tarball** if you need a signed package.
 </TabItem>
 
 <TabItem value="tarball" label="Tarball">
-
-:::note[Signed]
-Release tarballs are signed, so the **Package Manager** displays them as signed on **Unity 6.3** and above.
-:::
 
 1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
 2. Open `Window/Package Manager`.
@@ -106,12 +93,8 @@ Release tarballs are signed, so the **Package Manager** displays them as signed 
 5. Click `Import`.
 6. Make sure everything is selected and click `Import` again.
 
-:::info
-When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
-:::
-
-:::note
-Asset Store packages are imported into your project's `Assets` folder instead of being managed by the **Package Manager**, so package signing does not apply to them.
+:::warning
+When updating from the Asset Store, remove the previous version completely before importing the new one.
 :::
 
 </TabItem>
