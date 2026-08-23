@@ -13,9 +13,9 @@ namespace MyGameDevTools.SceneLoading
         /// </summary>
         IAsyncSceneOperation AsyncOperation { get; }
         /// <summary>
-        /// The <see cref="ILoadSceneInfo"/> that originally requested to load the scene.
+        /// The <see cref="SceneRef"/> that originally requested to load the scene.
         /// </summary>
-        ILoadSceneInfo LoadSceneInfo { get; }
+        SceneRef SceneRef { get; }
         /// <summary>
         /// The active scene reference. Can be invalid if the scene has not yet loaded.
         /// </summary>
@@ -38,11 +38,11 @@ namespace MyGameDevTools.SceneLoading
         void UpdateSceneReference();
 
         /// <summary>
-        /// Returns whether this <see cref="ISceneData"/> can be matched by the given <paramref name="loadSceneInfo"/>.
-        /// If the <paramref name="loadSceneInfo"/> is equal to the <see cref="ISceneData.LoadSceneInfo"/> or has a direct reference to the scene, it returns true.
+        /// Returns whether this <see cref="ISceneData"/> can be matched by the given <paramref name="sceneRef"/>.
+        /// If the <paramref name="sceneRef"/> is equal to the <see cref="ISceneData.SceneRef"/> or has a direct reference to the scene, it returns true.
         /// </summary>
-        /// <param name="loadSceneInfo"><see cref="ILoadSceneInfo"/> to validate a match.</param>
-        bool MatchesLoadSceneInfo(ILoadSceneInfo loadSceneInfo);
+        /// <param name="sceneRef"><see cref="SceneRef"/> to validate a match.</param>
+        bool Matches(SceneRef sceneRef);
 
         /// <summary>
         /// Triggers the load async operation and updates the <see cref="AsyncOperation"/> reference.
