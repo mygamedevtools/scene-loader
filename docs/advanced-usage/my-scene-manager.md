@@ -32,7 +32,7 @@ MySceneManager.TransitionAsync(sceneParameters, loadingScreen);
 MySceneManager.ReloadActiveSceneAsync(loadingScreen);
 ```
 
-In `4.x` this class re-implemented a large family of extension methods so that every reference kind and arity had its own signature. Those are gone: `SceneParameters` and `LoadingScreen` both convert implicitly, so a single signature covers what used to need sixteen.
+There is one signature per operation rather than one per reference kind, because `SceneParameters` and `LoadingScreen` both convert implicitly:
 
 ```cs
 MySceneManager.LoadAsync("my-scene");                     // string

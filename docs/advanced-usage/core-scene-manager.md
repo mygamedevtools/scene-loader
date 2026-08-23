@@ -43,9 +43,9 @@ public interface ISceneManager : IDisposable
 ```
 
 :::info
-**Four async methods, where `4.x` had 64.** Every reference kind and arity is reachable through the implicit conversions on `SceneParameters` and `LoadingScreen` instead of through another overload.
+**Four async methods, and no overloads.** Every reference kind and arity is reachable through the implicit conversions on `SceneParameters` and `LoadingScreen`, so loading one scene by name and five by asset reference are the same method.
 
-`IProgress<float>` and `CancellationToken` are gone from every signature — you attach them to the returned [`SceneOperation`](./scene-operation.md) instead of deciding up front.
+Progress and cancellation are not parameters either — they live on the returned [`SceneOperation`](./scene-operation.md).
 :::
 
 You will find many similarities between Unity's [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html) class, and that's both for maintaining an easy learning curve as well as because some of these operations will end up calling the _Unity Scene Manager_ internally (like `SetActiveScene` for instance).
@@ -79,7 +79,7 @@ yield return sceneManager.LoadAsync("my-scene").ToCoroutine();
 :::
 
 All four also receive a `SceneParameters` struct.
-So, instead of having multiple methods for receiving the scene's build index or the scene's name, we simply have a struct.
+So one method covers a build index, a name, a path, an address or an array of any of them.
 
 ## Constructor
 

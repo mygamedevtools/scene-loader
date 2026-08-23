@@ -33,7 +33,7 @@ The `TransitionAsync` method lets you provide the scene (or scenes) you want to 
 
 ## The loading screen
 
-The second argument to `TransitionAsync` is a [`LoadingScreen`](../getting-started/loading-screens.md), not a scene. A scene name, path, address, build index or `Scene` converts to one implicitly, so the `4.x` spelling still compiles:
+The second argument to `TransitionAsync` is a [`LoadingScreen`](../getting-started/loading-screens.md). Naming a scene gives you one implicitly, so the common case stays a one-liner:
 
 ```cs
 MySceneManager.TransitionAsync("target", "loading");        // a scene, as before
@@ -57,8 +57,6 @@ op.StateChanged += o =>
 
 await op;
 ```
-
-In `4.x` this meant locating the `LoadingBehavior` by scene comparison and calling `ContinueWith` on a `TaskCompletionSource` the package exposed publicly.
 
 You can also rely on the target scene's own `Awake()`, or subscribe to `SceneLoaded` on the operation or the manager.
 

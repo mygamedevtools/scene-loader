@@ -7,18 +7,11 @@ description: Understand the SceneOperation handle returned by every operation.
 
 Every operation returns a `SceneOperation` — **synchronously**, before the work starts. It is a live handle on that work: what phase it is in, how far along it is, what it produced, and how to wait for it.
 
-This replaces `4.x`'s `Task<SceneResult>` and its internal `IAsyncSceneOperation`.
+## Why a handle and not a Task
 
-## Why a handle instead of a Task
+A `Task` gives you one thing: the eventual result. Anything else you want to know about a scene load — how far along it is, which phase it is in, whether you can still stop it — has to be decided *before* the call, as extra parameters.
 
-In `4.x` you had to decide up front whether you wanted progress or cancellation, because they were parameters:
-
-```cs
-// 4.x — decided at the call, and there was nothing to attach to afterwards
-await MySceneManager.LoadAsync(sceneParameters, progress, token);
-```
-
-A `SceneOperation` is something you can hold, so those move off the signature and onto the handle:
+A `SceneOperation` is something you hold instead, so all of that attaches after the call:
 
 ```cs
 SceneOperation op = MySceneManager.TransitionAsync("target", "loading");
@@ -29,7 +22,7 @@ op.StateChanged += o => { if (o.State == SceneOperationState.ScreenOut) BeginInt
 SceneResult result = await op;
 ```
 
-That is what let `IProgress<float>` and `CancellationToken` leave all 64 `4.x` signatures.
+This is why none of the four methods take a progress or cancellation parameter: there is somewhere better to put them.
 
 ## Waiting for it
 
@@ -79,7 +72,7 @@ A subscriber that throws is reported through [`SceneManagerLog`](./logging.md) a
 
 Which of these you see depends on the operation — a plain load never reaches `ScreenIn`. The order follows the transition flow, which is why `Unloading` comes before `Loading`: the source scene goes away once the loading screen is up, before the target is brought in.
 
-Knowing when the loading screen is completely gone used to mean locating a `LoadingBehavior` and calling `ContinueWith` on a publicly exposed `TaskCompletionSource`. Now it is a state:
+So "the loading screen has finished fading out, start the cutscene" is a state you subscribe to:
 
 ```cs
 op.StateChanged += o =>
@@ -97,7 +90,7 @@ op.CancelWith(destroyCancellationToken);   // the opt-in bridge
 ```
 
 :::warning
-**The underlying Unity operations keep running.** They cannot be aborted, which is why `4.x`'s tokens never cancelled the work either — they only cancelled the *await*. A scene already loading will finish; what stops is this operation's reporting, its remaining phases, and its waiters.
+**The underlying Unity operations keep running.** A scene the engine has started loading cannot be aborted, so it will finish. What stops is this operation's reporting, its remaining phases, and its waiters.
 :::
 
 ## Combining
@@ -107,7 +100,7 @@ SceneOperation both = SceneOperation.WhenAll(first, second);
 SceneOperation any  = SceneOperation.WhenAny(first, second);
 ```
 
-These run over the same continuation lists, so they cost nothing per operation — unlike `Task.WhenAll` over `AsTask()`, which costs a `TaskCompletionSource` each.
+Prefer these over `Task.WhenAll` on `AsTask()`: they run over the operations' own continuation lists, so they do not allocate a `Task` per operation.
 
 ## Progress
 

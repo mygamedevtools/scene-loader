@@ -7,14 +7,14 @@ description: How to create loading screens with the package.
 
 During scene transitions, you have the option to provide a loading screen — an animated splash screen or a loading progress bar, for example.
 
-In `4.x` a loading screen **had to be a scene**. In `5.x` it is a `LoadingScreen`, and a scene is one of the things that converts into one:
+A loading screen is a `LoadingScreen`. The simplest one is a scene, and naming a scene gives you that for free:
 
 ```cs
-MySceneManager.TransitionAsync("target", "loading");           // a scene, as before
+MySceneManager.TransitionAsync("target", "loading");           // a scene
 MySceneManager.TransitionAsync("target", new MyScreen());      // a prefab, a UI Toolkit document, anything
 ```
 
-A scene name, path, address, build index, `Scene` or `AssetReference` all convert implicitly, so existing `4.x` calls keep working unchanged.
+A scene name, path, address, build index, `Scene` or `AssetReference` all convert into a scene-based loading screen implicitly, so you only write `LoadingScreen` yourself when you want something that is *not* a scene.
 
 ## Loading Screen Example
 
@@ -55,9 +55,7 @@ The `LoadingCompleted` event notifies when the scene load operation is completed
 The `Progressed` event sends a `float` parameter, ranging from 0 to 1, to report the progress of the scene loading operation.
 
 :::note
-`4.x` exposed two public `TaskCompletionSource` fields here, `TransitionInTask` and `TransitionOutTask`. Any consumer could complete them and desynchronise the transition, so they are replaced by `WaitForShowAsync()` / `WaitForHideAsync()`, which only *observe*, plus the `IsShown` / `IsHidden` properties.
-
-Both gates are also idempotent now, which fixes the `4.x` bug where calling `StartTransition()` twice threw `InvalidOperationException`.
+To wait on the screen's own transitions rather than the scene load, use `WaitForShowAsync()` and `WaitForHideAsync()`, or read the `IsShown` / `IsHidden` properties. These only observe the gates — you open them with `StartTransition()` and `EndTransition()`, and calling either twice is harmless.
 :::
 
 Back to the `LoadingBehavior`, it has a few options you can set on the Unity [Inspector](https://docs.unity3d.com/Manual/UsingTheInspector.html):
@@ -68,7 +66,7 @@ Back to the `LoadingBehavior`, it has a few options you can set on the Unity [In
 You will use these controls to customize your loading screen behavior.
 
 :::warning
-A gate nobody opens no longer hangs silently. If a transition waits more than 10 seconds on one, a development build names the `LoadingBehavior` holding it and keeps waiting.
+If you enable one of these toggles and never call the matching trigger, the transition waits forever. It will not fail silently: after 10 seconds a development build names the `LoadingBehavior` holding it up, and keeps waiting.
 :::
 
 ### The Loading Feedback

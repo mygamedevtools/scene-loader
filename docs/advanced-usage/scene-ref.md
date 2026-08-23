@@ -5,9 +5,9 @@ description: Understand the role of the SceneRef struct.
 
 # Scene Ref
 
-The `SceneRef` is a reference to a scene — the thing you pass to every operation. It replaces `4.x`'s `ILoadSceneInfo` interface and its five implementations.
+The `SceneRef` is a reference to a scene — the thing you pass to every operation. One struct covers every way of naming a scene.
 
-## One struct, not five types
+## One struct for every kind of reference
 
 ```cs
 public readonly struct SceneRef
@@ -21,7 +21,7 @@ public readonly struct SceneRef
 }
 ```
 
-`4.x` typed its reference as `object`, so a build index boxed on the way in and cast on the way out, and comparing two references boxed both sides. `SceneRef` stores each kind in its own field and discriminates with an enum, so nothing boxes.
+Each kind lives in its own field, with `Kind` saying which one is set. That is what keeps a build index from being boxed into an `object` and cast back out on every call.
 
 You rarely write `SceneRef` yourself, because everything converts implicitly:
 
@@ -69,7 +69,7 @@ flowchart
 
 ## How a string is resolved
 
-This is the part with no `4.x` equivalent. In `4.x` you chose the API — `LoadAsync` or `LoadAddressableAsync` — and that decided the backend. In `5.x` a bare string is a `Key`, and the `SceneRefResolver` settles it:
+You never pick between an addressable and a non-addressable API. A bare string arrives as a `Key`, and the `SceneRefResolver` decides what it means:
 
 1. **The build settings win.** If the string matches a scene name or path in the build settings, it becomes a `BuildIndex`.
 2. Otherwise, Addressables is probed, and it becomes an `Address`.

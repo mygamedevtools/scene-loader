@@ -7,7 +7,7 @@ description: Understand how backends dispatch scene operations.
 
 A **backend** is the thing that actually loads a scene. There are two in the box — the Unity Scene Manager and Addressables — and `ISceneBackend` is what makes that choice a lookup rather than a branch.
 
-This replaces `4.x`'s `ISceneData` and `SceneDataBuilder`.
+You will not touch this to load a scene. It matters when you want to know *how* a scene gets loaded, or when you want to add a way of your own.
 
 ## The interface
 
@@ -26,7 +26,7 @@ public interface ISceneBackend
 }
 ```
 
-In `4.x` the addressable-or-not decision was re-made at several points inside a single operation. Here it happens **once**, when the resolved `SceneRefKind` is handed to the registry:
+The addressable-or-not decision happens **once** per operation, when the resolved `SceneRefKind` is handed to the registry:
 
 ```mermaid
 flowchart LR
@@ -58,13 +58,13 @@ flowchart LR
 - `AddressablesSceneBackend` gets a `SceneInstance` back from Addressables, so it can name its own scene directly.
 - `StandardSceneBackend` cannot. The Unity Scene Manager has no API that says "this `AsyncOperation` produced that `Scene`", so the honest answer is "no", and the scene is matched afterwards by the linker.
 
-In `4.x` this asymmetry was a warn-and-return-default, which meant a correct operation logged a warning.
+Returning `false` rather than a default `Scene` is what keeps that matching step explicit instead of silent.
 
 ## Handles
 
 `SceneBackendHandle` is a **readonly struct** — a value, not an object — carrying the backend that owns it, the `SceneRef` it came from, the `Scene` once known, and the underlying Unity operation.
 
-Handles are ticked by the `SceneOperationPump` on the player loop. `4.x` polled with `await Task.Yield()` once per frame per operation group, round-tripping through the `SynchronizationContext` every time and reporting progress whether or not the value had moved. One pump, one pass, and `Progressed` fires only past an epsilon.
+Handles are ticked by the `SceneOperationPump`, a single player-loop pass over every live operation. That is what raises `Progressed` — and only when the value has actually moved past a small epsilon, so a bar bound to it does not churn every frame.
 
 ## Writing your own backend
 
@@ -81,7 +81,7 @@ SceneBackendRegistry.Register(new MyBackend());
 ```
 
 :::info
-This is the extension point that `4.x` did not have. Supporting a different asset-delivery system used to mean forking `SceneDataBuilder`; now it means implementing six methods and registering them.
+This is the extension point for a different asset-delivery system — a custom bundle pipeline, or a storefront SDK that hands you scenes. Implement six methods, register the backend, and every existing call site keeps working.
 :::
 
 :::warning

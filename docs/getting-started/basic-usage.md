@@ -51,7 +51,7 @@ MySceneManager.LoadAsync(new SceneParameters("my-scene", true));
 MySceneManager.LoadAsync(new SceneParameters(new SceneRef[] { 1, 2, 3 }, 1));
 ```
 
-You get the progress from the returned handle, rather than by passing an `IProgress<float>` in:
+Every operation returns a handle straight away, and progress comes from that:
 
 ```cs
 SceneOperation op = MySceneManager.LoadAsync("my-scene");
@@ -98,7 +98,7 @@ MySceneManager.TransitionAsync(new AssetReference[] { scene1, scene2, scene3 });
 ```
 
 :::info
-The target scenes and the loading screen **no longer have to be the same reference kind**. In `4.x` mixing them meant picking a different method; here each is resolved independently.
+The target scenes and the loading screen are resolved independently, so they do not have to be the same kind of reference — loading a scene by build index while showing a loading screen named by string is fine.
 
 The loading screen does not even have to be a scene — see [Loading Screens](./loading-screens.md).
 :::
@@ -144,7 +144,7 @@ Task<SceneResult> task = MySceneManager.LoadAsync("my-scene").AsTask();
 
 ## Cancelling
 
-There is no `CancellationToken` parameter. You cancel through the handle:
+You cancel through the handle, rather than by passing a token in:
 
 ```cs
 SceneOperation op = MySceneManager.LoadAsync("my-scene");
@@ -155,5 +155,5 @@ MySceneManager.LoadAsync("my-scene").CancelWith(destroyCancellationToken);
 ```
 
 :::warning
-Cancelling stops **this operation's** reporting, its remaining phases and its waiters. The underlying Unity load still runs to completion — Unity scene operations cannot be aborted, which is why `4.x`'s tokens never cancelled the work either.
+Cancelling stops **this operation's** reporting, its remaining phases and its waiters. The underlying Unity load still runs to completion: a scene the engine has started loading cannot be aborted.
 :::

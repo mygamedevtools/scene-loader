@@ -58,16 +58,10 @@ flowchart TB
 A Reload operation is considered a Transition operation.
 :::
 
-## What changed from 4.x
-
-If you are coming from `4.x`, three of these are new names for things you already know:
-
-| 4.x | 5.x |
-|---|---|
-| `ILoadSceneInfo` and its five implementations | [`SceneRef`](./scene-ref.md), one struct |
-| `ISceneData`, `SceneDataBuilder` | [`ISceneBackend`](./scene-backend.md) and `SceneBackendHandle` |
-| `IAsyncSceneOperation`, `Task<SceneResult>` | [`SceneOperation`](./scene-operation.md) |
-
-The 64 public methods of `4.x` collapse to the four above. See the [upgrade guide](../upgrades/from-4-to-5.md) for the full mapping.
-
 We will cover each of these structures in the next pages.
+
+:::info[Coming from 4.x?]
+Three of these are new names for things you already know — `SceneRef` for `ILoadSceneInfo`, `ISceneBackend` for `ISceneData`, `SceneOperation` for the returned `Task`. The [upgrade guide](../upgrades/from-4-to-5.md) maps every method.
+
+If you are new to the package, you can ignore that entirely.
+:::
