@@ -21,41 +21,41 @@ MySceneManager.LoadAsync("Scenes/my-scene");
 // Build Index
 MySceneManager.LoadAsync(1);
 // Address
-MySceneManager.LoadAddressableAsync("my-scene-address");
+MySceneManager.LoadAsync(SceneRef.Address("my-scene-address"));
 // Asset Reference
-MySceneManager.LoadAddressableAsync(mySceneAssetReference);
+MySceneManager.LoadAsync(mySceneAssetReference);
 ```
 
-Additionally, you can also pass an array of scenes (given the same type of reference):
+:::info
+There is no separate addressable API. A plain string is looked up in your **build settings first**, then in Addressables — so `LoadAsync("my-scene")` finds your scene wherever it lives.
+
+`SceneRef.Address(...)` is the override, for when a name exists in both places or when you want to skip the lookup. See [Scene Ref](../advanced-usage/scene-ref.md#how-a-string-is-resolved).
+:::
+
+Additionally, you can also pass an array of scenes:
 
 ```cs
 // Array of build indexes
-MySceneManager.LoadAsync(new int[] { 1, 2, 3});
+MySceneManager.LoadAsync(new int[] { 1, 2, 3 });
+// Mixed kinds are fine too
+MySceneManager.LoadAsync(new SceneRef[] { "scene-a", 2, SceneRef.Address("scene-c") });
 ```
 
-The loaded scene can be marked to be set as the active scene:
+The loaded scene can be marked to be set as the active scene, through `SceneParameters`:
 
 ```cs
 // Loads a scene and sets it as the active scene
-MySceneManager.LoadAsync("my-scene", true);
+MySceneManager.LoadAsync(new SceneParameters("my-scene", true));
 
-// Loads a list of scenes and set the scene at index 1 as the active scene
-MySceneManager.LoadAsync(new int[] { 1, 2, 3 }, 1);
+// Loads a list of scenes and sets the scene at index 1 as the active scene
+MySceneManager.LoadAsync(new SceneParameters(new SceneRef[] { 1, 2, 3 }, 1));
 ```
 
-You can get the progress of the loading operation by passing an `IProgress<float>` implementation, for example:
+Every operation returns a handle straight away, and progress comes from that:
 
 ```cs
-public class SimpleProgress : IProgress<float>
-{
-    public float Value;
-
-    public void Report(float value) => Value = value;
-}
-// [...]
-
-SimpleProgress progress = new SimpleProgress();
-MySceneManager.LoadAsync("my-scene", true, progress);
+SceneOperation op = MySceneManager.LoadAsync("my-scene");
+op.Progressed += value => progressBar.value = value;
 ```
 
 ## Unloading scenes
@@ -70,9 +70,9 @@ MySceneManager.UnloadAsync("Scenes/my-scene");
 // Build Index
 MySceneManager.UnloadAsync(1);
 // Address
-MySceneManager.UnloadAddressableAsync("my-scene-address");
+MySceneManager.UnloadAsync(SceneRef.Address("my-scene-address"));
 // Asset Reference
-MySceneManager.UnloadAddressableAsync(mySceneAssetReference);
+MySceneManager.UnloadAsync(mySceneAssetReference);
 // Scene
 MySceneManager.UnloadAsync(MySceneManager.GetActiveScene());
 ```
@@ -81,12 +81,12 @@ You can also unload multiple scenes:
 
 ```cs
 // Array of build indexes
-MySceneManager.UnloadAsync(new int[] { 1, 2, 3});
+MySceneManager.UnloadAsync(new int[] { 1, 2, 3 });
 ```
 
 ## Scene Transitions
 
-To perform scene transitions, first you pass the target scene(s) and then the intermediate scene (optional).
+To perform scene transitions, first you pass the target scene(s) and then the loading screen (optional).
 You can use the same references from the `LoadAsync` method.
 
 ```cs
@@ -94,14 +94,16 @@ You can use the same references from the `LoadAsync` method.
 MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 
 // Array of AssetReference
-MySceneManager.TransitionAddressableAsync(new AssetReference[] { scene1, scene2, scene3 });
+MySceneManager.TransitionAsync(new AssetReference[] { scene1, scene2, scene3 });
 ```
 
 :::info
-The reference type must be the same for the target scene and the intermediate scene.
+The target scenes and the loading screen are resolved independently, so they do not have to be the same kind of reference — loading a scene by build index while showing a loading screen named by string is fine.
+
+The loading screen does not even have to be a scene — see [Loading Screens](./loading-screens.md).
 :::
 
-Check the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample to try different loading scenes when performing **Scene Transitions**.
+Check the [Loading Scene Examples](../samples/loading-scene-examples.md) Sample to try different loading screens when performing **Scene Transitions**.
 
 ## Scene Reloading
 
@@ -109,27 +111,49 @@ You can reload the active scene using the `ReloadActiveSceneAsync` method.
 A scene reload is also a **scene transition** internally.
 It will load the active scene via the same reference it was loaded initially.
 
-Just like with **Scene Transitions**, you can also pass an intermediate loading scene.
+Just like with **Scene Transitions**, you can also pass a loading screen.
 
 ```cs
 MySceneManager.ReloadActiveSceneAsync("my-loading-scene");
 
 // No loading screen:
-MySceneManager.ReloadActiveSceneAsync(intermediateSceneReference: null);
+MySceneManager.ReloadActiveSceneAsync();
 ```
 
 ## Async Programming
 
-All scene operations are awaitable and can be used in coroutines as well. For example:
+Every operation returns a [`SceneOperation`](../advanced-usage/scene-operation.md) immediately — a handle on the work, which you can await directly:
 
 ```cs
 await MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");
 // Do something after the transition
 ```
 
-For coroutines, you must convert the `Task` into a `WaitTask`, which is a helper struct to support coroutines:
+For coroutines, use `ToCoroutine()`:
 
 ```cs
-yield return MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene").ToWaitTask();
+yield return MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene").ToCoroutine();
 // Do something after the transition
 ```
+
+And if a third-party API needs a `Task`, `AsTask()` bridges to one:
+
+```cs
+Task<SceneResult> task = MySceneManager.LoadAsync("my-scene").AsTask();
+```
+
+## Cancelling
+
+You cancel through the handle, rather than by passing a token in:
+
+```cs
+SceneOperation op = MySceneManager.LoadAsync("my-scene");
+op.Cancel();
+
+// Or bridge a token you already have:
+MySceneManager.LoadAsync("my-scene").CancelWith(destroyCancellationToken);
+```
+
+:::warning
+Cancelling stops **this operation's** reporting, its remaining phases and its waiters. The underlying Unity load still runs to completion: a scene the engine has started loading cannot be aborted.
+:::

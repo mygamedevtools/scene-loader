@@ -55,15 +55,6 @@ Each one of these buttons will trigger a scene transition to the other game scen
 
 Try out the transitions to see the effects in realtime.
 
-## Loading screens that are not scenes
-
-Alongside the loading **scenes**, the sample ships two `LoadingScreen` implementations that show the same progress without loading a scene at all:
-
-- `PrefabLoadingScreen` — instantiates a prefab into the `LoadingScreenHost`.
-- `UIDocumentLoadingScreen` — drives a UI Toolkit `UIDocument`.
-
-Both are working references you can copy into your own project. See [Creating Loading Screens](../getting-started/loading-screens.md#loading-screens-that-are-not-scenes) for the abstraction they implement.
-
 ## Understanding the Loading Scenes
 
 All loading scenes have the `LoadingBehavior` component and control the loading progress via the `LoadingBehavior.Progress` events and methods.
