@@ -21,5 +21,4 @@ This package has **no dependencies** and is compatible with some packages.
 If you wish to use it with `Addressables` or `TextMeshPro`, make sure you install the packages:
 
 * `com.unity.addressables` >= 1.19.0
-* `com.unity.ugui` >= 2.0.0 (ships `TextMeshPro` on Unity 6)
-* `com.unity.textmeshpro` >= 2.2.0 (standalone `TextMeshPro` package)
+* `com.unity.ugui` >= 2.0.0 — this is also what ships `TextMeshPro`, which the progress-text feedback components use
