@@ -48,10 +48,28 @@ namespace MyGameDevTools.SceneLoading
             if (Level < level)
                 return;
 
-            // "{0}" rather than passing the message as the format string: a message that
-            // happens to contain braces — a scene path, a serialized value — would otherwise
-            // be parsed as a format specifier and throw.
-            _handler.LogFormat(logType, null, "{0}", $"[{nameof(MySceneManager)}] {message}");
+            ILogHandler handler = _handler;
+
+            try
+            {
+                // "{0}" rather than passing the message as the format string: a message that
+                // happens to contain braces — a scene path, a serialized value — would otherwise
+                // be parsed as a format specifier and throw.
+                handler.LogFormat(logType, null, "{0}", $"[{nameof(MySceneManager)}] {message}");
+            }
+            catch (System.Exception exception)
+            {
+                // An assigned handler is someone else's code — an in-game console, an analytics
+                // sink — and it is reached from error paths that are already containing a
+                // failure. Letting it throw there would escape that containment and strand the
+                // caller. Fall back to the console it replaced, which is the one handler that
+                // cannot be broken from outside.
+                ILogHandler fallback = Debug.unityLogger.logHandler;
+                if (ReferenceEquals(handler, fallback))
+                    return;
+
+                fallback.LogFormat(LogType.Error, null, "{0}", $"[{nameof(MySceneManager)}] The assigned {nameof(Handler)} threw, so this went to the console instead: {message} — {exception}");
+            }
         }
 
         // Statics survive a disabled Domain Reload, so a test that raises the level or swaps
