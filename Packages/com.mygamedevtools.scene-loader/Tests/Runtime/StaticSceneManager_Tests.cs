@@ -87,9 +87,9 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [UnityTest]
-        public IEnumerator Reload([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleLoadSceneInfoList))] ILoadSceneInfo loadSceneInfo)
+        public IEnumerator Reload([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SingleSceneRefList))] SceneRef sceneRef)
         {
-            yield return Reload_Template(loadSceneInfo, () => MySceneManager.ReloadActiveSceneAsync(intermediateSceneReference: null));
+            yield return Reload_Template(sceneRef, () => MySceneManager.ReloadActiveSceneAsync());
         }
 
         public IEnumerator Load_Template(Func<Task<SceneResult>> loadTask, SimpleProgress progress, int sceneCount, int setIndexActive)
@@ -119,9 +119,9 @@ namespace MyGameDevTools.SceneLoading.Tests
             void reportSceneLoaded(Scene loadedScene) => reportedScenes.Add(loadedScene);
         }
 
-        public IEnumerator Reload_Template(ILoadSceneInfo loadSceneInfo, Func<Task<SceneResult>> reloadTask)
+        public IEnumerator Reload_Template(SceneRef sceneRef, Func<Task<SceneResult>> reloadTask)
         {
-            yield return MySceneManager.LoadAsync(new SceneParameters(loadSceneInfo, true)).ToWaitTask();
+            yield return MySceneManager.LoadAsync(new SceneParameters(sceneRef, true)).ToWaitTask();
             string activeScene = MySceneManager.GetActiveScene().name;
 
             var task = reloadTask();
@@ -189,7 +189,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         /// <summary>
         /// Required to test some transition scenarios.
         /// </summary>
-        public static WaitTask<SceneResult> LoadFirstScene() => MySceneManager.LoadAsync(SceneBuilder.SceneNames[1], true).ToWaitTask();
+        public static WaitTask<SceneResult> LoadFirstScene() => MySceneManager.LoadAsync(new SceneParameters((SceneRef)SceneBuilder.SceneNames[1], true)).ToWaitTask();
 
         public static IEnumerator UnloadManagerScenes()
         {
