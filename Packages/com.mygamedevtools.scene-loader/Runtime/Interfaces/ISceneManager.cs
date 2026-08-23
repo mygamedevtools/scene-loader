@@ -59,8 +59,8 @@ namespace MyGameDevTools.SceneLoading
         /// <summary>
         /// Triggers a transition to a group of scenes.
         /// It will transition from the current active scene (<see cref="GetActiveScene()"/>)
-        /// to the target scene or a group of scenes via a <see cref="SceneParameters"/> struct, with an optional <paramref name="loadingScene"/>.
-        /// If the <paramref name="loadingScene"/> is not set, the transition will have no intermediate loading scene and will instead simply load the target scene directly.
+        /// to the target scene or a group of scenes via a <see cref="SceneParameters"/> struct, with an optional <paramref name="loadingScreen"/>.
+        /// If the <paramref name="loadingScreen"/> is not set, the transition will have no loading screen and will instead simply load the target scene directly.
         /// The complete transition flow is:
         /// <br/><br/>
         /// 1. Load the intermediate scene (if provided).<br/>
@@ -71,20 +71,23 @@ namespace MyGameDevTools.SceneLoading
         /// <param name="sceneParameters">
         /// A <see cref="SceneParameters"/> struct that may hold one or more scenes and the target active index.
         /// </param>
-        /// <param name="loadingScene">
-        /// The scene to load as the transition intermediate. Leave it unset for a transition with no loading scene.
+        /// <param name="loadingScreen">
+        /// What to show while the transition runs. A scene name, path, address, build index or
+        /// <see cref="Scene"/> converts to a scene-based screen; a <see cref="LoadingScreen"/>
+        /// subclass — a prefab or a UI Toolkit document, say — passes straight through. Leave it
+        /// unset for a transition with no loading screen.
         /// </param>
         /// <returns>A <see cref="SceneOperation"/> handle on the transition.</returns>
-        SceneOperation TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default);
+        SceneOperation TransitionAsync(SceneParameters sceneParameters, LoadingScreen loadingScreen = null);
 
         /// <summary>
         /// Reloads the active scene with an optional intermediate loading scene.
         /// </summary>
-        /// <param name="loadingScene">
-        /// The scene to load as the transition intermediate. Leave it unset for a reload with no loading scene.
+        /// <param name="loadingScreen">
+        /// What to show while the reload runs. Leave it unset for a reload with no loading screen.
         /// </param>
         /// <returns>A <see cref="SceneOperation"/> handle on the reload.</returns>
-        SceneOperation ReloadActiveSceneAsync(SceneRef loadingScene = default);
+        SceneOperation ReloadActiveSceneAsync(LoadingScreen loadingScreen = null);
 
         /// <summary>
         /// Loads the target scene or group of scenes provided via a <see cref="SceneParameters"/> struct.

@@ -130,14 +130,14 @@ namespace MyGameDevTools.SceneLoading
         /// like a non-addressable one.
         /// </summary>
         /// <param name="sceneParameters">The scene or scenes to transition to. One of them must be marked active.</param>
-        /// <param name="loadingScene">The scene to load as the transition intermediate. Leave it unset for a transition with no loading scene.</param>
+        /// <param name="loadingScreen">What to show while the transition runs: a scene name, path or address, a build index, a <see cref="Scene"/>, or your own <see cref="LoadingScreen"/>. Leave it unset for no loading screen.</param>
         /// <returns>A <see cref="SceneOperation"/> handle on the transition.</returns>
-        public static SceneOperation TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default) => Default.TransitionAsync(sceneParameters, loadingScene);
+        public static SceneOperation TransitionAsync(SceneParameters sceneParameters, LoadingScreen loadingScreen = null) => Default.TransitionAsync(sceneParameters, loadingScreen);
 
         /// <summary>Reloads the active scene, optionally showing a loading screen.</summary>
-        /// <param name="loadingScene">The scene to load as the transition intermediate. Leave it unset for a reload with no loading scene.</param>
+        /// <param name="loadingScreen">What to show while the reload runs. Leave it unset for no loading screen.</param>
         /// <returns>A <see cref="SceneOperation"/> handle on the reload.</returns>
-        public static SceneOperation ReloadActiveSceneAsync(SceneRef loadingScene = default) => Default.ReloadActiveSceneAsync(loadingScene);
+        public static SceneOperation ReloadActiveSceneAsync(LoadingScreen loadingScreen = null) => Default.ReloadActiveSceneAsync(loadingScreen);
 
         /// <summary>Gets the current active scene.</summary>
         /// <returns>The current active scene, or an invalid scene if none of the loaded scenes are enabled as the active scene.</returns>

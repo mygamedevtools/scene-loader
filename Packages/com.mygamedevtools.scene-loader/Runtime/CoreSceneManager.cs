@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MyGameDevTools.SceneLoading
@@ -158,7 +158,7 @@ namespace MyGameDevTools.SceneLoading
             return operation;
         }
 
-        public SceneOperation TransitionAsync(SceneParameters sceneParameters, SceneRef loadingScene = default)
+        public SceneOperation TransitionAsync(SceneParameters sceneParameters, LoadingScreen loadingScreen = null)
         {
             // A transition always has to activate something — it unloads the scene you came
             // from. Every v4 transition overload defaulted its `setIndexActive` to 0 for that
@@ -168,11 +168,11 @@ namespace MyGameDevTools.SceneLoading
                 sceneParameters = new SceneParameters(sceneParameters.GetSceneRefs(), 0);
 
             SceneOperation operation = StartOperation(SceneOperationKind.Transition);
-            _ = RunAsync(operation, TransitionInternalAsync(operation, sceneParameters, loadingScene));
+            _ = RunAsync(operation, TransitionInternalAsync(operation, sceneParameters, loadingScreen));
             return operation;
         }
 
-        public SceneOperation ReloadActiveSceneAsync(SceneRef loadingScene = default)
+        public SceneOperation ReloadActiveSceneAsync(LoadingScreen loadingScreen = null)
         {
             if (!_activeScene.IsValid() || !_activeScene.isLoaded || !TryGetTrackedHandle(_activeScene, out SceneBackendHandle activeHandle))
                 throw new InvalidOperationException($"[{GetType().Name}] Cannot reload the active scene because it is null or not loaded. Make sure to load a scene before trying to reload it.");
@@ -187,7 +187,7 @@ namespace MyGameDevTools.SceneLoading
             }
 
             SceneOperation operation = StartOperation(SceneOperationKind.Reload);
-            _ = RunAsync(operation, TransitionInternalAsync(operation, new SceneParameters(targetScene, true), loadingScene));
+            _ = RunAsync(operation, TransitionInternalAsync(operation, new SceneParameters(targetScene, true), loadingScreen));
             return operation;
         }
 
@@ -254,71 +254,98 @@ namespace MyGameDevTools.SceneLoading
             operation.Complete(new SceneResult(SceneLinker.GetScenes(handles)));
         }
 
-        async Task TransitionInternalAsync(SceneOperation operation, SceneParameters sceneParameters, SceneRef loadingScene)
+        async Task TransitionInternalAsync(SceneOperation operation, SceneParameters sceneParameters, LoadingScreen loadingScreen)
         {
-            // Resolve everything first, so a bad reference fails before any scene moves.
-            SceneRef[] targetRefs = await ResolveAsync(operation, sceneParameters.GetSceneRefs());
-            if (operation.IsCancellationRequested)
-                return;
-
-            LoadingProgress screen = null;
+            // One holder scene per transition, created only if something actually needs it. It is
+            // what keeps a non-scene loading screen alive across the outgoing scene's unload, and
+            // what stops Unity from ever reaching zero loaded scenes — v4's "temp-transition-scene"
+            // special case, generalised.
+            LoadingScreenHost host = new();
             SceneBackendHandle[] loadingSceneHandles = null;
 
-            if (loadingScene.IsValid)
+            try
             {
-                loadingSceneHandles = await LoadScenesAsync(operation, await ResolveAsync(operation, new[] { loadingScene }));
+                // Resolve everything first, so a bad reference fails before any scene moves.
+                SceneRef[] targetRefs = await ResolveAsync(operation, sceneParameters.GetSceneRefs());
                 if (operation.IsCancellationRequested)
                     return;
 
-                screen = FindLoadingProgress(loadingSceneHandles[0].Scene);
-            }
+                if (loadingScreen is SceneLoadingScreen sceneScreen)
+                {
+                    loadingSceneHandles = await LoadScenesAsync(operation, await ResolveAsync(operation, new[] { sceneScreen.SceneRef }));
+                    if (operation.IsCancellationRequested)
+                        return;
 
-            // Unity cannot have zero loaded scenes, so a transition with no loading screen and a
-            // single loaded scene needs somewhere to stand while the swap happens.
-            Scene tempScene = default;
-            if (loadingSceneHandles == null && LoadedSceneCount <= 1)
-                tempScene = SceneManager.CreateScene("temp-transition-scene");
+                    sceneScreen.SetLoadedScene(loadingSceneHandles[0].Scene);
+                }
+                else if (LoadedSceneCount <= 1)
+                {
+                    // Nothing else will be loaded while the source scene goes away.
+                    host.EnsureCreated();
+                }
 
-            if (screen != null)
-            {
-                operation.SetState(SceneOperationState.ScreenIn);
-                await screen.WaitForShowAsync(operation);
+                if (loadingScreen != null)
+                {
+                    await loadingScreen.PrepareAsync(host, operation);
+                    if (operation.IsCancellationRequested)
+                        return;
+
+                    operation.SetState(SceneOperationState.ScreenIn);
+                    await loadingScreen.ShowAsync(operation);
+                    if (operation.IsCancellationRequested)
+                        return;
+                }
+
+                await UnloadSourceSceneAsync(operation);
                 if (operation.IsCancellationRequested)
                     return;
-            }
 
-            await UnloadSourceSceneAsync(operation);
-            if (operation.IsCancellationRequested)
+                SceneBackendHandle[] handles = await LoadScenesAsync(operation, targetRefs, sceneParameters.GetIndexToActivate(), loadingScreen);
+                if (operation.IsCancellationRequested)
+                    return;
+
+                if (loadingScreen != null)
+                {
+                    operation.SetState(SceneOperationState.ScreenOut);
+                    await loadingScreen.HideAsync(operation);
+                    if (operation.IsCancellationRequested)
+                        return;
+                }
+
+                if (loadingSceneHandles != null)
+                {
+                    await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(loadingSceneHandles[0].Scene) });
+                    if (operation.IsCancellationRequested)
+                        return;
+                }
+
+                await TearDownHostAsync(host, loadingScreen);
+                operation.Complete(new SceneResult(SceneLinker.GetScenes(handles)));
+            }
+            finally
+            {
+                // Runs on success, fault and cancellation alike — a screen that instantiated
+                // something has to get it back either way, and a half-unloaded holder scene would
+                // make the next unload of it a double unload.
+                await TearDownHostAsync(host, loadingScreen);
+            }
+        }
+
+        /// <summary>
+        /// Disposes the screen and waits for the holder scene to finish unloading. Idempotent, so
+        /// the happy path can do it before completing the operation and the <c>finally</c> can do
+        /// it again without consequence.
+        /// </summary>
+        static async Task TearDownHostAsync(LoadingScreenHost host, LoadingScreen loadingScreen)
+        {
+            loadingScreen?.Dispose();
+
+            AsyncOperation unload = host.BeginDispose();
+            if (unload == null)
                 return;
 
-            SceneBackendHandle[] handles = await LoadScenesAsync(operation, targetRefs, sceneParameters.GetIndexToActivate(), screen);
-            if (operation.IsCancellationRequested)
-                return;
-
-            if (screen != null)
-            {
-                screen.SetLoadingCompleted();
-                operation.SetState(SceneOperationState.ScreenOut);
-                await screen.WaitForHideAsync(operation);
-                if (operation.IsCancellationRequested)
-                    return;
-            }
-
-            if (loadingSceneHandles != null)
-            {
-                await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(loadingSceneHandles[0].Scene) });
-                if (operation.IsCancellationRequested)
-                    return;
-            }
-
-            if (tempScene.IsValid())
-            {
-                SceneBackendHandle tempHandle = CreateHandleForLoadedScene(tempScene);
-                SceneBackendHandle[] tempHandles = { tempHandle.Backend.Unload(tempHandle) };
-                await SceneOperationPump.WaitForAll(tempHandles, null);
-            }
-
-            operation.Complete(new SceneResult(SceneLinker.GetScenes(handles)));
+            while (!unload.isDone)
+                await SceneOperationPump.NextFrame();
         }
 
         async Task<SceneRef[]> ResolveAsync(SceneOperation operation, SceneRef[] sceneRefs)
@@ -330,7 +357,7 @@ namespace MyGameDevTools.SceneLoading
             return await SceneRefResolver.ResolveAllAsync(sceneRefs);
         }
 
-        async Task<SceneBackendHandle[]> LoadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs, int setIndexActive = -1, LoadingProgress screen = null)
+        async Task<SceneBackendHandle[]> LoadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs, int setIndexActive = -1, LoadingScreen screen = null)
         {
             int scenesToLoad = sceneRefs.Length;
             SceneBackendHandle[] handles = new SceneBackendHandle[scenesToLoad];
@@ -340,12 +367,12 @@ namespace MyGameDevTools.SceneLoading
                 handles[i] = SceneBackendRegistry.GetBackend(sceneRefs[i].Kind).Load(sceneRefs[i]);
 
             if (screen != null)
-                operation.Progressed += screen.Report;
+                operation.Progressed += screen.ReportProgress;
 
             await SceneOperationPump.WaitForAll(handles, operation);
 
             if (screen != null)
-                operation.Progressed -= screen.Report;
+                operation.Progressed -= screen.ReportProgress;
 
             if (operation.IsCancellationRequested)
                 return handles;
@@ -423,17 +450,6 @@ namespace MyGameDevTools.SceneLoading
                 return;
 
             await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(sourceScene) });
-        }
-
-        static LoadingProgress FindLoadingProgress(Scene loadingScene)
-        {
-#if UNITY_6000_5_OR_NEWER
-            LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>();
-#else
-            LoadingBehavior[] loadingBehaviors = UnityEngine.Object.FindObjectsByType<LoadingBehavior>(UnityEngine.FindObjectsSortMode.None);
-#endif
-            LoadingBehavior loadingBehavior = loadingBehaviors.FirstOrDefault(l => l.gameObject.scene == loadingScene);
-            return loadingBehavior ? loadingBehavior.Progress : null;
         }
 
         /// <summary>Wraps an already-loaded scene the manager did not load itself.</summary>
