@@ -1,0 +1,118 @@
+---
+sidebar_position: 1
+description: How to install the My Scene Manager package.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Installation
+
+You can install the package via **OpenUPM**, **Git**, **Tarball** or the **Unity Asset Store**:
+
+:::info[Package Signing]
+Release tarballs are signed with [UPM package signing](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), which the **Package Manager** verifies from **Unity 6.3** onwards.
+The **OpenUPM** and **Tarball** installations keep the signature, while **Git** installations are always unsigned.
+Releases published before signing was introduced (`4.1.1` and earlier) are unsigned.
+:::
+
+<Tabs defaultValue={(() => {
+          if (typeof window !== "undefined") {
+              const hash = window.location.hash.replace("#", "").toLowerCase();
+              return ["openupm", "git", "tarball", "asset-store"].includes(hash) ? hash : "openupm";
+          }
+          return "openupm";
+      })()}>
+<TabItem value="openupm" label="OpenUPM" default>
+
+:::note[Signed]
+OpenUPM republishes the signed tarball from each GitHub release unchanged, so the signature is preserved.
+Versions published before signing was introduced remain unsigned.
+:::
+
+This package is available on the [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader) registry.
+You can install an **OpenUPM** package either via [openupm-cli](https://github.com/openupm/openupm-cli) or manually via the **Package Manager**.
+
+<Tabs>
+<TabItem value="openupm-cli" label="openupm-cli" default>
+
+:::info[Required]
+Requires [openupm-cli](https://github.com/openupm/openupm-cli) and [nodejs 18 or above](https://nodejs.org/en/download/).
+:::
+
+In your Unity project folder, open the terminal and type:
+
+```sh
+openupm add com.mygamedevtools.scene-loader
+```
+
+This will automatically update your **Scoped Registries** and install the package in your project.
+</TabItem>
+
+<TabItem value="manually" label="Package Manager">
+* Open `Edit/Project Settings/Package Manager`.
+* Add a new **Scoped Registry** (or edit the existing _OpenUPM_ entry):
+    ```
+    Name: Open UPM
+    URL: https://package.openupm.com
+    Scope(s): com.mygamedevtools
+    ```
+* Click `Apply`.
+* Open `Window/Package Manager`.
+* In the left column, select `Open UPM` inside `My Registries`.
+* Select `My Scene Manager` under `My GameDev Tools`.
+* Click `Install`.
+</TabItem>
+</Tabs>
+
+</TabItem>
+
+<TabItem value="git" label="Git">
+
+:::info[Required]
+Requires [Git](https://git-scm.com/) installed and added to the PATH
+:::
+
+:::warning[Unsigned]
+Packages installed from a Git URL are not signed, so the **Package Manager** displays them as unsigned on **Unity 6.3** and above.
+Install via **OpenUPM** or **Tarball** if you need a signed package.
+:::
+
+1. Open `Window/Package Manager`.
+2. Click <kbd>+</kbd>.
+3. Select `Install package from git URL...`.
+4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
+5. Click `Add`.
+</TabItem>
+
+<TabItem value="tarball" label="Tarball">
+
+:::note[Signed]
+Release tarballs are signed, so the **Package Manager** displays them as signed on **Unity 6.3** and above.
+:::
+
+1. Choose the [release](https://github.com/mygamedevtools/scene-loader/releases) you want to install and download the `com.mygamedevtools.scene-loader-<release>.tgz` asset.
+2. Open `Window/Package Manager`.
+3. Click <kbd>+</kbd>.
+4. Select `Install package from tarball...`.
+5. Select the `com.mygamedevtools.scene-loader-<release>.tgz` file you downloaded.
+</TabItem>
+
+<TabItem value="asset-store" label="Unity Asset Store">
+1. Obtain the package for free at the [Asset Store](https://assetstore.unity.com/packages/slug/313159).
+2. With your Unity project open, click `Open in Unity`.
+3. The `Package Manager` will open with the package selected.
+4. Click `Download` or `Update`, depending on the local cache.
+5. Click `Import`.
+6. Make sure everything is selected and click `Import` again.
+
+:::info
+When updating from the Asset Store, make sure to remove the previous version completely before adding the updated version.
+:::
+
+:::note
+Asset Store packages are imported into your project's `Assets` folder instead of being managed by the **Package Manager**, so package signing does not apply to them.
+:::
+
+</TabItem>
+</Tabs>

@@ -37,7 +37,7 @@
   },
   "link.item.label.From 4.x to 5.x": {
     "message": "De 4.x para 5.x",
-    "description": "The label of footer link with label=From 4.x to 5.x linking to docs/upgrades/from-4-to-5"
+    "description": "The label of footer link with label=From 4.x to 5.x linking to docs/next/upgrades/from-4-to-5"
   },
   "link.item.label.Troubleshooting": {
     "message": "Soluções de Problemas",
