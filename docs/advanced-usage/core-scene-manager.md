@@ -17,19 +17,20 @@ public interface ISceneManager : IDisposable
     event Action<Scene, Scene> ActiveSceneChanged;
     event Action<Scene> SceneUnloaded;
     event Action<Scene> SceneLoaded;
+    event Action<SceneOperation> OperationStarted;
 
     int LoadedSceneCount { get; }
     int TotalSceneCount { get; }
 
     void SetActiveScene(Scene scene);
 
-    Task<SceneResult> TransitionAsync(SceneParameters sceneParameters, ILoadSceneInfo intermediateSceneReference = default, CancellationToken token = default);
+    SceneOperation TransitionAsync(SceneParameters sceneParameters, LoadingScreen loadingScreen = null);
 
-    Task<SceneResult> ReloadActiveSceneAsync(ILoadSceneInfo intermediateSceneReference = null, CancellationToken token = default);
+    SceneOperation ReloadActiveSceneAsync(LoadingScreen loadingScreen = null);
 
-    Task<SceneResult> LoadAsync(SceneParameters sceneParameters, IProgress<float> progress = null, CancellationToken token = default);
+    SceneOperation LoadAsync(SceneParameters sceneParameters);
 
-    Task<SceneResult> UnloadAsync(SceneParameters sceneParameters, CancellationToken token = default);
+    SceneOperation UnloadAsync(SceneParameters sceneParameters);
 
     Scene GetActiveScene();
 
@@ -40,6 +41,12 @@ public interface ISceneManager : IDisposable
     Scene GetLoadedSceneByName(string name);
 }
 ```
+
+:::info
+**Four async methods, where `4.x` had 64.** Every reference kind and arity is reachable through the implicit conversions on `SceneParameters` and `LoadingScreen` instead of through another overload.
+
+`IProgress<float>` and `CancellationToken` are gone from every signature — you attach them to the returned [`SceneOperation`](./scene-operation.md) instead of deciding up front.
+:::
 
 You will find many similarities between Unity's [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html) class, and that's both for maintaining an easy learning curve as well as because some of these operations will end up calling the _Unity Scene Manager_ internally (like `SetActiveScene` for instance).
 
@@ -60,18 +67,18 @@ flowchart LR
 
 ```
 
-The `ISceneManager` interface defines that the `LoadAsync`, `UnloadAsync`, `TransitionAsync` and `ReloadActiveSceneAsync` methods return a `Task<SceneResult>`.
-This means you can _await_ those methods if they are implemented with the _async_ keyword, or you can subscribe to the `SceneLoaded` or `SceneUnloaded` events to receive the same scenes you would via the _async_ methods.
+The `ISceneManager` interface defines that the `LoadAsync`, `UnloadAsync`, `TransitionAsync` and `ReloadActiveSceneAsync` methods return a [`SceneOperation`](./scene-operation.md) — **synchronously**, before the work starts.
+This means you can _await_ it, or subscribe to the `SceneLoaded` or `SceneUnloaded` events to receive the same scenes.
 
 :::info
-You can also wait for these methods in coroutines by converting them to a `WaitTask`:
+You can also wait for these methods in coroutines:
 
 ```cs
-yield return CoreSceneManager.LoadAsync("my-scene").ToWaitTask();
+yield return sceneManager.LoadAsync("my-scene").ToCoroutine();
 ```
 :::
 
-Both these methods also receive a `SceneParameter` struct.
+All four also receive a `SceneParameters` struct.
 So, instead of having multiple methods for receiving the scene's build index or the scene's name, we simply have a struct.
 
 ## Constructor
@@ -94,18 +101,18 @@ new CoreSceneManager(initializationScenes: new Scene[]);
 You don't need to manually create a `CoreSceneManager` instance if you're using the `MySceneManager`.
 :::
 
-## Scene Parameter
+## Scene Parameters
 
-`SceneParameter` is a struct to simplify passing single or multiple scenes as parameters for the **Scene Operations**.
+`SceneParameters` is a struct to simplify passing single or multiple scenes as parameters for the **Scene Operations**.
 
 ```cs
 public readonly struct SceneParameters
 {
     public readonly int Length;
 
-    public readonly ILoadSceneInfo GetLoadSceneInfo();
+    public readonly SceneRef GetSceneRef();
 
-    public readonly ILoadSceneInfo[] GetLoadSceneInfos();
+    public readonly SceneRef[] GetSceneRefs();
 
     public readonly bool ShouldSetActive();
 
@@ -114,20 +121,27 @@ public readonly struct SceneParameters
 ```
 
 It allows the definition of a single method that can perform operations for single or multiple scenes.
-Ideally, you should use the extension methods that build the `SceneParameters` internally instead of manually creating an instance for each call.
+Ideally, you should rely on the implicit conversions instead of manually creating an instance for each call.
 For example:
 
 ```cs
 // You don't need to do this:
-CoreSceneManager.LoadAsync(new SceneParameters(new LoadSceneInfoName("my-scene")));
+sceneManager.LoadAsync(new SceneParameters(SceneRef.FromKey("my-scene")));
 
-// Use the extension method instead:
-CoreSceneManager.LoadAsync("my-scene");
+// The conversion does it for you:
+sceneManager.LoadAsync("my-scene");
+```
+
+Reach for the explicit constructor when you need to say which scene becomes active:
+
+```cs
+sceneManager.LoadAsync(new SceneParameters("my-scene", true));
+sceneManager.LoadAsync(new SceneParameters(new SceneRef[] { 1, 2, 3 }, 1));
 ```
 
 ## Scene Result
 
-Just like the `SceneParameter`, the `SceneResult` simplifies returning a single or multiple scenes as result of a **Scene Operation**.
+Just like `SceneParameters`, the `SceneResult` simplifies returning a single or multiple scenes as result of a **Scene Operation**.
 
 ```cs
 public readonly struct SceneResult

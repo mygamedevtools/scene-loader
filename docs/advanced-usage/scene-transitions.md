@@ -31,13 +31,37 @@ a{{"**Load** Loading Scene"}} --- b{{"**Load** Scene B"}} --- c{{"**Unload** Sce
 That's **four** operations now.
 The `TransitionAsync` method lets you provide the scene (or scenes) you want to transition to from the **current active scene** and if you want an intermediate scene (loading scene for example).
 
-## Intermediate Loading Scene
+## The loading screen
 
-To create a Loading Scene, you need to use the [Loading Components](../getting-started/loading-screens.md#loading-components).
-When performing a **Scene Transition**, the `CoreSceneManager` looks for a `LoadingBehavior` component in the intermediate scene, and if it exists it is notified with the loading progress.
+The second argument to `TransitionAsync` is a [`LoadingScreen`](../getting-started/loading-screens.md), not a scene. A scene name, path, address, build index or `Scene` converts to one implicitly, so the `4.x` spelling still compiles:
 
-The `WaitForScriptedStart` and `WaitForScriptedEnd` fields in the `LoadingBehavior` control if the loading scene will have an animation to start and/or end the transition.
-Effectively, this **delays** the start or the end of the **Scene Transition** operation to display a visual feedback such as a fade in/out.
+```cs
+MySceneManager.TransitionAsync("target", "loading");        // a scene, as before
+MySceneManager.TransitionAsync("target", new MyScreen());   // a prefab or UI Toolkit document
+```
 
-When the `TransitionAsync` method is _awaited_, it will wait until the entire transition has been completed **and** the loading scene has been unloaded.
-If you wish to execute an action exactly when the target scene is loaded, you can either rely on that scene's `Awake()` calls or subscribe to the `SceneLoaded` event from the `CoreSceneManager` or `MySceneManager`.
+When the loading screen **is** a scene, the `LoadingBehavior` component in it is notified with the progress. Its `WaitForScriptedStart` and `WaitForScriptedEnd` fields control whether the transition waits for an animation to start and/or end — effectively **delaying** the transition to display visual feedback such as a fade in/out.
+
+## Knowing where you are
+
+When `TransitionAsync` is _awaited_, it waits until the entire transition has completed **and** the loading screen is gone. If you need a specific moment before that, the operation reports its phase:
+
+```cs
+SceneOperation op = MySceneManager.TransitionAsync("target", "loading");
+
+op.StateChanged += o =>
+{
+  if (o.State == SceneOperationState.ScreenOut)
+    BeginIntroCutscene();       // the loading screen is fully gone
+};
+
+await op;
+```
+
+In `4.x` this meant locating the `LoadingBehavior` by scene comparison and calling `ContinueWith` on a `TaskCompletionSource` the package exposed publicly.
+
+You can also rely on the target scene's own `Awake()`, or subscribe to `SceneLoaded` on the operation or the manager.
+
+:::note
+A transition **always activates something** — it unloads the scene you came from, so it cannot leave nothing active. If your `SceneParameters` does not name an index to activate, index 0 is used.
+:::
