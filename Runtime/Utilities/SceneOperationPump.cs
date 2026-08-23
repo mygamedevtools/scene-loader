@@ -63,6 +63,36 @@ namespace MyGameDevTools.SceneLoading
             return new ConditionAwaiter(condition, operation, description);
         }
 
+        /// <summary>
+        /// An awaitable that is already done — for a gate with nothing to wait on, so callers
+        /// can return one unconditionally instead of branching on null.
+        /// </summary>
+        public static ConditionAwaiter Completed(SceneOperation operation)
+        {
+            return new ConditionAwaiter(AlwaysTrue, operation, "nothing");
+        }
+
+        static readonly Func<bool> AlwaysTrue = () => true;
+
+        /// <summary>
+        /// Yields once, resuming on the next pump tick. For the rare place that has to poll an
+        /// engine operation no backend owns — the holder scene's unload.
+        /// </summary>
+        public static ConditionAwaiter NextFrame()
+        {
+            bool firstCheck = true;
+            return new ConditionAwaiter(Elapsed, null, "the next frame");
+
+            bool Elapsed()
+            {
+                if (!firstCheck)
+                    return true;
+
+                firstCheck = false;
+                return false;
+            }
+        }
+
         internal static void Track(SceneBackendHandle[] handles, SceneOperation operation, Action continuation)
         {
             _entries ??= new List<Entry>(8);
