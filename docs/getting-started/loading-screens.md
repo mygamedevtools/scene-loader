@@ -37,7 +37,7 @@ You can test this scene by passing its name, path or build index as the second a
 ### The Loading Behavior
 
 The Loading Behavior is a [MonoBehaviour] component, which you can attach to Unity [GameObjects], that receives the progress value from the scene manager.
-You **need** to add a `LoadingBehavior` component to a [GameObject] in your loading scene to be able to display scene loading feedback.
+Add a `LoadingBehavior` component to a [GameObject] in your loading scene to display scene loading feedback.
 It exposes its `LoadingProgress` instance, which you can use to listen to the loading events:
 
 ```cs
@@ -67,6 +67,17 @@ You will use these controls to customize your loading screen behavior.
 
 :::warning
 If you enable one of these toggles and never call the matching trigger, the transition waits forever. It will not fail silently: after 10 seconds a development build names the `LoadingBehavior` holding it up, and keeps waiting.
+:::
+
+:::info[How it is found]
+A `LoadingBehavior` registers itself when it is **enabled**, under the scene it lives in. Two consequences worth knowing:
+
+* A `LoadingBehavior` on a **disabled** GameObject is never found, and the transition runs with no feedback and no waiting rather than reporting a problem.
+* **One per loading scene.** If a scene contains two, the last one enabled is the one the transition drives.
+:::
+
+:::note
+A `LoadingBehavior` is **optional**. A loading scene without one still works as a loading screen — you simply get no progress feedback, and the transition never waits for a scripted start or end.
 :::
 
 ### The Loading Feedback
