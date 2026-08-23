@@ -32,14 +32,14 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(0, canvasGroup.alpha);
             yield return new WaitForSeconds(loadingFader.fadeTime * 2);
 
-            Assert.True(progress.TransitionInTask.Task.IsCompletedSuccessfully);
+            Assert.True(progress.IsShown);
             Assert.AreEqual(1, canvasGroup.alpha);
 
             progress.SetLoadingCompleted();
 
             yield return new WaitForSeconds(loadingFader.fadeTime * 2);
 
-            Assert.True(progress.TransitionOutTask.Task.IsCompletedSuccessfully);
+            Assert.True(progress.IsHidden);
             Assert.AreEqual(0, canvasGroup.alpha);
         }
     }
