@@ -29,7 +29,7 @@ what 3.0 and 4.0 both did, and it means every call site that needs changing prod
 compile error at exactly the line to change. **4.x receives no further maintenance**; the answer
 to a 4.x bug report is to upgrade.
 
-:::warning Asset Store users
+:::warning[Asset Store users]
 Remove the previous version completely before importing 5.0. This has always been true, but a
 major version makes it more likely to bite.
 :::
@@ -298,7 +298,7 @@ A bare string is resolved when the operation starts:
 **The build settings win.** If `Level1` exists in both, `LoadAsync("Level1")` loads the build
 settings one, and `SceneRef.Address("Level1")` is the override.
 
-:::caution Resolution is observable behaviour
+:::warning[Resolution is observable behaviour]
 Adding a scene to the build settings later can flip a string from the addressable backend to the
 standard one, with no code change. A key matching both is reported at `Warning` level, and every
 first resolution is logged at `Verbose`, so this is diagnosable rather than mysterious.
