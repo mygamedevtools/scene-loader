@@ -45,7 +45,7 @@ flowchart TB
 ```
 
 - The `MySceneManager` is a static implementation of a `CoreSceneManager`, which contains all the logic to perform **Scene Operations**.
-- The `CoreSceneManager` is an implementation of the `ISceneManager` interface, which defines exactly **four** async methods — `LoadAsync`, `UnloadAsync`, `TransitionAsync` and `ReloadActiveSceneAsync`. Everything else is reachable through implicit conversions rather than through more overloads.
+- The `CoreSceneManager` is an implementation of the `ISceneManager` interface, which defines **four** async methods: `LoadAsync`, `UnloadAsync`, `TransitionAsync` and `ReloadActiveSceneAsync`. A name, a build index, an address, an `AssetReference` or an array of any of them all reach the same method, because `SceneParameters` converts from each.
 - The `SceneParameters` struct is an abstraction to handle a single `SceneRef` or multiple (`SceneRef[]`), plus which one to activate.
 - The `SceneRef` struct is a reference to a scene. It is a single struct with a `SceneRefKind` discriminator rather than a family of types, which is what keeps build indices from boxing.
 - A bare string is a **`Key`**, which the `SceneRefResolver` settles into a build index or an address before the operation runs.

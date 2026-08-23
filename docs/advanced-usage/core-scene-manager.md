@@ -43,9 +43,9 @@ public interface ISceneManager : IDisposable
 ```
 
 :::info
-**Four async methods, and no overloads.** Every reference kind and arity is reachable through the implicit conversions on `SceneParameters` and `LoadingScreen`, so loading one scene by name and five by asset reference are the same method.
+**Four async methods cover every case.** `SceneParameters` and `LoadingScreen` convert from every kind of reference, so loading one scene by name and five by `AssetReference` are the same method with different arguments.
 
-Progress and cancellation are not parameters either — they live on the returned [`SceneOperation`](./scene-operation.md).
+Progress and cancellation are properties of the work, not of the request, so they live on the returned [`SceneOperation`](./scene-operation.md).
 :::
 
 You will find many similarities between Unity's [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html) class, and that's both for maintaining an easy learning curve as well as because some of these operations will end up calling the _Unity Scene Manager_ internally (like `SetActiveScene` for instance).

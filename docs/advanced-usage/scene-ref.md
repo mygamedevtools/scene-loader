@@ -108,7 +108,7 @@ When unloading addressable scenes, their resources will be released by calling `
 
 ## Scene Parameters
 
-`SceneParameters` wraps one or many `SceneRef`, plus which of them to make active. It also converts implicitly, which is why every operation needs only one overload:
+`SceneParameters` wraps one or many `SceneRef`, plus which of them to make active. It converts implicitly too, so most of the time you pass the scene straight to the operation and never name the struct:
 
 ```cs
 MySceneManager.LoadAsync("my-scene");                                  // one, not activated

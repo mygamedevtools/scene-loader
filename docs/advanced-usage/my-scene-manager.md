@@ -32,7 +32,7 @@ MySceneManager.TransitionAsync(sceneParameters, loadingScreen);
 MySceneManager.ReloadActiveSceneAsync(loadingScreen);
 ```
 
-There is one signature per operation rather than one per reference kind, because `SceneParameters` and `LoadingScreen` both convert implicitly:
+One signature per operation covers every kind of reference, because `SceneParameters` and `LoadingScreen` both convert implicitly:
 
 ```cs
 MySceneManager.LoadAsync("my-scene");                     // string
