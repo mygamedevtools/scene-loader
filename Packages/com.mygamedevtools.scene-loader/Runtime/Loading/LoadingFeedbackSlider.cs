@@ -3,25 +3,21 @@ using UnityEngine.UI;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>Displays loading progress as a <see cref="Slider"/>'s value.</summary>
     [AddComponentMenu("Scene Loading/Loading Slider")]
     [RequireComponent(typeof(Slider))]
-    public class LoadingFeedbackSlider : MonoBehaviour
+    public class LoadingFeedbackSlider : LoadingFeedback
     {
-        public LoadingBehavior loadingBehavior;
-
         Slider _slider;
 
-        void Awake()
+        protected override void Awake()
         {
             _slider = GetComponent<Slider>();
             _slider.value = 0;
+
+            base.Awake();
         }
 
-        void Start()
-        {
-            loadingBehavior.Progress.Progressed += UpdateSlider;
-        }
-
-        private void UpdateSlider(float progress) => _slider.value = progress;
+        protected override void OnProgressed(float progress) => _slider.value = progress;
     }
 }

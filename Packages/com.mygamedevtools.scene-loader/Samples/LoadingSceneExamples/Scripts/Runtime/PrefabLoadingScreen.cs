@@ -13,7 +13,6 @@ public class PrefabLoadingScreen : LoadingScreen
     readonly GameObject _prefab;
 
     GameObject _instance;
-    LoadingProgress _progress;
 
     /// <param name="prefab">
     /// A <see cref="LoadingBehavior"/> anywhere on it is picked up automatically and gates the
@@ -30,28 +29,9 @@ public class PrefabLoadingScreen : LoadingScreen
         // Into the holder scene, so it survives the outgoing scene being unloaded.
         host.Adopt(_instance);
 
-        _progress = _instance.GetComponentInChildren<LoadingBehavior>(true)?.Progress;
+        BindProgress(LoadingBehaviorRegistry.TryGet(_instance, out LoadingBehavior behavior) ? behavior.Progress : null);
 
         return SceneOperationPump.Completed(operation);
-    }
-
-    public override SceneOperationPump.ConditionAwaiter ShowAsync(SceneOperation operation)
-    {
-        return _progress == null ? SceneOperationPump.Completed(operation) : _progress.WaitForShowAsync(operation);
-    }
-
-    public override void ReportProgress(float progress)
-    {
-        _progress?.Report(progress);
-    }
-
-    public override SceneOperationPump.ConditionAwaiter HideAsync(SceneOperation operation)
-    {
-        if (_progress == null)
-            return SceneOperationPump.Completed(operation);
-
-        _progress.SetLoadingCompleted();
-        return _progress.WaitForHideAsync(operation);
     }
 
     public override void Dispose()
@@ -60,6 +40,7 @@ public class PrefabLoadingScreen : LoadingScreen
             Object.Destroy(_instance);
 
         _instance = null;
-        _progress = null;
+
+        base.Dispose();
     }
 }

@@ -7,10 +7,9 @@ using UnityEngine.LowLevel;
 namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
-    /// Ticks every in-flight backend operation once per frame, from the player loop. One pump,
-    /// one pass, and <see cref="SceneOperation.Progressed"/> only fires when there is something
-    /// to report — where v4 polled once per frame <i>per group</i> through the
-    /// <c>SynchronizationContext</c>.
+    /// Ticks every in-flight backend operation once per frame, from the player loop. One pump and
+    /// one pass for the whole process, rather than a poll per operation group, and
+    /// <see cref="SceneOperation.Progressed"/> only fires when there is something to report.
     /// <br/>
     /// Running on the player loop is also what makes <see cref="SceneOperationAwaiter"/> honest:
     /// continuations resume on the main thread because that is where the pump ticks.
@@ -31,7 +30,7 @@ namespace MyGameDevTools.SceneLoading
             public Func<bool> Condition;
             public SceneOperation Operation;
             public Action Continuation;
-            public string Description;
+            public Func<string> Describe;
             public float Waited;
             public bool Warned;
         }
@@ -54,13 +53,14 @@ namespace MyGameDevTools.SceneLoading
         /// <summary>
         /// An awaitable over a per-frame condition — the loading-screen gates, in practice.
         /// </summary>
-        /// <param name="description">
-        /// Named in the development-build warning if the wait runs long, so a gate that never
-        /// opens stops being a silent hang.
+        /// <param name="describe">
+        /// Names what the wait is blocked on, in the development-build warning raised when it runs
+        /// long — so a gate that never opens stops being a silent hang. Evaluated only if the
+        /// warning is raised, so it can report who is blocking <i>at that moment</i>.
         /// </param>
-        public static ConditionAwaiter WaitUntil(Func<bool> condition, SceneOperation operation, string description)
+        public static ConditionAwaiter WaitUntil(Func<bool> condition, SceneOperation operation, Func<string> describe)
         {
-            return new ConditionAwaiter(condition, operation, description);
+            return new ConditionAwaiter(condition, operation, describe);
         }
 
         /// <summary>
@@ -69,10 +69,12 @@ namespace MyGameDevTools.SceneLoading
         /// </summary>
         public static ConditionAwaiter Completed(SceneOperation operation)
         {
-            return new ConditionAwaiter(AlwaysTrue, operation, "nothing");
+            return new ConditionAwaiter(AlwaysTrue, operation, DescribeNothing);
         }
 
         static readonly Func<bool> AlwaysTrue = () => true;
+        static readonly Func<string> DescribeNothing = () => "nothing";
+        static readonly Func<string> DescribeNextFrame = () => "the next frame";
 
         /// <summary>
         /// Yields once, resuming on the next pump tick. For the rare place that has to poll an
@@ -81,7 +83,7 @@ namespace MyGameDevTools.SceneLoading
         public static ConditionAwaiter NextFrame()
         {
             bool firstCheck = true;
-            return new ConditionAwaiter(Elapsed, null, "the next frame");
+            return new ConditionAwaiter(Elapsed, null, DescribeNextFrame);
 
             bool Elapsed()
             {
@@ -104,7 +106,7 @@ namespace MyGameDevTools.SceneLoading
             });
         }
 
-        internal static void TrackCondition(Func<bool> condition, SceneOperation operation, string description, Action continuation)
+        internal static void TrackCondition(Func<bool> condition, SceneOperation operation, Func<string> describe, Action continuation)
         {
             _conditionEntries ??= new List<ConditionEntry>(4);
             _conditionEntries.Add(new ConditionEntry
@@ -112,7 +114,7 @@ namespace MyGameDevTools.SceneLoading
                 Condition = condition,
                 Operation = operation,
                 Continuation = continuation,
-                Description = description,
+                Describe = describe,
             });
         }
 
@@ -179,11 +181,11 @@ namespace MyGameDevTools.SceneLoading
                 {
                     entry.Waited += Time.unscaledDeltaTime;
 
-                    // A gate nobody ever opens used to hang the transition forever, silently.
+                    // A gate nobody ever opens would otherwise hang the transition forever, silently.
                     if (!entry.Warned && entry.Waited >= GateWarningSeconds && Debug.isDebugBuild)
                     {
                         entry.Warned = true;
-                        SceneManagerLog.Warning($"A transition has been waiting {GateWarningSeconds:0} seconds for {entry.Description}. It will keep waiting, but something is expected to release it.");
+                        SceneManagerLog.Warning($"A transition has been waiting {GateWarningSeconds:0} seconds for {entry.Describe()}. It will keep waiting, but something is expected to release it.");
                     }
 
                     _conditionEntries[i] = entry;
@@ -266,18 +268,18 @@ namespace MyGameDevTools.SceneLoading
 
             readonly Func<bool> _condition;
             readonly SceneOperation _operation;
-            readonly string _description;
+            readonly Func<string> _describe;
 
-            internal ConditionAwaiter(Func<bool> condition, SceneOperation operation, string description)
+            internal ConditionAwaiter(Func<bool> condition, SceneOperation operation, Func<string> describe)
             {
                 _condition = condition ?? throw new ArgumentNullException(nameof(condition));
                 _operation = operation;
-                _description = description;
+                _describe = describe;
             }
 
             public readonly ConditionAwaiter GetAwaiter() => this;
 
-            public readonly void OnCompleted(Action continuation) => TrackCondition(_condition, _operation, _description, continuation);
+            public readonly void OnCompleted(Action continuation) => TrackCondition(_condition, _operation, _describe, continuation);
 
             public readonly void GetResult() { }
         }
