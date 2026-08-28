@@ -138,7 +138,7 @@ namespace MyGameDevTools.SceneLoading
                 SceneRefKind.Key => MatchesKey(scene),
                 // A resolved key keeps matching by its original name or path. Narrowing it to
                 // the build index alone would break unloading an addressable-loaded scene by
-                // its name, which v4 supported.
+                // the same name that loaded it.
                 SceneRefKind.BuildIndex => scene.buildIndex == _buildIndex || MatchesKey(scene),
                 SceneRefKind.Scene => scene == _scene,
                 _ => false,

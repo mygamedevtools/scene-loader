@@ -21,8 +21,8 @@ namespace MyGameDevTools.SceneLoading
 
         readonly List<SceneBackendHandle> _unloadingScenes = new();
         readonly List<SceneBackendHandle> _loadedScenes = new();
-        // Live operations, so Dispose can cancel them — replacing v4's lifetime
-        // CancellationTokenSource and the linked source, closure and registration per call.
+        // Live operations, so Dispose can cancel them. One list the manager owns, rather than a
+        // lifetime CancellationTokenSource plus a linked source, closure and registration per call.
         readonly List<SceneOperation> _liveOperations = new();
 
         // Identified by the Scene itself: handles are values now, so there is no reference to
@@ -160,10 +160,10 @@ namespace MyGameDevTools.SceneLoading
 
         public SceneOperation TransitionAsync(SceneParameters sceneParameters, LoadingScreen loadingScreen = null)
         {
-            // A transition always has to activate something — it unloads the scene you came
-            // from. Every v4 transition overload defaulted its `setIndexActive` to 0 for that
-            // reason, and the conversions that make `TransitionAsync("target", "loading")`
-            // compile cannot carry an index, so the default lives here now.
+            // A transition always has to activate something: it unloads the scene you came from,
+            // and the engine needs an active scene. The conversions that make
+            // `TransitionAsync("target", "loading")` compile cannot carry an index, so the default
+            // for which scene to activate lives here.
             if (!sceneParameters.ShouldSetActive())
                 sceneParameters = new SceneParameters(sceneParameters.GetSceneRefs(), 0);
 
@@ -258,8 +258,7 @@ namespace MyGameDevTools.SceneLoading
         {
             // One holder scene per transition, created only if something actually needs it. It is
             // what keeps a non-scene loading screen alive across the outgoing scene's unload, and
-            // what stops Unity from ever reaching zero loaded scenes — v4's "temp-transition-scene"
-            // special case, generalised.
+            // what stops Unity from ever reaching zero loaded scenes.
             LoadingScreenHost host = new();
             SceneBackendHandle[] loadingSceneHandles = null;
 

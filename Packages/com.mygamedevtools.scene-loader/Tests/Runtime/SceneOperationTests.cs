@@ -62,8 +62,8 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             yield return operation.ToCoroutine();
 
-            // This is issue #52: knowing when the loading screen is completely gone used to mean
-            // reaching into a publicly exposed TaskCompletionSource.
+            // This is issue #52: knowing when the loading screen is completely gone has to be
+            // observable from the operation itself, not from the screen's internals.
             Assert.True(sawScreenIn, "A transition with a loading screen should report ScreenIn.");
             Assert.True(sawScreenOut, "A transition with a loading screen should report ScreenOut.");
             Assert.True(screenOutCameBeforeCompletion, "ScreenOut should be reported before the operation completes.");
