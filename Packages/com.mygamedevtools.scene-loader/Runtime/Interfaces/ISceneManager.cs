@@ -7,10 +7,11 @@ namespace MyGameDevTools.SceneLoading
     /// Interface to standardize scene management operations.
     /// The Scene Manager is responsible for scene loading operations, keeping track of its loaded scene stack and dispatching scene load events.
     /// <br/>
-    /// Four async operations, where v4 had 64 — every reference kind and arity is reachable
-    /// through <see cref="SceneParameters"/>' implicit conversions instead. Each returns a
-    /// <see cref="SceneOperation"/>, which is what let <c>IProgress&lt;float&gt;</c> and
-    /// <c>CancellationToken</c> leave every signature: you attach them to the handle now.
+    /// Four async operations in total: every reference kind and arity reaches them through
+    /// <see cref="SceneParameters"/>' implicit conversions rather than through an overload of its
+    /// own. Each returns a <see cref="SceneOperation"/>, which is what keeps
+    /// <c>IProgress&lt;float&gt;</c> and <c>CancellationToken</c> out of every signature — you
+    /// attach them to the handle instead.
     /// </summary>
     public interface ISceneManager : IDisposable
     {

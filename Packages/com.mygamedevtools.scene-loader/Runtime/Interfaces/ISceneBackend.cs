@@ -7,9 +7,9 @@ namespace MyGameDevTools.SceneLoading
     /// happens exactly once, when <see cref="SceneBackendRegistry.GetBackend"/> picks an
     /// implementation from an already-resolved <see cref="SceneRefKind"/>.
     /// <br/><br/>
-    /// <c>WaitForCompletion()</c> and <c>GetDownloadStatus()</c> are deliberately absent: they
-    /// exist only on the Addressables path, and adding either is how v4's
-    /// half-implemented-interface problem comes back.
+    /// <c>WaitForCompletion()</c> and <c>GetDownloadStatus()</c> are deliberately absent: they are
+    /// meaningful only on the Addressables path, and adding either would force the standard backend
+    /// to declare a method it cannot honour.
     /// </summary>
     public interface ISceneBackend
     {

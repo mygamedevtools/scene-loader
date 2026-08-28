@@ -1,0 +1,51 @@
+/*
+    Design tokens for the sample's UI Toolkit screens.
+
+    Declared once here and imported by every other stylesheet, so the persistent HUD, the
+    room UI and the UI Toolkit loading screens cannot drift apart.
+*/
+:root {
+    --accent: rgb(81, 137, 189);
+    --accent-soft: rgba(81, 137, 189, 0.16);
+    --accent-text: rgb(169, 203, 233);
+
+    /* Nearly opaque: at 0.88 an HDR sky bled through and washed the panels out. */
+    --panel-bg: rgba(18, 21, 26, 0.97);
+    --panel-border: rgb(51, 58, 69);
+    --divider: rgb(43, 49, 58);
+
+    --text: rgb(232, 236, 241);
+    --text-strong: rgb(242, 245, 248);
+    --text-dim: rgb(139, 149, 161);
+    --text-faint: rgb(111, 123, 137);
+    --text-ghost: rgb(89, 99, 111);
+
+    --track: rgb(38, 44, 53);
+    --busy: rgb(216, 178, 113);
+    --danger: rgb(217, 162, 162);
+    --success: rgb(74, 157, 106);
+
+    /*
+        The persistent HUD is a panel in the top-right corner. Only its width is shared: the
+        room's header is capped so the two never meet, and the loading screens centre their
+        content, which a corner panel does not sit on.
+    */
+    --hud-width: 400px;
+}
+
+/* Every screen in the sample fills its panel and keeps the same outer margin. */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+}
+
+.panel {
+    background-color: var(--panel-bg);
+    border-width: 1px;
+    border-color: var(--panel-border);
+    border-radius: 8px;
+}

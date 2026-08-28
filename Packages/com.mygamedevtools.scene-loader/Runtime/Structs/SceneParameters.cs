@@ -9,9 +9,9 @@ namespace MyGameDevTools.SceneLoading
     /// <summary>
     /// One or more <see cref="SceneRef"/>s, plus which of them should become the active scene.
     /// <br/>
-    /// The conversions below are what collapsed v4's 64 async methods into four. They exist one
-    /// per source type rather than chaining through <see cref="SceneRef"/> because <b>C#
-    /// user-defined conversions do not chain</b>.
+    /// The conversions below are what keep the async API to four methods rather than one overload
+    /// per reference kind and arity. They exist one per source type rather than chaining through
+    /// <see cref="SceneRef"/> because <b>C# user-defined conversions do not chain</b>.
     /// </summary>
     public readonly struct SceneParameters
     {
@@ -59,7 +59,19 @@ namespace MyGameDevTools.SceneLoading
 
 #if ENABLE_ADDRESSABLES
         /// <inheritdoc cref="SceneParameters(SceneRef[], int)"/>
-        public SceneParameters(AssetReference[] assetReferences, int setIndexActive) : this(Convert(assetReferences, SceneRef.FromAssetReference), setIndexActive) { }
+        /// <remarks>
+        /// <b>A named factory rather than a constructor, and it has to be.</b> Every
+        /// <c>new SceneParameters(...)</c> resolves against every constructor at once, so a
+        /// constructor taking <c>AssetReference[]</c> forces the compiler to load that type to
+        /// judge applicability — even for a call passing <c>string[]</c>. Any assembly that does
+        /// not reference Addressables then fails with CS0012, despite never mentioning it.
+        /// <br/>
+        /// A distinctly named static is not in that candidate set, so it costs nothing to
+        /// assemblies that do not use it. The implicit conversions below are unaffected:
+        /// conversion resolution does not trip the same wire.
+        /// </remarks>
+        public static SceneParameters FromAssetReferences(AssetReference[] assetReferences, int setIndexActive) =>
+            new(Convert(assetReferences, SceneRef.FromAssetReference), setIndexActive);
 #endif
 
         /// <summary>The first referenced scene.</summary>

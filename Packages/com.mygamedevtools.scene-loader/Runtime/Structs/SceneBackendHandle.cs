@@ -13,8 +13,9 @@ namespace MyGameDevTools.SceneLoading
     /// in-flight operation, and — once linking has run — the scene itself.
     /// <br/>
     /// The engine operations are held in typed fields rather than behind a common interface, so
-    /// nothing boxes; only the backend that created a handle reads its own field. Immutable, so
-    /// v4's mutable-struct-behind-an-interface footgun is gone.
+    /// nothing boxes; only the backend that created a handle reads its own field. Immutable, so it
+    /// cannot be copied by value and then mutated on the copy — the footgun every mutable struct
+    /// reached through an interface carries.
     /// </summary>
     public readonly struct SceneBackendHandle : IEquatable<SceneBackendHandle>
     {

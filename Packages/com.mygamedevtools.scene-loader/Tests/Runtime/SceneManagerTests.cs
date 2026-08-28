@@ -354,11 +354,11 @@ namespace MyGameDevTools.SceneLoading.Tests
         {
             yield return manager.LoadAsync(new SceneParameters(sceneRef)).ToCoroutine();
 
-#if UNITY_EDITOR
-            yield return manager.UnloadAsync(1).ToCoroutine();
-#else
-            yield return manager.UnloadAsync(2).ToCoroutine();
-#endif
+            // The index the scene actually landed on, rather than the one it happens to occupy
+            // in this project. A hardcoded index breaks as soon as the Build Settings hold
+            // anything else — a sample, or the consuming project's own scenes.
+            int buildIndex = manager.GetLastLoadedScene().buildIndex;
+            yield return manager.UnloadAsync(buildIndex).ToCoroutine();
 
             Assert.Zero(manager.LoadedSceneCount);
         }

@@ -1,0 +1,170 @@
+@import url("Shared.uss");
+
+/*
+    The persistent HUD: one panel in the top-right corner holding the active scene and whatever
+    operation is running. They answer the same question at different resolutions — where am I,
+    and what is happening to that — so they are read together.
+
+    Top-right rather than a full-width bar: the room owns the top-left for its header and the
+    left column for its examples list, and a corner panel leaves the centre of the screen clear
+    for the loading screens.
+*/
+.hud {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.hud__panel {
+    width: var(--hud-width);
+}
+
+/* ---- the active scene ---- */
+.hud__scene {
+    padding: 12px 15px 11px 15px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--divider);
+}
+
+.hud__caption {
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 1.4px;
+    color: var(--text-faint);
+}
+
+.hud__scene-row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.hud__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 5px;
+    background-color: var(--accent);
+    margin-right: 10px;
+    transition-property: background-color;
+    transition-duration: 200ms;
+}
+
+.hud__dot--busy {
+    background-color: var(--busy);
+}
+
+.hud__scene-name {
+    font-size: 19px;
+    -unity-font-style: bold;
+    color: var(--text);
+}
+
+/* ---- the operation ---- */
+.hud__op {
+    padding: 11px 15px 13px 15px;
+}
+
+.hud__op-head {
+    flex-direction: row;
+    align-items: center;
+}
+
+.hud__kind {
+    font-size: 13px;
+    -unity-font-style: bold;
+    color: var(--text);
+}
+
+.hud__idle {
+    font-size: 13px;
+    color: var(--text-faint);
+}
+
+.hud__pct {
+    margin-left: auto;
+    font-size: 13px;
+    -unity-font-style: bold;
+    color: var(--accent-text);
+}
+
+.hud__cancel {
+    margin-left: 10px;
+    margin-right: 0;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    color: var(--danger);
+    background-color: rgba(180, 80, 80, 0.12);
+    border-width: 1px;
+    border-color: rgb(109, 58, 58);
+    transition-property: background-color;
+    transition-duration: 120ms;
+}
+
+.hud__cancel:hover {
+    background-color: rgba(180, 80, 80, 0.26);
+}
+
+/*
+    The SceneOperationState timeline. Wraps, because a corner panel is narrower than the
+    sequence — which is fine here in a way it would not be in a single-line bar.
+*/
+.hud__phases {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 9px;
+}
+
+.phase {
+    font-size: 11px;
+    -unity-font-style: bold;
+    color: rgb(92, 102, 115);
+    border-width: 1px;
+    border-color: rgb(46, 52, 61);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    transition-property: background-color, border-color, color;
+    transition-duration: 140ms;
+}
+
+.phase--done {
+    color: rgb(125, 139, 153);
+    border-color: rgb(58, 68, 80);
+}
+
+.phase--current {
+    color: rgb(255, 255, 255);
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.phase--completed {
+    color: rgb(255, 255, 255);
+    background-color: var(--success);
+    border-color: var(--success);
+}
+
+.phase--failed {
+    color: rgb(255, 255, 255);
+    background-color: rgb(138, 90, 90);
+    border-color: rgb(138, 90, 90);
+}
+
+.hud__track {
+    height: 5px;
+    border-radius: 3px;
+    background-color: var(--track);
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.hud__fill {
+    height: 5px;
+    width: 0%;
+    border-radius: 3px;
+    background-color: var(--accent);
+    transition-property: width;
+    transition-duration: 120ms;
+}
