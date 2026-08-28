@@ -10,12 +10,11 @@ namespace MyGameDevTools.SceneLoading
     /// </summary>
     /// <remarks>
     /// Two needs, one object: a screen that is not a scene needs somewhere to live that survives
-    /// the outgoing scene's unload, and Unity cannot have zero loaded scenes. v4's
-    /// <c>temp-transition-scene</c> special case disappears into this.
+    /// the outgoing scene's unload, and Unity cannot have zero loaded scenes.
     /// <br/><br/>
     /// A dedicated scene rather than <c>DontDestroyOnLoad</c>: cleaner to tear down, and it does
     /// not leak if a transition faults. Created lazily, so a transition through a loading
-    /// <i>scene</i> still costs no extra scene, exactly as in v4.
+    /// <i>scene</i> — which already has somewhere to live — costs no extra scene.
     /// </remarks>
     public sealed class LoadingScreenHost : IDisposable
     {
