@@ -268,22 +268,28 @@ name, path, address, build index, `Scene` or `AssetReference` all convert to a s
 ```cs
 public class MyScreen : LoadingScreen
 {
-    public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHost host, SceneOperation op) { /* instantiate into host */ }
-    public override SceneOperationPump.ConditionAwaiter ShowAsync(SceneOperation op)  { /* gate transition-in  */ }
-    public override void ReportProgress(float progress)                               { /* drive the UI       */ }
-    public override SceneOperationPump.ConditionAwaiter HideAsync(SceneOperation op)  { /* gate transition-out */ }
-    public override void Dispose()                                                    { /* tear it down        */ }
+    public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHost host, SceneOperation op)
+    {
+        /* instantiate into host, then BindProgress(...) the LoadingProgress that gates it */
+        return SceneOperationPump.Completed(op);
+    }
+
+    public override void Dispose() { /* tear it down */ base.Dispose(); }
 }
 
 await MySceneManager.TransitionAsync("target", new MyScreen());
 ```
 
+`PrepareAsync` is the only member a screen has to write, plus `Dispose` if it built anything.
+Showing, hiding and reporting are driven by the `LoadingProgress` the screen binds — one found on a
+`LoadingBehavior`, or one it creates for itself — so every screen gates the same way.
+
 `LoadingScreenHost` is a package-owned scene that exists for the length of one transition, so a
 screen that instantiates something has somewhere to put it that survives the outgoing scene being
 unloaded. It also replaces 4.x's internal `temp-transition-scene`.
 
-The `Loading Scene Examples` sample ships `PrefabLoadingScreen` and `UIDocumentLoadingScreen` as
-reference implementations to copy.
+The [Loading Scene Examples](../samples/loading-scene-examples.md) sample ships `PrefabLoadingScreen`
+and `UIDocumentLoadingScreen` as reference implementations to copy.
 
 ## String resolution and its precedence
 
