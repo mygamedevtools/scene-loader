@@ -161,8 +161,8 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.Throws<System.ArgumentException>(() => _ = new SceneParameters((SceneRef[])null));
         }
 
-        // v4 boxed a build index on the way in and again on the way out. Removing that is a
-        // headline claim, so it gets asserted rather than assumed.
+        // Converting a build index in and reading it back out must not box it. That is a claim the
+        // API makes, so it gets asserted rather than assumed.
         [UnityTest]
         public IEnumerator SceneRef_RoundTripsWithoutAllocating()
         {

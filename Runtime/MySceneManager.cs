@@ -23,10 +23,33 @@ namespace MyGameDevTools.SceneLoading
             get
             {
                 if (_instance == null)
-                    throw new NullReferenceException($"[{nameof(MySceneManager)}] The static Scene Manager instance is not available before the first scene is fully loaded. Try moving the call to `Start()`.");
+                    throw new InvalidOperationException($"[{nameof(MySceneManager)}] The static Scene Manager instance is not available before the first scene is fully loaded. Try moving the call to `Start()`, or ask {nameof(TryGetDefault)} first.");
                 return _instance;
             }
             set => _instance = value;
+        }
+
+        /// <summary>
+        /// The manager, if there is one yet. The only way to ask without risking the exception
+        /// <see cref="Default"/> throws.
+        /// </summary>
+        /// <remarks>
+        /// There are two windows where there is no manager, and both are ordinary rather than
+        /// exceptional: before the first scene has finished loading — every <c>Awake</c> and
+        /// <c>OnEnable</c> in it — and after play mode has torn the statics down, which is where
+        /// an <c>OnDestroy</c> unsubscribing from manager events can land.
+        /// <code>
+        /// if (MySceneManager.TryGetDefault(out ISceneManager manager))
+        ///     manager.OperationStarted -= OnOperationStarted;
+        /// </code>
+        /// It hands back the manager rather than a bare <see langword="bool"/> because every
+        /// reason to ask is followed by wanting to use it.
+        /// </remarks>
+        /// <returns>Whether a manager was available.</returns>
+        public static bool TryGetDefault(out ISceneManager manager)
+        {
+            manager = _instance;
+            return manager != null;
         }
 
         internal static ISceneManager Instance => Default;

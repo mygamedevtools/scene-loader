@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="LoadingScreenAnimated.uss" />
+
+    <!--
+        A loading screen that is a scene, built with UI Toolkit rather than uGUI. The panels
+        are driven by AnimatedLoadingScreen, which holds both gates from Awake and releases
+        them when each slide finishes.
+    -->
+    <ui:VisualElement name="root" class="screen animated">
+        <ui:VisualElement name="panel-left" class="animated__panel animated__panel--left" />
+        <ui:VisualElement name="panel-right" class="animated__panel animated__panel--right" />
+
+        <ui:VisualElement name="content" class="animated__content">
+            <ui:VisualElement name="mark" class="animated__mark" />
+            <ui:Label text="LOADING" class="animated__label" />
+            <ui:Label name="value" text="0%" class="animated__value" />
+            <ui:VisualElement class="animated__track">
+                <ui:VisualElement name="fill" class="animated__fill" />
+            </ui:VisualElement>
+            <ui:Label text="Gates held until each slide finishes" class="animated__hint" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

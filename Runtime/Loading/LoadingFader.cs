@@ -3,11 +3,18 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>
+    /// Fades a <see cref="CanvasGroup"/> in when the loading screen appears and out when loading
+    /// completes, holding the transition for the length of each fade.
+    /// </summary>
+    /// <remarks>
+    /// The holds are what make this work with no configuration: adding this component is itself
+    /// the statement that the transition should wait for the fades.
+    /// </remarks>
     [AddComponentMenu("Scene Loading/Loading Fader")]
     [RequireComponent(typeof(CanvasGroup))]
-    public class LoadingFader : MonoBehaviour
+    public class LoadingFader : LoadingScreenComponent
     {
-        public LoadingBehavior loadingBehavior;
         [Range(.05f, 5)]
         public float fadeTime = 1;
 
@@ -16,30 +23,33 @@ namespace MyGameDevTools.SceneLoading
         [SerializeField]
         AnimationCurve _fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-        LoadingProgress _loadingProgress;
         CanvasGroup _canvasGroup;
 
-        void Awake()
+        protected override void Awake()
         {
             _canvasGroup = GetComponent<CanvasGroup>();
             _canvasGroup.alpha = 0;
+
+            base.Awake();
         }
 
-        void Start()
+        protected override void OnBound()
         {
-            _loadingProgress = loadingBehavior.Progress;
-            _loadingProgress.LoadingCompleted += FadeOut;
+            // Both gates at once: the transition waits for the fade in before it unloads anything,
+            // and for the fade out before it considers the screen gone.
+            Progress.HoldShow(this);
+            Progress.HoldHide(this);
+            Progress.LoadingCompleted += FadeOut;
+
             FadeIn();
         }
 
-        void FadeOut()
+        protected override void OnDestroy()
         {
-            StartCoroutine(fadeOutRoutine());
-            IEnumerator fadeOutRoutine()
-            {
-                yield return FadeRoutine(_fadeOutCurve);
-                _loadingProgress.EndTransition();
-            }
+            if (Progress != null)
+                Progress.LoadingCompleted -= FadeOut;
+
+            base.OnDestroy();
         }
 
         void FadeIn()
@@ -48,7 +58,17 @@ namespace MyGameDevTools.SceneLoading
             IEnumerator fadeInRoutine()
             {
                 yield return FadeRoutine(_fadeInCurve);
-                _loadingProgress.StartTransition();
+                Progress.ReleaseShow(this);
+            }
+        }
+
+        void FadeOut()
+        {
+            StartCoroutine(fadeOutRoutine());
+            IEnumerator fadeOutRoutine()
+            {
+                yield return FadeRoutine(_fadeOutCurve);
+                Progress.ReleaseHide(this);
             }
         }
 

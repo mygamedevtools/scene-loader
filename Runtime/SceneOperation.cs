@@ -98,8 +98,8 @@ namespace MyGameDevTools.SceneLoading
         /// <summary>
         /// Stops this operation, completing it in <see cref="SceneOperationState.Canceled"/>.
         /// <br/>
-        /// <b>The underlying Unity operations keep running</b> — they cannot be aborted, which is
-        /// why v4's tokens never cancelled the work either. A scene already loading will finish;
+        /// <b>The underlying Unity operations keep running</b> — the engine cannot abort a scene
+        /// load once it has started, whatever the caller does. A scene already loading will finish;
         /// what stops is this operation's reporting, its remaining phases, and its waiters.
         /// </summary>
         public void Cancel()
