@@ -47,6 +47,8 @@ The sample contains **two** rooms, **two** loading scenes and **two** helper sce
 
 Start in either room. The list holds **eight** examples; click one to run it, and read the line of code underneath to see what ran:
 
+![Loading Scene Examples](../img/sample_loading-scene-examples.jpg)
+
 | Example | What it runs | What it shows |
 |---|---|---|
 | **Direct** | `TransitionAsync("SceneB")` | A straight swap, no loading screen. |
