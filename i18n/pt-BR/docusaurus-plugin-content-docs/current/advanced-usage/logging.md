@@ -67,5 +67,5 @@ A maior parte do que você vai ver está coberta na página de **Troubleshooting
 
 - avisos de resolução com correspondência dupla, quando um nome está tanto nas Build Settings quanto nos Addressables
 - chaves de cena que não podem ser resolvidas
-- uma transição esperando por um portão de tela de carregamento que nunca foi aberto
+- uma transição esperando por um gate de tela de carregamento que nunca foi aberto
 - uma operação falhando, com a exceção que causou a falha

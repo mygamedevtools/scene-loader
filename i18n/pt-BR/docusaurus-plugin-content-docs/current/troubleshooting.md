@@ -43,7 +43,7 @@ Depois de 10 segundos esperando pela mesma operação da engine, um build de des
 [MySceneManager] A Transition operation has been waiting 10 seconds on ...
 ```
 
-Isso normalmente significa que um portão da tela de carregamento nunca foi liberado — um componente que chamou `HoldShow` ou `HoldHide` no seu `LoadingProgress` e nunca chamou o `ReleaseShow` / `ReleaseHide` correspondente. O aviso indica o detentor. Um detentor destruído sem liberar é descartado automaticamente, então o culpado é algum que ainda está vivo.
+Isso normalmente significa que um gate da tela de carregamento nunca foi liberado — um componente que chamou `HoldShow` ou `HoldHide` no seu `LoadingProgress` e nunca chamou o `ReleaseShow` / `ReleaseHide` correspondente. O aviso indica o detentor. Um detentor destruído sem liberar é descartado automaticamente, então o culpado é algum que ainda está vivo.
 
 ## Aumentando os diagnósticos {/* #turning-the-diagnostics-up */}
 

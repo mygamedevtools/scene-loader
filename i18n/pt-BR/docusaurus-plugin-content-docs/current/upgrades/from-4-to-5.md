@@ -48,7 +48,7 @@ versão major a chance de dar problema é maior.
   acontece uma vez por operação, em vez de a cada chamada.
 * **Telas de carregamento não precisam mais ser cenas** — `LoadingScreen` também cobre prefabs e documentos
   do UI Toolkit.
-* **Portões da tela de carregamento são retenções, não toggles.** `waitForScriptedStart` / `waitForScriptedEnd`
+* **Gates da tela de carregamento são retenções, não toggles.** `waitForScriptedStart` / `waitForScriptedEnd`
   e `StartTransition()` / `EndTransition()` foram removidos; um componente que precisa que a transição
   espere faz uma retenção no `LoadingProgress` e a libera quando terminar.
 * **`LoadingScreenComponent`** é a base para tudo que vive em uma tela de carregamento. A
@@ -137,9 +137,9 @@ abaixo.
 ### `waitForScriptedStart` / `waitForScriptedEnd` e `StartTransition()` / `EndTransition()` → retenções {/* #waitforscriptedstart--waitforscriptedend-and-starttransition--endtransition--holds */}
 
 Na 4.x, uma tela de carregamento que animava a entrada ou a saída marcava dois toggles no `LoadingBehavior` e
-chamava dois gatilhos no seu `LoadingProgress` — e se dois componentes quisessem controlar o portão da mesma
-transição, o primeiro a chamar `EndTransition()` liberava para os dois. Na 5.x os portões ficam
-**abertos a menos que algo os retenha**: cada participante faz a sua própria retenção e o portão abre
+chamava dois gatilhos no seu `LoadingProgress` — e se dois componentes quisessem controlar o gate da mesma
+transição, o primeiro a chamar `EndTransition()` liberava para os dois. Na 5.x os gates ficam
+**abertos a menos que algo os retenha**: cada participante faz a sua própria retenção e o gate abre
 quando o último deles libera.
 
 ```cs
@@ -164,9 +164,9 @@ void OnPlayInFinished()  => _loadingBehavior.Progress.ReleaseShow(this);
 void OnPlayOutFinished() => _loadingBehavior.Progress.ReleaseHide(this);
 ```
 
-Faça as retenções no `Awake` ou no `OnEnable`, antes de a transição ler os portões. Um novo
+Faça as retenções no `Awake` ou no `OnEnable`, antes de a transição ler os gates. Um novo
 par `HoldCompletion` / `ReleaseCompletion` atrasa o próprio sinal de `LoadingCompleted`, que é exatamente o que
-um tempo mínimo de exibição precisa. Veja [Portões e retenções](../getting-started/loading-screens.md#gates-and-holds).
+um tempo mínimo de exibição precisa. Veja [Gates e retenções](../getting-started/loading-screens.md#gates-and-holds).
 
 O `LoadingFader` agora faz suas próprias retenções, então uma cena que só usava ele funciona sem nenhuma mudança
 além dos toggles que desaparecem do Inspector.
@@ -346,7 +346,7 @@ public class MyScreen : LoadingScreen
 {
     public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHost host, SceneOperation op)
     {
-        /* instancie dentro do host e então faça BindProgress(...) do LoadingProgress que controla o portão */
+        /* instancie dentro do host e então faça BindProgress(...) do LoadingProgress que controla o gate */
         return SceneOperationPump.Completed(op);
     }
 
@@ -358,7 +358,7 @@ await MySceneManager.TransitionAsync("target", new MyScreen());
 
 `PrepareAsync` é o único membro que uma tela precisa implementar, além de `Dispose` se ela construiu algo.
 Exibir, esconder e reportar progresso são conduzidos pelo `LoadingProgress` ao qual a tela se vincula — um encontrado em um
-`LoadingBehavior`, ou um que ela mesma cria — então toda tela controla o portão do mesmo jeito.
+`LoadingBehavior`, ou um que ela mesma cria — então toda tela controla o gate do mesmo jeito.
 
 `LoadingScreenHost` é uma cena de propriedade do pacote que existe durante uma transição, então uma
 tela que instancia algo tem onde colocá-lo sem que ele se perca quando a cena de saída for

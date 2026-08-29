@@ -56,7 +56,7 @@ Comece em qualquer uma das salas. A lista contém **oito** exemplos; clique em u
 | **Loading scene** | `TransitionAsync("SceneB", "Loading_Screen")` | Uma cena com um `LoadingBehavior` e um `LoadingFader`, construída com uGUI. |
 | **Prefab screen** | `TransitionAsync(target, new PrefabLoadingScreen(prefab))` | A mesma tela como um prefab: sem cena extra, sem entrada nas Build Settings. |
 | **UI Toolkit screen** | `TransitionAsync(target, new UIDocumentLoadingScreen(uxml, panel))` | Um documento UXML que é dono do seu próprio `LoadingProgress`, sem `LoadingBehavior` em lugar nenhum. |
-| **Animated screen** | `TransitionAsync("SceneB", "Loading_Animated")` | Uma cena de carregamento UI Toolkit cujos portões ficam retidos até cada deslize terminar. |
+| **Animated screen** | `TransitionAsync("SceneB", "Loading_Animated")` | Uma cena de carregamento UI Toolkit cujos gates ficam retidos até cada deslize terminar. |
 | **Reload this scene** | `ReloadActiveSceneAsync(loadingScreen)` | Recarrega a cena ativa, seja ela qual for, então o mesmo botão funciona nas duas salas. |
 | **Two scenes at once** | `TransitionAsync(new[] { target, extra }, loadingScreen)` | Uma operação, duas cenas, a primeira delas definida como ativa. |
 | **Await the handle** | `SceneResult result = await TransitionAsync(target, loadingScreen)` | A operação é aguardável; o resultado traz as cenas que ela produziu. |
@@ -145,7 +145,7 @@ void OnOperationStarted(SceneOperation operation)
 - `LoadingFeedbackSlider` e `LoadingFeedbackText` exibindo o progresso.
 - `MinimumDisplayTime`, um componente do exemplo que mantém a tela visível por dois segundos.
 
-Nenhum deles é ligado aos outros no Inspector. Todo componente abaixo do `LoadingBehavior` o encontra nos pais, e cada um que precisa que a transição espere faz sua própria **retenção** nos portões do progresso. A transição espera até o último deles liberar.
+Nenhum deles é ligado aos outros no Inspector. Todo componente abaixo do `LoadingBehavior` o encontra nos pais, e cada um que precisa que a transição espere faz sua própria **retenção** nos gates do progresso. A transição espera até o último deles liberar.
 
 ### A tela em prefab {/* #the-prefab-screen */}
 
@@ -210,11 +210,11 @@ public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHo
     progress.LoadingCompleted += FadeOut;
     BindProgress(progress);
 
-    // Retidos antes que a transição possa ler os portões, e liberados quando cada fade termina.
+    // Retidos antes que a transição possa ler os gates, e liberados quando cada fade termina.
     progress.HoldShow(this);
     progress.HoldHide(this);
 
-    // Atrasa o sinal em vez do portão, para que a tela permaneça visível pelo seu tempo mínimo.
+    // Atrasa o sinal em vez do gate, para que a tela permaneça visível pelo seu tempo mínimo.
     if (_minimumSeconds > 0)
     {
         progress.HoldCompletion(this);
@@ -232,7 +232,7 @@ Os fades rodam pelo próprio scheduler do UI Toolkit, então a tela não precisa
 
 ### A tela animada {/* #the-animated-screen */}
 
-`Loading_Animated` é uma **cena** de carregamento que não é uGUI. `AnimatedLoadingScreen` é um `LoadingScreenComponent` — a base para qualquer coisa que vive em uma tela de carregamento e conduz o seu `LoadingProgress`, ou espera por ele. Ele encontra o `LoadingBehavior` no mesmo objeto e, uma vez vinculado, retém os dois portões até cada deslize terminar:
+`Loading_Animated` é uma **cena** de carregamento que não é uGUI. `AnimatedLoadingScreen` é um `LoadingScreenComponent` — a base para qualquer coisa que vive em uma tela de carregamento e conduz o seu `LoadingProgress`, ou espera por ele. Ele encontra o `LoadingBehavior` no mesmo objeto e, uma vez vinculado, retém os dois gates até cada deslize terminar:
 
 ```cs
 [RequireComponent(typeof(UIDocument))]
@@ -263,7 +263,7 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
 }
 ```
 
-O portão abre quando o deslize termina, não quando começa, então a cena de saída nunca é descarregada atrás de uma cortina que ainda está se abrindo.
+O gate abre quando o deslize termina, não quando começa, então a cena de saída nunca é descarregada atrás de uma cortina que ainda está se abrindo.
 
 ### Tempo mínimo de exibição {/* #minimum-display-time */}
 
@@ -294,7 +294,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 }
 ```
 
-Ele retém a **conclusão**, não o portão de ocultação. Reter o portão de ocultação atrasa a transição depois que a tela já recebeu o aviso para sair, então o fade roda até o fim e o resto da espera acontece numa tela vazia. Reter a conclusão atrasa o próprio sinal `LoadingCompleted`, então a tela permanece visível e a animação de saída, seja ela qual for, começa na hora certa.
+Ele retém a **conclusão**, não o gate de ocultação. Reter o gate de ocultação atrasa a transição depois que a tela já recebeu o aviso para sair, então o fade roda até o fim e o resto da espera acontece numa tela vazia. Reter a conclusão atrasa o próprio sinal `LoadingCompleted`, então a tela permanece visível e a animação de saída, seja ela qual for, começa na hora certa.
 
 ## Conclusão {/* #wrap-up */}
 

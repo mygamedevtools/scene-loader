@@ -41,7 +41,7 @@ MySceneManager.TransitionAsync("target", "loading");        // uma cena, como an
 MySceneManager.TransitionAsync("target", new MyScreen());   // um prefab ou um documento UI Toolkit
 ```
 
-Quando a tela de carregamento **é** uma cena, o componente `LoadingBehavior` presente nela é notificado do progresso. Qualquer coisa nessa cena que precise que a transição espere — um fade, uma animação, um script — faz uma **retenção** nos portões do seu `LoadingProgress` com `HoldShow` / `HoldHide` e a libera quando terminar, efetivamente **atrasando** a transição para exibir um feedback visual, como um efeito de fade in/out.
+Quando a tela de carregamento **é** uma cena, o componente `LoadingBehavior` presente nela é notificado do progresso. Qualquer coisa nessa cena que precise que a transição espere — um fade, uma animação, um script — faz uma **retenção** nos gates do seu `LoadingProgress` com `HoldShow` / `HoldHide` e a libera quando terminar, efetivamente **atrasando** a transição para exibir um feedback visual, como um efeito de fade in/out.
 
 ## Sabendo onde você está {/* #knowing-where-you-are */}
 
