@@ -30,7 +30,7 @@ erro de compilação exatamente na linha a ser alterada. **A 4.x não receberá 
 a um relato de bug na 4.x é atualizar.
 
 :::warning[Usuários da Asset Store]
-Remova completamente a versão anterior antes de importar a 5.0. Isso sempre foi verdade, mas em uma
+Remova completamente a versão anterior antes de importar a 5.0. Essa sempre foi a regra, mas em uma
 versão major a chance de dar problema é maior.
 :::
 
