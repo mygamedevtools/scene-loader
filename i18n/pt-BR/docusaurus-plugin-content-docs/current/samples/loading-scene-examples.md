@@ -48,7 +48,7 @@ O exemplo contém **duas** salas, **duas** cenas de carregamento e **duas** cena
 
 Comece em qualquer uma das salas. A lista contém **oito** exemplos; clique em um para executá-lo e leia a linha de código logo abaixo para ver o que rodou:
 
-![Loading Scene Examples](../img/sample_loading-scene-examples.jpg)
+![Loading Scene Examples](@site/docs/img/sample_loading-scene-examples.jpg)
 
 | Exemplo | O que executa | O que mostra |
 |---|---|---|
