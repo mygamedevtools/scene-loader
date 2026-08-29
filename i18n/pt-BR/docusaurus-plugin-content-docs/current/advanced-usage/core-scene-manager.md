@@ -49,11 +49,11 @@ public interface ISceneManager : IDisposable
 Progresso e cancelamento são propriedades do trabalho, não da requisição, então eles vivem no [`SceneOperation`](./scene-operation.md) retornado.
 :::
 
-Você encontrará muitas semelhanças com a classe [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html) da Unity, tanto para manter uma curva de aprendizado suave quanto porque algumas dessas operações acabam chamando internamente o _Unity Scene Manager_ (como `SetActiveScene`, por exemplo).
+Você vai notar muitas semelhanças com a classe [SceneManager](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.html) da Unity, tanto para manter a curva de aprendizado suave quanto porque algumas dessas operações acabam chamando o _Unity Scene Manager_ internamente (como `SetActiveScene`, por exemplo).
 
-O pacote inclui a implementação `CoreSceneManager`, capaz de lidar com operações de cena tanto **addressable** quanto **não-addressable**. Você pode usar essa implementação como referência para **construir seu próprio** Scene Manager, se necessário.
+O pacote inclui a implementação `CoreSceneManager`, capaz de lidar com operações de cena tanto **addressable** quanto **não-addressable**. Você pode usar essa implementação como referência para **construir seu próprio** Scene Manager, se precisar.
 
-O `CoreSceneManager` é projetado para ser usado como uma camada acima do `SceneManager` da Unity, adicionando funcionalidades extras. Ao criar um `CoreSceneManager`, você pode decidir se ele irá gerenciar cenas que já foram carregadas ou não.
+O `CoreSceneManager` foi pensado para ser usado como uma camada sobre o `SceneManager` da Unity, com funcionalidades adicionais. Ao criar um `CoreSceneManager`, você decide se ele deve ou não gerenciar as cenas que já estavam carregadas.
 
 ```mermaid
 flowchart LR
@@ -69,7 +69,7 @@ flowchart LR
 ```
 
 A interface `ISceneManager` define que os métodos `LoadAsync`, `UnloadAsync`, `TransitionAsync` e `ReloadActiveSceneAsync` retornam um [`SceneOperation`](./scene-operation.md) — de forma **síncrona**, antes de o trabalho começar.
-Isso significa que você pode usar _await_ nele, ou se inscrever nos eventos `SceneLoaded` ou `SceneUnloaded` para receber as mesmas cenas.
+Isso significa que você pode dar _await_ nele, ou se inscrever nos eventos `SceneLoaded` ou `SceneUnloaded` para receber as mesmas cenas.
 
 :::info
 Você também pode aguardar a conclusão desses métodos em coroutines:
@@ -104,7 +104,7 @@ Você não precisa criar manualmente uma instância de `CoreSceneManager` se est
 
 ## Scene Parameters {/* #scene-parameters */}
 
-`SceneParameters` é uma struct que simplifica o envio de uma ou múltiplas cenas como parâmetros para as **Operações de Cena**.
+`SceneParameters` é uma struct que simplifica o envio de uma ou várias cenas como parâmetros para as **Operações de Cena**.
 
 ```cs
 public readonly struct SceneParameters
@@ -121,8 +121,8 @@ public readonly struct SceneParameters
 }
 ```
 
-Isso permite a definição de um único método que pode realizar operações para uma ou várias cenas.
-Idealmente, você deve confiar nas conversões implícitas ao invés de criar uma instância manualmente para cada chamada.
+Isso permite definir um único método capaz de realizar operações em uma ou várias cenas.
+Idealmente, você deve confiar nas conversões implícitas em vez de criar uma instância manualmente a cada chamada.
 Por exemplo:
 
 ```cs
@@ -133,7 +133,7 @@ sceneManager.LoadAsync(new SceneParameters(SceneRef.FromKey("my-scene")));
 sceneManager.LoadAsync("my-scene");
 ```
 
-Use o construtor explícito quando precisar dizer qual cena se torna a ativa:
+Use o construtor explícito quando precisar indicar qual cena vai ficar ativa:
 
 ```cs
 sceneManager.LoadAsync(new SceneParameters("my-scene", true));
@@ -142,7 +142,7 @@ sceneManager.LoadAsync(new SceneParameters(new SceneRef[] { 1, 2, 3 }, 1));
 
 ## Scene Result {/* #scene-result */}
 
-Assim como o `SceneParameters`, o `SceneResult` simplifica o retorno de uma ou múltiplas cenas como resultado de uma **Operação de Cena**.
+Assim como o `SceneParameters`, o `SceneResult` simplifica o retorno de uma ou várias cenas como resultado de uma **Operação de Cena**.
 
 ```cs
 public readonly struct SceneResult

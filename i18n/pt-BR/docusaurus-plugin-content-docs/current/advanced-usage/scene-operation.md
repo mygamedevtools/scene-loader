@@ -6,13 +6,13 @@ description: Entenda o handle SceneOperation retornado por toda operação.
 
 # Scene Operation
 
-Toda operação retorna um `SceneOperation` — **de forma síncrona**, antes de o trabalho começar. Ele é um handle vivo sobre esse trabalho: em que fase está, quão longe chegou, o que produziu, e como esperar por ele.
+Toda operação retorna um `SceneOperation` — **de forma síncrona**, antes de o trabalho começar. Ele é um handle vivo sobre esse trabalho: em que fase está, quanto já avançou, o que produziu e como esperar por ele.
 
 ## Por que um handle e não uma Task {/* #why-a-handle-and-not-a-task */}
 
-Uma `Task` te dá uma coisa: o resultado final. Qualquer outra coisa que você queira saber sobre um carregamento de cena — quão longe chegou, em que fase está, se ainda dá para pará-lo — precisa ser decidida *antes* da chamada, como parâmetros extras.
+Uma `Task` te dá uma coisa: o resultado final. Qualquer outra coisa que você queira saber sobre um carregamento de cena — quanto já avançou, em que fase está, se ainda dá para pará-lo — precisa ser decidida *antes* da chamada, como parâmetros extras.
 
-Um `SceneOperation` é algo que você segura, então tudo isso se conecta depois da chamada:
+Já um `SceneOperation` é algo que você segura, então tudo isso é conectado depois da chamada:
 
 ```cs
 SceneOperation op = MySceneManager.TransitionAsync("target", "loading");
@@ -37,7 +37,7 @@ Task<SceneResult> task = op.AsTask();      // ponte para interoperar com terceir
 
 `await op` é o caminho principal. `GetAwaiter()` retorna um `SceneOperationAwaiter` sobre a própria lista de continuações da operação — sem `Task`, sem `Awaitable`. Como o pump roda no player loop, as continuações retomam na thread principal por construção, sem ida e volta pelo `SynchronizationContext`.
 
-Ele também é **re-awaitable** — aguardar duas vezes retorna o mesmo resultado, e `op.Result` continua legível após a conclusão. Esse é o motivo específico pelo qual `Awaitable` não é usado internamente: seus objetos voltam para um pool depois de um único await.
+Ele também é **re-awaitable** — dar await duas vezes retorna o mesmo resultado, e `op.Result` continua legível após a conclusão. É justamente por isso que `Awaitable` não é usado internamente: seus objetos voltam para um pool depois de um único await.
 
 :::info
 `AsTask()` é uma conveniência, não um pilar do design. Ele custa um `TaskCompletionSource` por chamada e `await op` não, então recorra a ele apenas quando uma API de terceiros exigir uma `Task`.
@@ -61,17 +61,17 @@ E os eventos:
 | `Progressed` | Dispara quando `Progress` muda. Não é disparado para valores inalterados. |
 | `StateChanged` | Dispara a cada mudança de `State` |
 | `SceneLoaded` / `SceneUnloaded` | Uma vez por cena |
-| `Completed` | Uma vez ao terminar — sucesso, cancelamento e falha igualmente. Inscrever-se após a conclusão o invoca imediatamente. |
+| `Completed` | Uma vez, ao terminar — seja sucesso, cancelamento ou falha. Inscrever-se depois da conclusão o invoca imediatamente. |
 
 :::note
-Um inscrito que lança exceção é reportado através do [`SceneManagerLog`](./logging.md) e contido. Ele não vai fazer a operação falhar, e não vai impedir os outros inscritos ou os awaiters de rodar.
+Um inscrito que lança exceção é reportado através do [`SceneManagerLog`](./logging.md) e contido. Ele não vai fazer a operação falhar, nem vai impedir os outros inscritos ou os awaiters de rodar.
 :::
 
 ### Estados {/* #states */}
 
 `Pending` → `Resolving` → `ScreenIn` → `Unloading` → `Loading` → `Activating` → `ScreenOut` → `Completed`, com `Canceled` e `Faulted` como alternativas terminais.
 
-Quais deles você vê depende da operação — um load simples nunca chega a `ScreenIn`. A ordem segue o fluxo da transição, e é por isso que `Unloading` vem antes de `Loading`: a cena de origem vai embora assim que a tela de carregamento está aberta, antes de a cena de destino ser trazida.
+Quais deles você vê depende da operação — um carregamento simples nunca chega a `ScreenIn`. A ordem segue o fluxo da transição, e é por isso que `Unloading` vem antes de `Loading`: a cena de origem vai embora assim que a tela de carregamento estiver visível, antes de a cena de destino entrar.
 
 Então "a tela de carregamento terminou o fade out, comece a cutscene" é um estado no qual você se inscreve:
 
@@ -91,7 +91,7 @@ op.CancelWith(destroyCancellationToken);   // a ponte opcional
 ```
 
 :::warning
-**As operações subjacentes da Unity continuam rodando.** Uma cena que a engine já começou a carregar não pode ser abortada, então ela vai terminar. O que para é o reporte desta operação, suas fases restantes e seus waiters.
+**As operações subjacentes da Unity continuam rodando.** Uma cena que a engine já começou a carregar não pode ser abortada, então ela vai terminar. O que para é o relato desta operação, as fases restantes e os awaiters dela.
 :::
 
 ## Combinando {/* #combining */}
@@ -101,7 +101,7 @@ SceneOperation both = SceneOperation.WhenAll(first, second);
 SceneOperation any  = SceneOperation.WhenAny(first, second);
 ```
 
-Prefira estes a `Task.WhenAll` sobre `AsTask()`: eles rodam sobre as próprias listas de continuações das operações, então não alocam uma `Task` por operação.
+Prefira estes a um `Task.WhenAll` em cima de `AsTask()`: eles rodam sobre as listas de continuações das próprias operações, então não alocam uma `Task` por operação.
 
 ## Progresso {/* #progress */}
 
@@ -112,5 +112,5 @@ Um grupo que mistura backends avança de forma **desigual**. Os Addressables inc
 :::
 
 :::note
-`SceneOperation` deliberadamente **não é pooled**. Esta API incentiva você a manter o handle — `op.Result` após a conclusão e aguardar duas vezes são ambos suportados — então nada consegue saber quando ele está livre. Isso é uma pequena alocação por operação, contra as dezenas de kilobytes que um carregamento de cena custa. Os buffers por operação *são* pooled.
+`SceneOperation` deliberadamente **não é pooled**. Esta API incentiva você a manter o handle — `op.Result` após a conclusão e aguardar duas vezes são ambos suportados — então nada tem como saber quando ele está livre. É uma alocação pequena por operação, diante das dezenas de kilobytes que um carregamento de cena custa. Os buffers por operação *são* pooled.
 :::

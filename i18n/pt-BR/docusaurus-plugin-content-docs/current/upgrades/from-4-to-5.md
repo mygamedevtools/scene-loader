@@ -12,10 +12,10 @@ description: Atualize da versão 4.x para 5.x
 MySceneManager.TransitionAsync("my-target-scene", "my-loading-scene");   // 4.x e 5.x, idêntico
 ```
 
-Se isso é a maior parte do que o seu projeto faz, sua migração é pequena. A maioria dos projetos vai encontrar
-renomeações e argumentos removidos — coisa de localizar e substituir, não uma rearquitetura.
+Se isso é a maior parte do que o seu projeto faz, a migração é pequena. A maioria dos projetos vai lidar com
+renomeações e argumentos removidos — coisa de localizar e substituir, não de rearquitetura.
 
-**Chamadas addressable agora são idênticas às não-addressable.** Uma string simples se resolve sozinha,
+**Chamadas addressable agora ficam idênticas às não addressable.** Uma string simples se resolve sozinha,
 então a família `*AddressableAsync` foi removida em vez de renomeada:
 
 ```cs
@@ -30,36 +30,36 @@ erro de compilação exatamente na linha a ser alterada. **A 4.x não receberá 
 a um relato de bug na 4.x é atualizar.
 
 :::warning[Usuários da Asset Store]
-Remova completamente a versão anterior antes de importar a 5.0. Isso sempre foi verdade, mas uma
-versão major torna mais provável que cause problemas.
+Remova completamente a versão anterior antes de importar a 5.0. Isso sempre foi verdade, mas em uma
+versão major a chance de dar problema é maior.
 :::
 
 ## Principais mudanças {/* #key-changes */}
 
-* **64 métodos async públicos viraram 4.** Todo tipo de referência, quantidade de cenas e host é alcançável através
-  das conversões implícitas de `SceneParameters` em vez de um método próprio.
-* **`SceneRef` substitui `ILoadSceneInfo`** e suas cinco structs que o implementavam — um único value type sem boxing
+* **64 métodos async públicos viraram 4.** Todo tipo de referência, quantidade de cenas e host fica acessível pelas
+  conversões implícitas de `SceneParameters`, em vez de por um método próprio.
+* **`SceneRef` substitui `ILoadSceneInfo`** e as cinco structs que a implementavam — um único value type sem boxing
   para nomes, caminhos, endereços, índices de build, `AssetReference`s e `Scene`s.
 * **Uma `string` simples se resolve sozinha**, consultando primeiro as Build Settings e depois o Addressables.
 * **Toda operação retorna uma `SceneOperation`** em vez de uma `Task<SceneResult>`: progresso,
   cancelamento, fase e eventos por cena vivem todos no handle.
 * **`CancellationToken` e `IProgress<float>` saíram da API pública.**
 * **`ISceneBackend` substitui `ISceneData` e `IAsyncSceneOperation`**, então a seleção de backend
-  acontece uma vez por operação em vez de em cada chamada.
-* **Telas de carregamento não precisam mais ser cenas** — `LoadingScreen` cobre prefabs e documentos
-  do UI Toolkit também.
+  acontece uma vez por operação, em vez de a cada chamada.
+* **Telas de carregamento não precisam mais ser cenas** — `LoadingScreen` também cobre prefabs e documentos
+  do UI Toolkit.
 * **Portões da tela de carregamento são retenções, não toggles.** `waitForScriptedStart` / `waitForScriptedEnd`
   e `StartTransition()` / `EndTransition()` foram removidos; um componente que precisa que a transição
   espere faz uma retenção no `LoadingProgress` e a libera quando terminar.
 * **`LoadingScreenComponent`** é a base para tudo que vive em uma tela de carregamento. A
-  referência ao `LoadingBehavior` é opcional e é encontrada nos pais.
+  referência ao `LoadingBehavior` é opcional e, quando ausente, é buscada nos pais.
 * **`SceneManagerLog`** dá ao pacote uma única camada de logging configurável e roteável.
 * **Corrigido:** `LoadingProgress` não lança mais exceção quando uma transição é iniciada duas vezes — liberar uma
   retenção duas vezes é inofensivo.
 
 ## Tipos removidos e seus substitutos {/* #removed-types-and-their-replacements */}
 
-Esta é a tabela para ler primeiro. Renomeações de métodos estão a uma tecla do IntelliSense; tipos removidos
+Esta é a tabela para ler primeiro. Renomeações de método se resolvem com uma tecla no IntelliSense; tipos removidos,
 não — `LoadSceneInfoName` não autocompleta para `SceneRef`.
 
 ### `ILoadSceneInfo` e as structs `LoadSceneInfo*` → `SceneRef` {/* #iloadsceneinfo-and-the-loadsceneinfo-structs--sceneref */}
@@ -114,8 +114,8 @@ public interface ISceneBackend
 }
 ```
 
-Registre o seu próprio com `SceneBackendRegistry.Register(backend)`; ele tem precedência sobre os
-backends embutidos para os tipos que ele declara suportar.
+Registre o seu com `SceneBackendRegistry.Register(backend)`; ele tem precedência sobre os
+backends embutidos para os tipos que declarar suportar.
 
 ### `WaitTask<T>` e `TaskExtensions` → `SceneOperation.ToCoroutine()` {/* #waittaskt-and-taskextensions--sceneoperationtocoroutine */}
 
@@ -138,9 +138,9 @@ abaixo.
 
 Na 4.x, uma tela de carregamento que animava a entrada ou a saída marcava dois toggles no `LoadingBehavior` e
 chamava dois gatilhos no seu `LoadingProgress` — e se dois componentes quisessem controlar o portão da mesma
-transição, o primeiro a chamar `EndTransition()` liberava para os dois. Na 5.x os portões estão
-**abertos a menos que algo os retenha**: cada participante faz sua própria retenção e o portão abre
-quando o último libera.
+transição, o primeiro a chamar `EndTransition()` liberava para os dois. Na 5.x os portões ficam
+**abertos a menos que algo os retenha**: cada participante faz a sua própria retenção e o portão abre
+quando o último deles libera.
 
 ```cs
 // 4.x — waitForScriptedStart e waitForScriptedEnd marcados no Inspector
@@ -165,11 +165,11 @@ void OnPlayOutFinished() => _loadingBehavior.Progress.ReleaseHide(this);
 ```
 
 Faça as retenções no `Awake` ou no `OnEnable`, antes de a transição ler os portões. Um novo
-par `HoldCompletion` / `ReleaseCompletion` atrasa o próprio sinal de `LoadingCompleted`, que é o que
+par `HoldCompletion` / `ReleaseCompletion` atrasa o próprio sinal de `LoadingCompleted`, que é exatamente o que
 um tempo mínimo de exibição precisa. Veja [Portões e retenções](../getting-started/loading-screens.md#gates-and-holds).
 
-O `LoadingFader` agora faz suas próprias retenções, então uma cena que só usava ele funciona sem mudanças
-além do sumiço dos toggles do Inspector.
+O `LoadingFader` agora faz suas próprias retenções, então uma cena que só usava ele funciona sem nenhuma mudança
+além dos toggles que desaparecem do Inspector.
 
 ### `LoadingProgress.TransitionInTask` / `TransitionOutTask` → `WaitForShowAsync()` / `WaitForHideAsync()` {/* #loadingprogresstransitionintask--transitionouttask--waitforshowasync--waitforhideasync */}
 
@@ -300,7 +300,7 @@ op.Progressed += p => bar.value = p;
 SceneResult result = await op;
 ```
 
-`await op` não precisa de `Task`. Se você precisar de uma para interoperar com terceiros, `op.AsTask()` fornece uma.
+`await op` não precisa de `Task`. Se você precisar de uma para interoperar com bibliotecas de terceiros, `op.AsTask()` entrega uma.
 
 O cancelamento agora tem um único mecanismo:
 
@@ -311,13 +311,13 @@ op.CancelWith(destroyCancellationToken);  // ponte opcional para concorrência e
 
 :::note
 Operações de cena da Unity não podem ser abortadas — a própria documentação da 4.x dizia isso em todos os 64 métodos, e
-o token só cancelava o *await*. `Cancel()` interrompe o relato de progresso, pula as
+o token só cancelava o *await*. `Cancel()` para de reportar progresso, pula as
 fases restantes e completa a operação em `Canceled`; o carregamento subjacente ainda termina.
 :::
 
 ## Observando uma transição {/* #watching-a-transition */}
 
-Uma `SceneOperation` reporta em qual fase está, o que antes exigia acessar um
+Uma `SceneOperation` reporta em qual fase está, o que antes exigia entrar em um
 `LoadingBehavior` e chamar `ContinueWith` em um `TaskCompletionSource` exposto publicamente:
 
 ```cs
@@ -356,13 +356,13 @@ public class MyScreen : LoadingScreen
 await MySceneManager.TransitionAsync("target", new MyScreen());
 ```
 
-`PrepareAsync` é o único membro que uma tela precisa escrever, mais `Dispose` se ela construiu algo.
-Mostrar, esconder e reportar são conduzidos pelo `LoadingProgress` que a tela vincula — um encontrado em um
-`LoadingBehavior`, ou um que ela cria para si mesma — então toda tela controla o portão do mesmo jeito.
+`PrepareAsync` é o único membro que uma tela precisa implementar, além de `Dispose` se ela construiu algo.
+Exibir, esconder e reportar progresso são conduzidos pelo `LoadingProgress` ao qual a tela se vincula — um encontrado em um
+`LoadingBehavior`, ou um que ela mesma cria — então toda tela controla o portão do mesmo jeito.
 
-`LoadingScreenHost` é uma cena do pacote que existe pela duração de uma transição, então uma
-tela que instancia algo tem onde colocá-lo de forma que sobreviva ao descarregamento da cena de
-saída. Ela também substitui a `temp-transition-scene` interna da 4.x.
+`LoadingScreenHost` é uma cena de propriedade do pacote que existe durante uma transição, então uma
+tela que instancia algo tem onde colocá-lo sem que ele se perca quando a cena de saída for
+descarregada. Ela também substitui a `temp-transition-scene` interna da 4.x.
 
 O exemplo [Loading Scene Examples](../samples/loading-scene-examples.md) inclui `PrefabLoadingScreen`
 e `UIDocumentLoadingScreen` como implementações de referência para copiar.
@@ -370,7 +370,7 @@ e `UIDocumentLoadingScreen` como implementações de referência para copiar.
 :::note[O exemplo foi reconstruído]
 As cenas `Loading_Fade` e `Loading_Custom` e os scripts `SceneTransitionTrigger`,
 `AnimatedTrigger` e `LoadingFeedbackImageFill` do exemplo da 4.x foram removidos. Se você copiou algum deles para o
-seu projeto, eles foram escritos em cima dos toggles e gatilhos removidos — reimporte o exemplo
+seu projeto, saiba que eles foram escritos em cima dos toggles e gatilhos removidos — reimporte o exemplo
 e parta dos scripts da 5.x.
 :::
 
@@ -378,19 +378,19 @@ e parta dos scripts da 5.x.
 
 Uma string simples é resolvida quando a operação começa:
 
-1. **Build Settings**, por nome ou caminho. Uma consulta em dicionário, síncrona, e o caso comum.
+1. **Build Settings**, por nome ou caminho. Uma única consulta em dicionário, síncrona — e o caso comum.
 2. **Addressables**, se as Build Settings não a tiverem e o Addressables estiver instalado. Isso
    precisa do catálogo, então é assíncrono — o primeiro carregamento addressable por string paga a
-   latência de inicialização do catálogo, e carregamentos posteriores de qualquer chave usam um cache.
-3. **Nenhum** → uma exceção nomeando os dois lugares onde procuramos.
+   latência de inicialização do catálogo, e os carregamentos seguintes, de qualquer chave, vêm do cache.
+3. **Nenhum dos dois** → uma exceção que cita os dois lugares onde procuramos.
 
-**As Build Settings vencem.** Se `Level1` existe em ambos, `LoadAsync("Level1")` carrega a versão das Build
-Settings, e `SceneRef.Address("Level1")` é a forma de sobrescrever.
+**As Build Settings vencem.** Se `Level1` existe nos dois, `LoadAsync("Level1")` carrega a versão das Build
+Settings, e `SceneRef.Address("Level1")` é a forma de sobrescrever isso.
 
 :::warning[A resolução é um comportamento observável]
 Adicionar uma cena às Build Settings mais tarde pode mudar uma string do backend addressable para o
-padrão, sem nenhuma alteração no código. Uma chave que corresponde a ambos é reportada no nível `Warning`, e toda
-primeira resolução é registrada em `Verbose`, então isso é diagnosticável em vez de misterioso.
+padrão, sem nenhuma alteração no código. Uma chave que corresponde aos dois é reportada no nível `Warning`, e toda
+primeira resolução é registrada em `Verbose`, então o problema é diagnosticável, não misterioso.
 :::
 
 ## Logging {/* #logging */}
@@ -402,17 +402,17 @@ SceneManagerLog.Level = SceneLogLevel.Verbose;   // Off | Error | Warning | Info
 SceneManagerLog.Handler = myLogHandler;          // redirecione para um console dentro do jogo ou para analytics
 ```
 
-O padrão é `Warning` em builds de desenvolvimento e `Error` em release, e pode ser alterado em tempo de execução
-para que um build publicado possa ser elevado para diagnosticar um problema em produção. Defina `MSM_DISABLE_LOGGING` para remover
+O padrão é `Warning` em builds de desenvolvimento e `Error` em release, e pode ser alterado em tempo de execução,
+então dá para elevar o nível em um build publicado para diagnosticar um problema em produção. Defina `MSM_DISABLE_LOGGING` para remover
 a camada por completo.
 
-`Verbose` é onde a camada de vinculação de cenas narra a si mesma — qual referência resolveu para o quê, e
-qual cena carregada foi vinculada a qual referência. Historicamente essa é a parte mais delicada do
-pacote, então vale a pena ligar quando algo é vinculado errado.
+`Verbose` é onde a camada de vinculação de cenas narra o que está fazendo — qual referência resolveu para o quê e
+qual cena carregada foi vinculada a qual referência. Historicamente, essa é a parte mais delicada do
+pacote, então vale a pena ligar quando alguma vinculação sai errada.
 
 ## Uma nota sobre progresso {/* #a-note-on-progress */}
 
-Progresso significa coisas ligeiramente diferentes por backend, e sempre significou. O progresso do Addressables abrange
-download, carregamento e ativação; o caminho padrão cobre apenas o carregamento. Um grupo misturando os dois
-portanto avança de forma desigual. Isso está documentado em vez de corrigido — reescalar um para combinar com o
-outro seria inventar um número que nenhum dos backends reporta.
+Progresso significa algo ligeiramente diferente em cada backend, e sempre foi assim. O progresso do Addressables abrange
+download, carregamento e ativação; o caminho padrão cobre apenas o carregamento. Um grupo que mistura os dois,
+portanto, avança de forma desigual. Isso é documentado, não corrigido — reescalar um para bater com o
+outro seria inventar um número que nenhum dos dois backends reporta.

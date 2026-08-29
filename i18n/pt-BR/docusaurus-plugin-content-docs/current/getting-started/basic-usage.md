@@ -5,9 +5,9 @@ description: Introdução básica ao uso do My Scene Manager.
 
 # Guia Básico
 
-Carregar cenas com esse pacote implica que as cenas **sempre serão carregadas aditivamente**. Isso porque não há vantagem em carregar cenas no modo **Single** quando você espera trabalhar com múltiplas cenas.
+Ao carregar cenas com este pacote, elas **sempre serão carregadas de forma aditiva**. Isso porque simplesmente não há vantagem em carregar cenas no modo **Single** quando você pretende trabalhar com várias cenas.
 
-Você usará a classe estática `MySceneManager` para realizar as operações de cenas.
+Você usará a classe estática `MySceneManager` para realizar as operações de cena.
 
 ## Carregando cenas {/* #loading-scenes */}
 
@@ -29,10 +29,10 @@ MySceneManager.LoadAsync(mySceneAssetReference);
 :::info
 Não existe uma API addressable separada. Uma simples string é procurada primeiro no seu **Build Settings** e depois no Addressables — então `LoadAsync("my-scene")` encontra sua cena onde quer que ela esteja.
 
-`SceneRef.Address(...)` é a forma de forçar, para quando um nome existe nos dois lugares ou quando você quer pular a busca. Veja [Scene Ref](../advanced-usage/scene-ref.md#how-a-string-is-resolved).
+`SceneRef.Address(...)` é a forma de forçar o endereço, para quando um nome existe nos dois lugares ou quando você quer pular a busca. Veja [Scene Ref](../advanced-usage/scene-ref.md#how-a-string-is-resolved).
 :::
 
-Além disso, você também pode fornecer um array de cenas:
+Você também pode passar um array de cenas:
 
 ```cs
 // Array de índices de build
@@ -86,7 +86,7 @@ MySceneManager.UnloadAsync(new int[] { 1, 2, 3 });
 
 ## Transições de Cena {/* #scene-transitions */}
 
-Para realizar transições de cena, primeiro providencie a(s) cena(s) alvo e depois a tela de carregamento (opcional).
+Para realizar transições de cena, primeiro passe a(s) cena(s) de destino e depois a tela de carregamento (opcional).
 Você pode usar as mesmas referências do método `LoadAsync`.
 
 ```cs
@@ -98,20 +98,20 @@ MySceneManager.TransitionAsync(new AssetReference[] { scene1, scene2, scene3 });
 ```
 
 :::info
-As cenas alvo e a tela de carregamento são resolvidas de forma independente, então elas não precisam ser do mesmo tipo de referência — carregar uma cena por índice de build enquanto exibe uma tela de carregamento nomeada por string funciona normalmente.
+As cenas de destino e a tela de carregamento são resolvidas de forma independente, então não precisam ser do mesmo tipo de referência — carregar uma cena por índice de build enquanto exibe uma tela de carregamento nomeada por string funciona normalmente.
 
 A tela de carregamento nem precisa ser uma cena — veja [Telas de Carregamento](./loading-screens.md).
 :::
 
-Confira o Exemplo '[Loading Scene Examples](../samples/loading-scene-examples.md)' para testar diferentes telas de carregamento durante **Transições de Cena**.
+Confira o exemplo [Loading Scene Examples](../samples/loading-scene-examples.md) para testar diferentes telas de carregamento em **Transições de Cena**.
 
 ## Recarregando Cenas {/* #scene-reloading */}
 
 Você pode recarregar a cena ativa usando o método `ReloadActiveSceneAsync`.
 Um recarregamento de cena também é uma **transição de cena** internamente.
-Isso irá recarregar a cena ativa pela mesma referência que a carregou inicialmente.
+Ela recarrega a cena ativa usando a mesma referência com que a cena foi carregada inicialmente.
 
-Assim como nas **Transições de Cena**, você também pode providenciar uma tela de carregamento.
+Assim como nas **Transições de Cena**, você também pode passar uma tela de carregamento.
 
 ```cs
 MySceneManager.ReloadActiveSceneAsync("my-loading-scene");
@@ -155,5 +155,5 @@ MySceneManager.LoadAsync("my-scene").CancelWith(destroyCancellationToken);
 ```
 
 :::warning
-Cancelar interrompe os relatórios **desta operação**, suas fases restantes e quem estiver aguardando por ela. O carregamento interno do Unity ainda roda até o fim: uma cena que a engine já começou a carregar não pode ser abortada.
+Cancelar interrompe as notificações **desta operação**, suas fases restantes e quem estiver aguardando por ela. O carregamento interno do Unity ainda roda até o fim: uma cena que a engine já começou a carregar não pode ser abortada.
 :::

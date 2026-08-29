@@ -4,13 +4,13 @@ sidebar_position: 1
 
 # Introdução
 
-**My Scene Manager** é um pacote poderoso para Unity, projetado para simplificar o gerenciamento de cenas, melhorar o desempenho e aumentar a flexibilidade nos seus projetos. Seja lidando com transições entre cenas, cenas usando [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html) ou fluxos assíncronos com async/await, este pacote oferece uma solução fácil de usar para lidar com todas as suas necessidades de gerenciamento de cenas.
+**My Scene Manager** é um pacote poderoso para Unity, projetado para simplificar o gerenciamento de cenas, melhorar o desempenho e aumentar a flexibilidade nos seus projetos. Seja para transições de cena, cenas do [Unity Addressables](https://docs.unity3d.com/Manual/com.unity.addressables.html) ou fluxos com async/await, este pacote oferece uma solução fácil de usar para todas as suas necessidades de gerenciamento de cenas.
 
 ## Principais Funcionalidades {/* #key-features */}
 
-* **Transições de Cena Fluidas**: Troque entre cenas com facilidade, com telas de carregamento opcionais para uma experiência de usuário fluida.
-* **Suporte para Cenas Addressable e Não Addressable**: Uma única API para ambas — uma simples string encontra sua cena onde quer que ela esteja, sem métodos addressable separados para aprender.
-* **Um Handle Para Cada Operação**: Progresso, fase, eventos por cena e cancelamento, tudo anexado *depois* da chamada em vez de decidido antes dela.
+* **Transições de Cena Fluidas**: Faça transições entre cenas com facilidade, com telas de carregamento opcionais para uma experiência de usuário suave.
+* **Suporte para Cenas Addressable e Não Addressable**: Uma única API para ambas — uma simples string encontra sua cena onde quer que ela esteja, sem métodos separados para addressables que você precise aprender.
+* **Um Handle Para Cada Operação**: Progresso, fase, eventos por cena e cancelamento, tudo conectado *depois* da chamada, em vez de decidido antes dela.
 * **Aguarde Do Jeito Que Preferir**: Use `await` diretamente, converta para `Task` ou faça `yield return` a partir de uma coroutine.
 * **Telas de Carregamento Além de Cenas**: Cenas, prefabs ou documentos do UI Toolkit, com componentes integrados para cada um.
 
@@ -23,9 +23,9 @@ Para começar a usar o My Scene Manager, você pode instalá-lo de várias manei
 * [Instalar por Tarball](./getting-started/installation.mdx#tarball)
 * [Unity Asset Store](./getting-started/installation.mdx#asset-store)
 
-## Começando Rápido {/* #quick-start */}
+## Início Rápido {/* #quick-start */}
 
-Veja como você pode começar com transições de cenas em apenas algumas linhas de código:
+Veja como começar a fazer transições de cena com apenas algumas linhas de código:
 
 ```cs
 using MyGameDevTools.SceneLoading;

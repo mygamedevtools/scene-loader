@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 Você pode instalar o pacote via **OpenUPM**, **Git**, **Tarball** ou **Unity Asset Store**:
 
-As versões são assinadas com a [assinatura de pacotes do UPM](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), que o **Package Manager** verifica a partir do **Unity 6.3**. O método que você escolher decide se você recebe essa assinatura:
+As versões são assinadas com a [assinatura de pacotes do UPM](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), que o **Package Manager** verifica a partir do **Unity 6.3**. O método que você escolher determina se você recebe essa assinatura:
 
 | Método | Assinatura |
 |---|---|
@@ -31,7 +31,7 @@ Versões publicadas antes da introdução da assinatura (`4.1.1` e anteriores) n
 <TabItem value="openupm" label="OpenUPM" default>
 
 Esse pacote está disponível no registro [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader).
-Você pode instalar um pacote **OpenUPM** tanto pelo [openupm-cli](https://github.com/openupm/openupm-cli) ou manualmente pelo **Package Manager**.
+Você pode instalar um pacote **OpenUPM** tanto pelo [openupm-cli](https://github.com/openupm/openupm-cli) quanto manualmente pelo **Package Manager**.
 
 <Tabs>
 <TabItem value="openupm-cli" label="openupm-cli" default>
@@ -44,7 +44,7 @@ Na pasta do seu projeto Unity, abra o terminal e digite:
 openupm add com.mygamedevtools.scene-loader
 ```
 
-Isso irá atualizar automaticamente o **Scoped Registries** e instalar o pacote no seu projeto.
+Isso atualiza automaticamente os seus **Scoped Registries** e instala o pacote no seu projeto.
 </TabItem>
 
 <TabItem value="manually" label="Package Manager">
@@ -55,11 +55,11 @@ Isso irá atualizar automaticamente o **Scoped Registries** e instalar o pacote 
     URL: https://package.openupm.com
     Scope(s): com.mygamedevtools
     ```
-* Clique `Apply`.
+* Clique em `Apply`.
 * Abra `Window/Package Manager`.
 * Na coluna da esquerda, selecione `Open UPM` dentro de `My Registries`.
 * Selecione `My Scene Manager` dentro de `My GameDev Tools`.
-* Clique `Install`.
+* Clique em `Install`.
 </TabItem>
 </Tabs>
 
@@ -67,31 +67,31 @@ Isso irá atualizar automaticamente o **Scoped Registries** e instalar o pacote 
 
 <TabItem value="git" label="Git">
 
-Requer [Git](https://git-scm.com/) instalado e disponível em PATH.
+Requer [Git](https://git-scm.com/) instalado e disponível no PATH.
 
 1. Abra `Window/Package Manager`.
-2. Clique <kbd>+</kbd>.
+2. Clique em <kbd>+</kbd>.
 3. Selecione `Install package from git URL...`.
-4. Copie `https://github.com/mygamedevtools/scene-loader.git#upm` no url.
-5. Clique `Add`.
+4. Cole `https://github.com/mygamedevtools/scene-loader.git#upm` no campo de URL.
+5. Clique em `Add`.
 </TabItem>
 
 <TabItem value="tarball" label="Tarball">
 
-1. Escolha a [versão](https://github.com/mygamedevtools/scene-loader/releases) que deseja instalar e baixe o pacote `com.mygamedevtools.scene-loader-<release>.tgz`.
+1. Escolha a [versão](https://github.com/mygamedevtools/scene-loader/releases) que você quer instalar e baixe o arquivo `com.mygamedevtools.scene-loader-<release>.tgz`.
 2. Abra `Window/Package Manager`.
-3. Clique <kbd>+</kbd>.
+3. Clique em <kbd>+</kbd>.
 4. Selecione `Install package from tarball...`.
 5. Selecione o arquivo `com.mygamedevtools.scene-loader-<release>.tgz` que você baixou.
 </TabItem>
 
 <TabItem value="asset-store" label="Unity Asset Store">
 1. Obtenha o pacote gratuitamente na [Asset Store](https://assetstore.unity.com/packages/slug/313159).
-2. Com seu projeto Unity aberto, clique `Open in Unity`.
+2. Com o seu projeto Unity aberto, clique em `Open in Unity`.
 3. O `Package Manager` abrirá com o pacote selecionado.
-4. Clique `Download` ou `Update`, dependendo do estado local de cache.
-5. Clique `Import`.
-6. Valide que tudo está selecionado e clique `Import` novamente.
+4. Clique em `Download` ou `Update`, dependendo do cache local.
+5. Clique em `Import`.
+6. Confira se tudo está selecionado e clique em `Import` novamente.
 
 :::warning
 Ao atualizar pela Asset Store, remova a versão anterior completamente antes de importar a nova.

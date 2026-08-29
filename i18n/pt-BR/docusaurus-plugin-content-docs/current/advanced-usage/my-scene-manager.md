@@ -5,9 +5,9 @@ title: My Scene Manager
 
 # My Scene Manager
 
-O `MySceneManager` é uma classe estática que engloba a classe `CoreSceneManager`, que existe para simplificar a experiência de uso das **Operações de Cena**.
-Ele gerencia uma referência interna ao Core Scene Manager que é criado durante o _callback_ `RuntimeInitializeOnLoadMethod`, que é executado depois que a primeira cena é carregada e depois do primeiro ciclo de `Awake()`.
-Isso significa que o `MySceneManager` não será inicializado até o primeiro ciclo de `Start()`.
+O `MySceneManager` é um wrapper estático da classe `CoreSceneManager`, e existe para simplificar o uso das **Operações de Cena**.
+Ele mantém uma referência interna a um Core Scene Manager, criado durante o _callback_ `RuntimeInitializeOnLoadMethod`, que é executado depois que a primeira cena foi carregada e depois do primeiro ciclo de `Awake()`.
+Isso significa que o `MySceneManager` só estará inicializado a partir do primeiro ciclo de `Start()`.
 
 ```cs
 [RuntimeInitializeOnLoadMethod]
@@ -19,12 +19,12 @@ internal static void Initialize()
 
 ## API Estática {/* #static-api */}
 
-Você tem a opção de desabilitar a classe estática `MySceneManager` completamente se deseja controlar manualmente o ciclo de vida do `CoreSceneManager` e/ou estender sua funcionalidade.
-Para fazer isso, apenas defina o _scripting symbol_ `DISABLE_STATIC_SCENE_MANAGER` nas suas configurações de compilação.
+Se quiser, você pode desabilitar a classe estática `MySceneManager` por completo, caso prefira controlar manualmente o ciclo de vida do `CoreSceneManager` e/ou estender alguma funcionalidade.
+Para isso, basta definir o _scripting symbol_ `DISABLE_STATIC_SCENE_MANAGER` nas configurações de compilação do seu projeto.
 
 ## Os quatro métodos {/* #the-four-methods */}
 
-Como a instância interna de `CoreSceneManager` não é exposta, ele espelha as mesmas quatro operações de forma estática:
+Ele não expõe a instância interna de `CoreSceneManager`, então espelha as mesmas quatro operações de forma estática:
 
 ```cs
 MySceneManager.LoadAsync(sceneParameters);
@@ -50,9 +50,9 @@ O `MySceneManager` repassa os mesmos eventos da API de instância:
 |---|---|
 | `SceneLoaded` / `SceneUnloaded` | Uma vez por cena |
 | `ActiveSceneChanged` | A cena ativa anterior e a atual |
-| `OperationStarted` | Toda operação que este gerenciador inicia, **antes** de ela executar |
+| `OperationStarted` | Toda operação que este gerenciador inicia, **antes** de ela rodar |
 
-`OperationStarted` é o ponto de conexão para instrumentação global — ele entrega o `SceneOperation` antes da primeira mudança de estado, que é o único momento a partir do qual você consegue observar todo o ciclo de vida:
+`OperationStarted` é o ponto de encaixe para instrumentação global — ele te entrega o `SceneOperation` antes da primeira mudança de estado, o único momento a partir do qual dá para observar o ciclo de vida inteiro:
 
 ```cs
 MySceneManager.OperationStarted += op =>

@@ -6,9 +6,9 @@ description: Como criar telas de carregamento com o pacote.
 
 # Criando Telas de Carregamento
 
-Durante as transições de cena, você tem a opção de providenciar uma tela de carregamento — uma splash screen animada ou uma barra de progresso, por exemplo.
+Durante as transições de cena, você pode fornecer uma tela de carregamento — uma splash screen animada ou uma barra de progresso, por exemplo.
 
-Uma tela de carregamento é um `LoadingScreen`. A mais simples é uma cena, e nomear uma cena te dá isso de graça:
+Uma tela de carregamento é um `LoadingScreen`. A mais simples é uma cena, e basta passar o nome de uma cena para ter uma de graça:
 
 ```cs
 MySceneManager.TransitionAsync("target", "loading");                                  // uma cena
@@ -16,13 +16,13 @@ MySceneManager.TransitionAsync("target", new PrefabLoadingScreen(prefab));      
 MySceneManager.TransitionAsync("target", new UIDocumentLoadingScreen(uxml, panel));   // um documento UI Toolkit
 ```
 
-Um nome de cena, caminho, endereço, índice de build, `Scene` ou `AssetReference` são todos convertidos implicitamente em uma tela de carregamento baseada em cena, então você só escreve um `LoadingScreen` por conta própria quando quer algo que *não* é uma cena.
+Nome de cena, caminho, endereço, índice de build, `Scene` ou `AssetReference`: todos são convertidos implicitamente em uma tela de carregamento baseada em cena, então você só escreve o seu próprio `LoadingScreen` quando quer algo que *não* seja uma cena.
 
-Seja qual for a tela, ela controla a transição da mesma forma, por meio de um `LoadingProgress`. Esta página começa com uma cena de carregamento construída a partir dos componentes do pacote, explica os portões que esses componentes usam e, em seguida, mostra como os mesmos portões conduzem um prefab ou um documento UI Toolkit.
+Seja qual for a tela, ela segura a transição da mesma forma, por meio de um `LoadingProgress`. Esta página começa com uma cena de carregamento construída a partir dos componentes do pacote, explica os portões que esses componentes usam e, em seguida, mostra como os mesmos portões conduzem um prefab ou um documento UI Toolkit.
 
 ## Uma cena de carregamento {/* #a-loading-scene */}
 
-Considere a hierarquia da seguinte cena de carregamento como exemplo — é a cena `Loading_Screen` do exemplo [Loading Scene Examples](../samples/loading-scene-examples.md):
+Tome como exemplo a hierarquia de cena de carregamento a seguir — é a cena `Loading_Screen` do exemplo [Loading Scene Examples](../samples/loading-scene-examples.md):
 
 * Loading Screen - ([Canvas], [CanvasScaler], [CanvasGroup], `LoadingBehavior`, `LoadingFader`, `MinimumDisplayTime`)
   * Backdrop - ([Image])
@@ -31,9 +31,9 @@ Considere a hierarquia da seguinte cena de carregamento como exemplo — é a ce
     * Track - ([Slider], `LoadingFeedbackSlider`)
       * Fill - ([Image])
 
-Com essa hierarquia na sua cena de carregamento, ela faz fade in, mostra tanto uma barra de progresso quanto uma porcentagem de progresso, permanece visível por pelo menos alguns segundos e faz fade out assim que a cena de destino tiver carregado.
+Com essa hierarquia na sua cena de carregamento, ela faz fade in, mostra uma barra e uma porcentagem de progresso, permanece visível por pelo menos alguns segundos e faz fade out assim que a cena de destino terminar de carregar.
 
-Nada é conectado no Inspector: todo componente abaixo do `LoadingBehavior` o encontra nos seus pais, e cada um que precisa que a transição espere — o fader, o tempo mínimo de exibição — faz sua própria retenção. A transição espera por quem liberar por último.
+Nada precisa ser ligado no Inspector: cada componente abaixo do `LoadingBehavior` o encontra nos pais, e cada um que precisa que a transição espere — o fader, o tempo mínimo de exibição — mantém sua própria retenção. A transição espera por quem liberar por último.
 
 Você pode testar essa cena passando seu nome, caminho ou índice de build como segundo argumento de `TransitionAsync`.
 
@@ -45,7 +45,7 @@ A cena de carregamento não precisa ser uGUI. A cena `Loading_Animated` do exemp
 
 ### O Loading Behavior {/* #the-loading-behavior */}
 
-O `LoadingBehavior` é um componente [MonoBehaviour] que ancora o `LoadingProgress` da tela. Coloque um na raiz da sua tela de carregamento e todo o resto — feedbacks, fades, animações — se pendura no seu `Progress`:
+O `LoadingBehavior` é um componente [MonoBehaviour] que ancora o `LoadingProgress` da tela. Coloque um na raiz da sua tela de carregamento e todo o resto — feedbacks, fades, animações — se conecta ao seu `Progress`:
 
 ```cs
 public class LoadingProgress : IProgress<float>
@@ -66,24 +66,24 @@ public class LoadingProgress : IProgress<float>
 ```
 
 O evento `Progressed` envia um parâmetro `float`, de 0 a 1, para reportar o progresso da operação de carregamento de cena.
-O evento `LoadingCompleted` notifica quando a operação de carregamento de cena foi concluída, mas a tela de carregamento ainda está ativa — é o sinal para a tela começar a se esconder.
+O evento `LoadingCompleted` notifica quando a operação de carregamento de cena foi concluída, mas a tela de carregamento ainda está ativa — é o sinal para a tela começar a se ocultar.
 
 :::info[Como ele é encontrado]
 Um `LoadingBehavior` se registra quando é **habilitado**, sob a cena em que vive — ou, para uma tela em prefab, sob a hierarquia em que foi instanciado. Duas consequências que vale a pena conhecer:
 
 * Um `LoadingBehavior` em um GameObject **desabilitado** nunca é encontrado, e a transição roda sem feedback e sem espera, em vez de reportar um problema.
-* **Um por tela de carregamento.** Se uma cena contiver dois, a transição registra um aviso e conduz o primeiro que se registrou.
+* **Um por tela de carregamento.** Se uma cena contiver dois, a transição emite um aviso no log e conduz o primeiro que se registrou.
 :::
 
 :::note
-Um `LoadingBehavior` é **opcional**. Uma cena de carregamento sem um ainda funciona como tela de carregamento — você simplesmente não recebe feedback de progresso, e a tela aparece exatamente pelo tempo que o carregamento levar.
+Um `LoadingBehavior` é **opcional**. Uma cena de carregamento sem ele continua funcionando como tela de carregamento — você só não recebe feedback de progresso, e a tela fica visível exatamente pelo tempo que o carregamento levar.
 :::
 
 ### Portões e retenções {/* #gates-and-holds */}
 
-A transição espera em dois **portões**: o portão de *exibição*, antes de descarregar a cena de onde você veio, e o portão de *ocultação*, antes de considerar que a tela de carregamento se foi. Ambos estão **abertos, a menos que algo os esteja retendo fechados**.
+A transição espera em dois **portões**: o portão de *exibição*, antes de descarregar a cena de onde você veio, e o portão de *ocultação*, antes de considerar que a tela de carregamento se foi. Ambos ficam **abertos, a menos que algo os esteja segurando fechados**.
 
-Qualquer coisa que precise que a transição espere — um fade, uma animação, um script — chama `HoldShow` ou `HoldHide` passando a si mesma como dona, e libera quando termina. O portão abre quando o último detentor solta, e é isso que permite que vários componentes controlem a mesma transição sem que nenhum deles saiba dos outros.
+Qualquer coisa que precise que a transição espere — um fade, uma animação, um script — chama `HoldShow` ou `HoldHide` passando a si mesma como dona, e libera quando termina. O portão abre quando o último detentor libera, e é isso que permite que vários componentes segurem a mesma transição sem que nenhum deles saiba da existência dos outros.
 
 ```cs
 void Awake()
@@ -100,16 +100,16 @@ void OnPlayInFinished()  => _loadingBehavior.Progress.ReleaseShow(this);
 void OnPlayOutFinished() => _loadingBehavior.Progress.ReleaseHide(this);
 ```
 
-As retenções são identificadas pelo seu dono, então reter duas vezes e liberar duas vezes são ambos inofensivos. Faça as retenções em `Awake` ou `OnEnable`: uma feita mais tarde pode chegar depois que a transição já tiver lido o portão.
+As retenções são identificadas pelo dono, então reter duas vezes ou liberar duas vezes é inofensivo. Faça as retenções em `Awake` ou `OnEnable`: uma retenção feita mais tarde pode chegar depois de a transição já ter lido o portão.
 
-Existe uma terceira retenção, `HoldCompletion`, que atrasa o **sinal** `LoadingCompleted` em vez de um portão. Reter o portão de ocultação atrasa a *transição* enquanto a tela já foi avisada para ir embora, então um fade out roda até o fim e o resto da espera acontece em uma tela vazia. Reter a conclusão mantém a tela visível, e o que quer que a leve embora começa quando deveria. É isso que um [tempo mínimo de exibição](#minimum-display-time) quer.
+Existe uma terceira retenção, `HoldCompletion`, que atrasa o **sinal** `LoadingCompleted` em vez de um portão. Reter o portão de ocultação atrasa a *transição*, mas a tela já foi avisada para sair: um fade out roda até o fim e o resto da espera acontece em uma tela vazia. Reter a conclusão mantém a tela visível, e o que quer que a leve embora começa na hora certa. É disso que um [tempo mínimo de exibição](#minimum-display-time) precisa.
 
 :::note
 Para esperar pelos portões por conta própria, use `WaitForShowAsync()` e `WaitForHideAsync()`, ou leia as propriedades `IsShown` / `IsHidden`.
 :::
 
 :::warning
-Se você fizer uma retenção e nunca liberá-la, a transição espera. Ela não vai falhar silenciosamente: depois de 10 segundos, um development build nomeia o detentor e continua esperando. Um detentor que é destruído sem liberar é descartado, em vez de ficar bloqueando para sempre.
+Se você fizer uma retenção e nunca a liberar, a transição espera. Isso não falha silenciosamente: depois de 10 segundos, um development build informa qual é o detentor e continua esperando. Um detentor destruído sem liberar é descartado, em vez de bloquear para sempre.
 :::
 
 ### O Feedback de Carregamento {/* #the-loading-feedback */}
@@ -128,15 +128,15 @@ O campo `LoadingBehavior` deles é opcional: quando deixado vazio, ele é obtido
 
 O componente `LoadingFader` realiza transições de **fade in/out**.
 Adicione-o a um [GameObject] com [UI Canvas Group] para controlar o valor de alpha do grupo durante as transições visuais.
-Você também pode definir o tempo de fade e personalizar as curvas de animação do fade in/out de acordo com a sua preferência.
+Você também pode definir o tempo de fade e personalizar as curvas de animação do fade in/out como preferir.
 
-Ele retém ambos os portões pela duração de cada fade, então adicionar o componente é, por si só, a declaração de que a transição deve esperar pelos fades — não há nada para habilitar no `LoadingBehavior`.
+Ele retém os dois portões durante cada fade, então basta adicionar o componente para declarar que a transição deve esperar pelos fades — não há nada para habilitar no `LoadingBehavior`.
 
 ### Componentes personalizados {/* #custom-components */}
 
-Os feedbacks e o fader estendem `LoadingScreenComponent`, a base para qualquer coisa que vive em uma tela de carregamento e conduz, ou espera por, o seu `LoadingProgress`. Ele resolve o `LoadingBehavior` para você e chama `OnBound` assim que o `Progress` estiver disponível — que é onde você se inscreve nos eventos e faz suas retenções.
+Os feedbacks e o fader estendem `LoadingScreenComponent`, a base de qualquer coisa que vive em uma tela de carregamento e conduz o seu `LoadingProgress`, ou espera por ele. Ela resolve o `LoadingBehavior` para você e chama `OnBound` assim que o `Progress` estiver disponível — é ali que você se inscreve nos eventos e faz suas retenções.
 
-Um feedback são poucas linhas:
+Um feedback cabe em poucas linhas:
 
 ```cs
 public class LoadingFeedbackImageFill : LoadingScreenComponent
@@ -156,7 +156,7 @@ public class LoadingFeedbackImageFill : LoadingScreenComponent
 }
 ```
 
-Uma animação pela qual a transição precisa esperar tem o mesmo formato, mais as retenções. Esta é a cena `Loading_Animated` do exemplo — um documento UI Toolkit cujos painéis deslizam até se encontrarem, e deslizam de volta assim que o carregamento termina:
+Uma animação pela qual a transição precisa esperar tem a mesma forma, mais as retenções. É o caso da cena `Loading_Animated` do exemplo — um documento UI Toolkit cujos painéis deslizam até se encontrar e voltam a deslizar para fora assim que o carregamento termina:
 
 ```cs
 [RequireComponent(typeof(UIDocument))]
@@ -187,11 +187,11 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
 }
 ```
 
-Cada portão é liberado quando o seu deslize **terminou**, não quando começa, então a cena de saída nunca é descarregada atrás de uma cortina que ainda está abrindo.
+Cada portão é liberado quando o respectivo deslize **termina**, não quando começa, então a cena de saída nunca é descarregada atrás de uma cortina que ainda está se abrindo.
 
 ### Tempo mínimo de exibição {/* #minimum-display-time */}
 
-Uma cena que carrega em dois frames produz uma tela de carregamento que pisca, o que parece um bug. O componente `MinimumDisplayTime` do exemplo mantém uma tela visível por pelo menos um tempo definido, e é o motivo pelo qual `HoldCompletion` existe:
+Uma cena que carrega em dois frames produz uma tela de carregamento que apenas pisca, o que parece um bug. O componente `MinimumDisplayTime` do exemplo mantém a tela visível por pelo menos um tempo definido, e é a razão de `HoldCompletion` existir:
 
 ```cs
 public class MinimumDisplayTime : LoadingScreenComponent
@@ -218,7 +218,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 }
 ```
 
-Coloque-o ao lado de um `LoadingBehavior` e o sinal `LoadingCompleted` espera por ele — o fader, ou o que quer que leve a tela embora, começa assim que tanto o carregamento quanto o temporizador tiverem terminado.
+Coloque-o junto de um `LoadingBehavior` e o sinal `LoadingCompleted` espera por ele — o fader, ou o que quer que leve a tela embora, começa assim que o carregamento e o temporizador tiverem terminado.
 
 ## Telas de carregamento que não são cenas {/* #loading-screens-that-are-not-scenes */}
 
@@ -238,15 +238,15 @@ public abstract class LoadingScreen : IDisposable
 }
 ```
 
-`PrepareAsync` é o único membro que uma tela precisa escrever, mais `Dispose` se ela tiver construído alguma coisa. Exibir, ocultar e reportar são conduzidos pelo `LoadingProgress` que a tela vincula enquanto se prepara — um encontrado em um `LoadingBehavior`, ou um que ela cria para si mesma — para que toda tela controle a transição da mesma forma, em vez de reimplementá-la. Uma tela que não vincula nada não controla nada.
+`PrepareAsync` é o único membro que uma tela precisa escrever, mais `Dispose` se ela tiver construído alguma coisa. Exibir, ocultar e reportar são conduzidos pelo `LoadingProgress` que a tela vincula durante a preparação — um encontrado em um `LoadingBehavior` ou um criado por ela mesma — de modo que toda tela segura a transição da mesma forma, em vez de reimplementar isso. Uma tela que não vincula nada não segura nada.
 
-`LoadingScreenHost` é uma cena de propriedade do pacote que existe pela duração de uma transição. Adote nele o que quer que você construa, para que tenha um lugar para viver que não seja a cena sendo descarregada.
+`LoadingScreenHost` é uma cena gerenciada pelo pacote que existe durante uma transição. Adote nela tudo o que você construir, para que tenha onde viver além da cena que está sendo descarregada.
 
-`SceneLoadingScreen` é a implementação embutida para telas baseadas em cena — é o que toda conversão implícita acima produz, e ele vincula o `LoadingBehavior` encontrado na cena carregada.
+`SceneLoadingScreen` é a implementação embutida para telas baseadas em cena — é o que toda conversão implícita acima produz, e ela vincula o `LoadingBehavior` encontrado na cena carregada.
 
 ### Uma tela em prefab {/* #a-prefab-screen */}
 
-A mesma hierarquia da cena de carregamento acima, instanciada em vez de carregada. Um `LoadingBehavior` em qualquer lugar do prefab é detectado por meio do `LoadingBehaviorRegistry` e controla a transição; sem um, a tela não segura nada.
+A mesma hierarquia da cena de carregamento acima, instanciada em vez de carregada. Um `LoadingBehavior` em qualquer lugar do prefab é detectado por meio do `LoadingBehaviorRegistry` e segura a transição; sem ele, a tela não segura nada.
 
 ```cs
 public class PrefabLoadingScreen : LoadingScreen
@@ -278,7 +278,7 @@ await MySceneManager.TransitionAsync("target", new PrefabLoadingScreen(prefab));
 
 ### Uma tela de documento UI Toolkit {/* #a-ui-toolkit-document-screen */}
 
-Sem cena, sem prefab e sem `LoadingBehavior` em lugar nenhum. A tela cria seu próprio `LoadingProgress`, retém seus portões enquanto faz fade e retém a conclusão pelo seu tempo mínimo de exibição — tudo o que uma tela de carregamento precisa fazer é expresso por meio de `LoadingProgress`, e um objeto C# comum pode ter um.
+Sem cena, sem prefab e sem `LoadingBehavior` em lugar nenhum. A tela cria seu próprio `LoadingProgress`, retém seus portões enquanto faz fade e retém a conclusão durante o seu tempo mínimo de exibição — tudo o que uma tela de carregamento precisa fazer se expressa por meio de um `LoadingProgress`, e um objeto C# comum pode ter um.
 
 ```cs
 public class UIDocumentLoadingScreen : LoadingScreen
@@ -327,7 +327,7 @@ await MySceneManager.TransitionAsync("target", new UIDocumentLoadingScreen(uxml,
 
 Os fades rodam pelo próprio scheduler do UI Toolkit, então a tela não precisa de nenhum `MonoBehaviour` para rodar uma coroutine.
 
-## Exemplo de Cenas de Carregamento {/* #loading-scene-sample */}
+## Exemplo de Cena de Carregamento {/* #loading-scene-sample */}
 
 Toda tela desta página está no exemplo [Loading Scene Examples](../samples/loading-scene-examples.md) como uma referência funcional e executável: a cena uGUI `Loading_Screen`, a cena UI Toolkit `Loading_Animated`, `PrefabLoadingScreen`, `UIDocumentLoadingScreen` e `MinimumDisplayTime`.
 

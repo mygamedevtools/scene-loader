@@ -6,14 +6,14 @@ description: Aprenda com o Exemplo 'Loading Scene Examples'.
 
 # Exemplos de Cena de Carregamento
 
-Este exemplo são duas salas e uma lista de exemplos. Cada item da lista é **uma linha da API do pacote**, mostrada ao lado da linha que a executa — telas de carregamento a partir de uma cena, de um prefab e de um documento UI Toolkit, carregamentos multi-cena, recarregamentos e transições aguardadas. Um HUD persistente reporta a fase e o progresso de cada operação enquanto ela roda.
+Este exemplo consiste em duas salas e uma lista de exemplos. Cada item da lista é **uma linha da API do pacote**, mostrada ao lado da linha que a executa — telas de carregamento a partir de uma cena, de um prefab e de um documento UI Toolkit, carregamentos de várias cenas, recarregamentos e transições aguardadas. Um HUD persistente reporta a fase e o progresso de cada operação enquanto ela roda.
 
 ## Instalação {/* #installation */}
 
 Importe o exemplo através do **Package Manager**.
 
 1. Abra `Window/Package Manager`.
-2. Selecione `My Scene Manager` da lista `In Project`.
+2. Selecione `My Scene Manager` na lista `In Project`.
 3. No painel direito, selecione a aba **Samples**.
 4. Clique no botão `Import` do item `Loading Scene Examples`.
 
@@ -26,25 +26,25 @@ Isso atualizará os materiais tanto para **URP** quanto para **HDRP**.
 
 ## Adicionando cenas às Build Settings {/* #adding-scenes-to-build-settings */}
 
-O exemplo alcança suas cenas pelo nome, então elas precisam estar nas **Build Settings**.
-Nada é escrito na importação: as Build Settings são estado do projeto inteiro, então o exemplo pergunta antes.
+O exemplo carrega suas cenas pelo nome, então elas precisam estar nas **Build Settings**.
+Nada é gravado na importação: as Build Settings valem para o projeto inteiro, então o exemplo pede permissão antes.
 
 Abra **SceneA** ou **SceneB** e entre no modo de jogo. Se alguma das cenas do exemplo estiver faltando, a sala é substituída por um aviso:
 
 - **Add them, and exit Play Mode** (adicioná-las e sair do modo de jogo) adiciona as cenas que faltam. As Build Settings são lidas quando o modo de jogo começa, então o exemplo sai do modo de jogo — entre nele de novo e o exemplo vai rodar.
 - **Leave without changing anything** (sair sem alterar nada) sai do modo de jogo e deixa as Build Settings como estão.
 
-Para tirar as cenas de volta, use o botão **Remove the sample's scenes from Build Settings, and exit Play Mode** (remover as cenas do exemplo das Build Settings e sair do modo de jogo) na UI da sala. Somente as cenas do exemplo são removidas; todo o resto permanece.
+Para remover as cenas de novo, use o botão **Remove the sample's scenes from Build Settings, and exit Play Mode** (remover as cenas do exemplo das Build Settings e sair do modo de jogo) na UI da sala. Somente as cenas do exemplo são removidas; todo o resto fica como está.
 
 ## Testando o Exemplo {/* #playing-the-sample */}
 
 O exemplo contém **duas** salas, **duas** cenas de carregamento e **duas** cenas auxiliares:
 
-- **SceneA** e **SceneB** — as salas. Cada uma transiciona para a outra.
+- **SceneA** e **SceneB** — as salas. Cada uma faz a transição para a outra.
 - **Loading_Screen** — uma cena de carregamento uGUI construída a partir dos próprios componentes do pacote.
 - **Loading_Animated** — uma cena de carregamento UI Toolkit com uma animação de painéis deslizantes.
-- **Extra** — uma cena com um objeto girando, carregada junto com uma sala pelo exemplo multi-cena.
-- **SceneListenerHUD** — o HUD persistente. Carregado sob demanda pela sala em que você começar, e nunca descarregado.
+- **Extra** — uma cena com um objeto girando, carregada junto com uma sala pelo exemplo de várias cenas.
+- **SceneListenerHUD** — o HUD persistente. Carregado sob demanda pela sala em que você começar e nunca descarregado.
 
 Comece em qualquer uma das salas. A lista contém **oito** exemplos; clique em um para executá-lo e leia a linha de código logo abaixo para ver o que rodou:
 
@@ -55,21 +55,21 @@ Comece em qualquer uma das salas. A lista contém **oito** exemplos; clique em u
 | **Direct** | `TransitionAsync("SceneB")` | Uma troca direta, sem tela de carregamento. |
 | **Loading scene** | `TransitionAsync("SceneB", "Loading_Screen")` | Uma cena com um `LoadingBehavior` e um `LoadingFader`, construída com uGUI. |
 | **Prefab screen** | `TransitionAsync(target, new PrefabLoadingScreen(prefab))` | A mesma tela como um prefab: sem cena extra, sem entrada nas Build Settings. |
-| **UI Toolkit screen** | `TransitionAsync(target, new UIDocumentLoadingScreen(uxml, panel))` | Um documento UXML que é dono do seu próprio `LoadingProgress`, sem nenhum `LoadingBehavior` em lugar nenhum. |
+| **UI Toolkit screen** | `TransitionAsync(target, new UIDocumentLoadingScreen(uxml, panel))` | Um documento UXML que é dono do seu próprio `LoadingProgress`, sem `LoadingBehavior` em lugar nenhum. |
 | **Animated screen** | `TransitionAsync("SceneB", "Loading_Animated")` | Uma cena de carregamento UI Toolkit cujos portões ficam retidos até cada deslize terminar. |
-| **Reload this scene** | `ReloadActiveSceneAsync(loadingScreen)` | Recarrega o que quer que esteja ativo, então o mesmo botão funciona nas duas salas. |
-| **Two scenes at once** | `TransitionAsync(new[] { target, extra }, loadingScreen)` | Uma operação, duas cenas, a primeira delas tornada ativa. |
-| **Await the handle** | `SceneResult result = await TransitionAsync(target, loadingScreen)` | A operação é aguardável; o resultado carrega as cenas que ela produziu. |
+| **Reload this scene** | `ReloadActiveSceneAsync(loadingScreen)` | Recarrega a cena ativa, seja ela qual for, então o mesmo botão funciona nas duas salas. |
+| **Two scenes at once** | `TransitionAsync(new[] { target, extra }, loadingScreen)` | Uma operação, duas cenas, a primeira delas definida como ativa. |
+| **Await the handle** | `SceneResult result = await TransitionAsync(target, loadingScreen)` | A operação é aguardável; o resultado traz as cenas que ela produziu. |
 
-Toda tela de carregamento do exemplo permanece visível por pelo menos **dois segundos**, por mais rápido que o carregamento seja, para que haja tempo de ler o que ela está te mostrando.
+Toda tela de carregamento do exemplo permanece visível por pelo menos **dois segundos**, por mais rápido que o carregamento seja, para que dê tempo de ler o que ela está mostrando.
 
 ### O HUD de operação {/* #the-operation-hud */}
 
-A barra no topo da tela é a cena `SceneListenerHUD`. Ela nomeia a cena ativa, o tipo de operação em execução, seu progresso, e acende cada fase do ciclo de vida da operação conforme ela passa por elas:
+A barra no topo da tela é a cena `SceneListenerHUD`. Ela mostra a cena ativa, o tipo de operação em execução e seu progresso, e acende cada fase do ciclo de vida da operação conforme ela avança:
 
 `Resolving → ScreenIn → Unloading → Loading → Activating → ScreenOut → Completed`
 
-Um botão **Cancel** aparece enquanto uma operação roda. Cancele uma no meio do caminho e a linha do tempo termina em `Canceled` em vez disso.
+Um botão **Cancel** aparece enquanto uma operação roda. Cancele uma no meio do caminho e a linha do tempo termina em `Canceled`.
 
 O HUD vive na sua própria cena porque a UI de uma sala é descarregada no meio de uma transição, então ela nunca conseguiria reportar uma do início ao fim. Nada nele usa `DontDestroyOnLoad`: `TransitionAsync` só descarrega a cena **ativa**, então uma cena carregada aditivamente simplesmente sobrevive.
 
@@ -77,7 +77,7 @@ O HUD vive na sua própria cena porque a UI de uma sala é descarregada no meio 
 
 ### Iniciando uma transição {/* #starting-a-transition */}
 
-A lista de exemplos é um único componente `TransitionExamples`, compartilhado pelas duas salas como um prefab — só a cena para a qual ele transiciona é diferente. Cada linha emparelha o código que ela exibe com o código que ela executa:
+A lista de exemplos é um único componente `TransitionExamples`, compartilhado pelas duas salas como um prefab — só a cena de destino é diferente. Cada linha combina o código que exibe com o código que executa:
 
 ```cs
 new Example(
@@ -89,14 +89,14 @@ new Example(
 
 Nada nele reporta progresso ou observa fases — o HUD faz isso para toda operação que o exemplo inicia. Esse é o arranjo que vale a pena copiar: o código que inicia uma transição não precisa saber nada sobre o código que a exibe.
 
-Duas das linhas fazem um pouco mais. O exemplo multi-cena constrói um `SceneParameters` a partir de um array — a primeira cena é tornada ativa, a menos que os parâmetros nomeiem outra:
+Duas das linhas fazem um pouco mais. O exemplo de várias cenas constrói um `SceneParameters` a partir de um array — a primeira cena vira a ativa, a menos que os parâmetros indiquem outra:
 
 ```cs
 SceneParameters parameters = new[] { _targetScene, _additiveScene };
 MySceneManager.TransitionAsync(parameters, _loadingScene);
 ```
 
-E o exemplo aguardado é `async void`, o mesmo formato que um handler de botão no seu próprio projeto teria. A operação é cancelada se o objeto desaparecer no meio do caminho, que é para isso que `CancelWith` serve:
+E o exemplo aguardado é `async void`, o mesmo formato que um handler de botão no seu próprio projeto teria. A operação é cancelada se o objeto for destruído no meio do caminho, e é para isso que `CancelWith` serve:
 
 ```cs
 async void AwaitTransition()
@@ -110,12 +110,12 @@ async void AwaitTransition()
 ```
 
 :::info
-O exemplo acessa `MySceneManager` a partir de `Start`, nunca de `Awake` ou `OnEnable`. O manager estático é criado depois que a primeira cena termina de carregar, então tentar alcançá-lo antes disso lança uma exceção quando a cena por acaso é a primeira.
+O exemplo acessa `MySceneManager` a partir de `Start`, nunca de `Awake` ou `OnEnable`. O manager estático é criado depois que a primeira cena termina de carregar, então tentar acessá-lo antes disso lança uma exceção quando a cena em questão é justamente a primeira.
 :::
 
 ### Observando toda operação {/* #watching-every-operation */}
 
-`OperationHud` se inscreve uma vez, e toda operação que o exemplo inicia se reporta:
+`OperationHud` se inscreve uma única vez, e toda operação que o exemplo inicia se reporta a ele:
 
 ```cs
 void Start()
@@ -134,7 +134,7 @@ void OnOperationStarted(SceneOperation operation)
 }
 ```
 
-`operation.State` é comparado com a linha do tempo para acender os indicadores de fase, e `operation.Cancel()` é o que o botão **Cancel** chama. Veja [Operação de Cena](../advanced-usage/scene-operation.md) para a superfície completa do handle.
+`operation.State` é comparado com a linha do tempo para acender os indicadores de fase, e `operation.Cancel()` é o que o botão **Cancel** chama. Veja [Operação de Cena](../advanced-usage/scene-operation.md) para a API completa do handle.
 
 ### A cena de carregamento {/* #the-loading-scene */}
 
@@ -145,11 +145,11 @@ void OnOperationStarted(SceneOperation operation)
 - `LoadingFeedbackSlider` e `LoadingFeedbackText` exibindo o progresso.
 - `MinimumDisplayTime`, um componente do exemplo que mantém a tela visível por dois segundos.
 
-Nenhum deles é conectado ao outro no Inspector. Todo componente abaixo do `LoadingBehavior` o encontra nos seus pais, e cada um que precisa que a transição espere faz sua própria **retenção** nos portões do progresso. A transição espera por quem liberar por último.
+Nenhum deles é ligado aos outros no Inspector. Todo componente abaixo do `LoadingBehavior` o encontra nos pais, e cada um que precisa que a transição espere faz sua própria **retenção** nos portões do progresso. A transição espera até o último deles liberar.
 
 ### A tela em prefab {/* #the-prefab-screen */}
 
-`PrefabLoadingScreen` mostra que a *cena* de carregamento nunca foi o ponto. O `LoadingScreen.prefab` que ele instancia é exatamente a mesma hierarquia de `Loading_Screen` — a cena é construída a partir do prefab — então os dois são idênticos por construção:
+`PrefabLoadingScreen` mostra que a *cena* de carregamento nunca foi a questão. O `LoadingScreen.prefab` que ele instancia tem exatamente a mesma hierarquia de `Loading_Screen` — a cena é construída a partir do prefab — então os dois são idênticos por construção:
 
 ```cs
 public class PrefabLoadingScreen : LoadingScreen
@@ -184,11 +184,11 @@ public class PrefabLoadingScreen : LoadingScreen
 }
 ```
 
-`PrepareAsync` e `Dispose` são tudo o que ele escreve. Um `LoadingBehavior` em qualquer lugar do prefab é detectado por meio do `LoadingBehaviorRegistry` e controla a transição; sem um, a tela não segura nada.
+`PrepareAsync` e `Dispose` são tudo o que ele implementa. Um `LoadingBehavior` em qualquer lugar do prefab é detectado por meio do `LoadingBehaviorRegistry` e controla a transição; sem um, a tela não retém nada.
 
 ### A tela UI Toolkit {/* #the-ui-toolkit-screen */}
 
-`UIDocumentLoadingScreen` vai um passo além: sem cena, sem prefab e sem `LoadingBehavior` em lugar nenhum. Ele cria seu próprio `LoadingProgress` e controla a transição com ele — tudo o que uma tela de carregamento precisa fazer é expresso por meio de `LoadingProgress`, e um objeto C# comum pode ter um.
+`UIDocumentLoadingScreen` vai um passo além: sem cena, sem prefab e sem `LoadingBehavior` em lugar nenhum. Ele cria seu próprio `LoadingProgress` e controla a transição por meio dele — tudo o que uma tela de carregamento precisa fazer se expressa por um `LoadingProgress`, e um objeto C# comum pode ter um.
 
 ```cs
 public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHost host, SceneOperation operation)
@@ -232,7 +232,7 @@ Os fades rodam pelo próprio scheduler do UI Toolkit, então a tela não precisa
 
 ### A tela animada {/* #the-animated-screen */}
 
-`Loading_Animated` é uma **cena** de carregamento que não é uGUI. `AnimatedLoadingScreen` é um `LoadingScreenComponent` — a base para qualquer coisa que vive em uma tela de carregamento e conduz, ou espera por, o seu `LoadingProgress`. Ele encontra o `LoadingBehavior` no mesmo objeto e, uma vez vinculado, retém ambos os portões até cada deslize terminar:
+`Loading_Animated` é uma **cena** de carregamento que não é uGUI. `AnimatedLoadingScreen` é um `LoadingScreenComponent` — a base para qualquer coisa que vive em uma tela de carregamento e conduz o seu `LoadingProgress`, ou espera por ele. Ele encontra o `LoadingBehavior` no mesmo objeto e, uma vez vinculado, retém os dois portões até cada deslize terminar:
 
 ```cs
 [RequireComponent(typeof(UIDocument))]
@@ -263,7 +263,7 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
 }
 ```
 
-O portão abre quando o deslize termina, não quando começa, então a cena de saída nunca é descarregada atrás de uma cortina que ainda está abrindo.
+O portão abre quando o deslize termina, não quando começa, então a cena de saída nunca é descarregada atrás de uma cortina que ainda está se abrindo.
 
 ### Tempo mínimo de exibição {/* #minimum-display-time */}
 
@@ -294,9 +294,9 @@ public class MinimumDisplayTime : LoadingScreenComponent
 }
 ```
 
-Ele retém a **conclusão**, não o portão de ocultação. Reter o portão de ocultação atrasa a transição enquanto a tela já foi avisada para ir embora, então um fade roda até o fim e a espera restante acontece em uma tela vazia. Reter a conclusão atrasa o próprio sinal `LoadingCompleted`, então a tela permanece visível e o que quer que a leve embora começa quando deveria.
+Ele retém a **conclusão**, não o portão de ocultação. Reter o portão de ocultação atrasa a transição depois que a tela já recebeu o aviso para sair, então o fade roda até o fim e o resto da espera acontece numa tela vazia. Reter a conclusão atrasa o próprio sinal `LoadingCompleted`, então a tela permanece visível e a animação de saída, seja ela qual for, começa na hora certa.
 
 ## Conclusão {/* #wrap-up */}
 
-Com este exemplo, você pôde executar, a partir de uma única lista, todas as formas que uma transição pode tomar, observar cada uma delas pelo mesmo HUD e ler três telas de carregamento — uma cena, um prefab e um documento UI Toolkit — que controlam a mesma transição da mesma maneira.
+Com este exemplo, você pôde executar, a partir de uma única lista, todas as formas que uma transição pode assumir, observar cada uma delas pelo mesmo HUD e ler três telas de carregamento — uma cena, um prefab e um documento UI Toolkit — que controlam a mesma transição da mesma maneira.
 Use os scripts `PrefabLoadingScreen`, `UIDocumentLoadingScreen` e `MinimumDisplayTime` como ponto de partida para criar suas próprias experiências de carregamento ✨.
