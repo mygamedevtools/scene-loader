@@ -295,10 +295,6 @@ public class MinimumDisplayTime : LoadingScreenComponent
 
 It holds **completion**, not the hide gate. Holding the hide gate delays the transition while the screen has already been told to go, so a fade runs to its end and the remaining wait plays out on an empty screen. Holding completion delays the `LoadingCompleted` cue itself, so the screen stays up and whatever plays it out starts when it should.
 
-## Rebuilding the sample
-
-The sample's scenes, prefabs and assets are generated from `SampleBuilder`, so they can be regenerated and reviewed as a diff. If you are developing the package itself, run `Tools/My Scene Manager/Rebuild 'Loading Scene Examples'`.
-
 ## Wrap-up
 
 With this sample, you were able to run every shape a transition can take from one list, watch each one through the same HUD, and read three loading screens — a scene, a prefab and a UI Toolkit document — that gate the same transition in the same way.
