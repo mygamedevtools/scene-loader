@@ -48,8 +48,14 @@ major version makes it more likely to bite.
   happens once per operation rather than at every call site.
 * **Loading screens no longer have to be scenes** — `LoadingScreen` covers prefabs and UI Toolkit
   documents too.
+* **Loading screen gates are holds, not toggles.** `waitForScriptedStart` / `waitForScriptedEnd`
+  and `StartTransition()` / `EndTransition()` are gone; a component that needs the transition to
+  wait takes a hold on the `LoadingProgress` and releases it when done.
+* **`LoadingScreenComponent`** is the base for everything that lives on a loading screen. The
+  `LoadingBehavior` reference is optional and found on the parents.
 * **`SceneManagerLog`** gives the package one configurable, routable logging layer.
-* **Fixed:** `LoadingProgress` no longer throws when a transition is started twice.
+* **Fixed:** `LoadingProgress` no longer throws when a transition is started twice — releasing a
+  hold twice is harmless.
 
 ## Removed types and their replacements
 
@@ -128,6 +134,43 @@ The 698 lines of extension methods existed to spell out every combination of ope
 reference kind. `SceneParameters`' implicit conversions replace all of them; see the method table
 below.
 
+### `waitForScriptedStart` / `waitForScriptedEnd` and `StartTransition()` / `EndTransition()` → holds
+
+In 4.x a loading screen that animated in or out ticked two toggles on the `LoadingBehavior` and
+called two triggers on its `LoadingProgress` — and if two components both wanted to gate the same
+transition, the first one to call `EndTransition()` released it for both. In 5.x the gates are
+**open unless something holds them**: each participant takes a hold of its own and the gate opens
+when the last one releases.
+
+```cs
+// 4.x — waitForScriptedStart and waitForScriptedEnd ticked in the Inspector
+void Awake()
+{
+    _loadingBehavior.Progress.LoadingCompleted += PlayOut;
+    PlayIn();
+}
+void OnPlayInFinished()  => _loadingBehavior.Progress.StartTransition();
+void OnPlayOutFinished() => _loadingBehavior.Progress.EndTransition();
+
+// 5.x — nothing to tick; the holds are the statement that the transition should wait
+void Awake()
+{
+    _loadingBehavior.Progress.HoldShow(this);
+    _loadingBehavior.Progress.HoldHide(this);
+    _loadingBehavior.Progress.LoadingCompleted += PlayOut;
+    PlayIn();
+}
+void OnPlayInFinished()  => _loadingBehavior.Progress.ReleaseShow(this);
+void OnPlayOutFinished() => _loadingBehavior.Progress.ReleaseHide(this);
+```
+
+Take the holds in `Awake` or `OnEnable`, before the transition reads the gates. A new
+`HoldCompletion` / `ReleaseCompletion` pair delays the `LoadingCompleted` cue itself, which is what
+a minimum display time needs. See [Gates and holds](../getting-started/loading-screens.md#gates-and-holds).
+
+The `LoadingFader` takes its own holds now, so a scene that only used it works with no changes
+beyond the toggles disappearing from the Inspector.
+
 ### `LoadingProgress.TransitionInTask` / `TransitionOutTask` → `WaitForShowAsync()` / `WaitForHideAsync()`
 
 These were public `TaskCompletionSource<bool>` fields, so any consumer could complete them and
@@ -141,6 +184,39 @@ await loadingBehavior.Progress.TransitionInTask.Task;
 // 5.x
 await loadingBehavior.Progress.WaitForShowAsync();
 bool shown = loadingBehavior.Progress.IsShown;
+```
+
+### Feedback components' `loadingBehavior` field → `LoadingScreenComponent.LoadingBehavior`
+
+`LoadingFader`, `LoadingFeedbackSlider`, `LoadingFeedbackText` and `LoadingFeedbackTextMeshPro`
+now extend `LoadingScreenComponent`. Their public `loadingBehavior` field is a `LoadingBehavior`
+property, kept serialized under the old name so existing scenes keep their wiring — and it is
+optional, resolved from the same object or its closest parent when left empty.
+
+```cs
+// 4.x
+slider.loadingBehavior = behavior;
+
+// 5.x — or leave it empty and put the LoadingBehavior on a parent
+slider.LoadingBehavior = behavior;
+```
+
+If you wrote your own feedback against `LoadingBehavior.Progress`, extend `LoadingScreenComponent`
+instead and move the subscription into `OnBound`:
+
+```cs
+// 4.x
+public class LoadingFeedbackImageFill : MonoBehaviour
+{
+    public LoadingBehavior loadingBehavior;
+    void Start() => loadingBehavior.Progress.Progressed += p => _image.fillAmount = p;
+}
+
+// 5.x
+public class LoadingFeedbackImageFill : LoadingScreenComponent
+{
+    protected override void OnBound() => Progress.Progressed += p => _image.fillAmount = p;
+}
 ```
 
 ## Every 4.x method and its 5.x equivalent
@@ -268,22 +344,35 @@ name, path, address, build index, `Scene` or `AssetReference` all convert to a s
 ```cs
 public class MyScreen : LoadingScreen
 {
-    public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHost host, SceneOperation op) { /* instantiate into host */ }
-    public override SceneOperationPump.ConditionAwaiter ShowAsync(SceneOperation op)  { /* gate transition-in  */ }
-    public override void ReportProgress(float progress)                               { /* drive the UI       */ }
-    public override SceneOperationPump.ConditionAwaiter HideAsync(SceneOperation op)  { /* gate transition-out */ }
-    public override void Dispose()                                                    { /* tear it down        */ }
+    public override SceneOperationPump.ConditionAwaiter PrepareAsync(LoadingScreenHost host, SceneOperation op)
+    {
+        /* instantiate into host, then BindProgress(...) the LoadingProgress that gates it */
+        return SceneOperationPump.Completed(op);
+    }
+
+    public override void Dispose() { /* tear it down */ base.Dispose(); }
 }
 
 await MySceneManager.TransitionAsync("target", new MyScreen());
 ```
 
+`PrepareAsync` is the only member a screen has to write, plus `Dispose` if it built anything.
+Showing, hiding and reporting are driven by the `LoadingProgress` the screen binds — one found on a
+`LoadingBehavior`, or one it creates for itself — so every screen gates the same way.
+
 `LoadingScreenHost` is a package-owned scene that exists for the length of one transition, so a
 screen that instantiates something has somewhere to put it that survives the outgoing scene being
 unloaded. It also replaces 4.x's internal `temp-transition-scene`.
 
-The `Loading Scene Examples` sample ships `PrefabLoadingScreen` and `UIDocumentLoadingScreen` as
-reference implementations to copy.
+The [Loading Scene Examples](../samples/loading-scene-examples.md) sample ships `PrefabLoadingScreen`
+and `UIDocumentLoadingScreen` as reference implementations to copy.
+
+:::note[The sample was rebuilt]
+The 4.x sample's `Loading_Fade`, `Loading_Custom` scenes and the `SceneTransitionTrigger`,
+`AnimatedTrigger` and `LoadingFeedbackImageFill` scripts are gone. If you copied any of them into
+your project, they were written against the removed toggles and triggers — re-import the sample
+and start from its 5.x scripts instead.
+:::
 
 ## String resolution and its precedence
 

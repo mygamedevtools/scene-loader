@@ -43,7 +43,7 @@ After 10 seconds waiting on the same engine operation, a development build repor
 [MySceneManager] A Transition operation has been waiting 10 seconds on ...
 ```
 
-This usually means a loading screen gate was never opened — a `LoadingBehavior` with `WaitForScriptedStart` or `WaitForScriptedEnd` enabled whose script never called the corresponding trigger.
+This usually means a loading screen gate was never released — a component that called `HoldShow` or `HoldHide` on its `LoadingProgress` and never called the matching `ReleaseShow` / `ReleaseHide`. The warning names the holder. A holder that is destroyed without releasing is dropped automatically, so the culprit is one that is still alive.
 
 ## Turning the diagnostics up
 

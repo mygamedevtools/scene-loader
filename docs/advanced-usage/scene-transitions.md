@@ -40,7 +40,7 @@ MySceneManager.TransitionAsync("target", "loading");        // a scene, as befor
 MySceneManager.TransitionAsync("target", new MyScreen());   // a prefab or UI Toolkit document
 ```
 
-When the loading screen **is** a scene, the `LoadingBehavior` component in it is notified with the progress. Its `WaitForScriptedStart` and `WaitForScriptedEnd` fields control whether the transition waits for an animation to start and/or end — effectively **delaying** the transition to display visual feedback such as a fade in/out.
+When the loading screen **is** a scene, the `LoadingBehavior` component in it is notified with the progress. Anything in that scene that needs the transition to wait — a fade, an animation, a script — takes a **hold** on its `LoadingProgress` gates with `HoldShow` / `HoldHide` and releases it when done, effectively **delaying** the transition to display visual feedback such as a fade in/out.
 
 ## Knowing where you are
 
