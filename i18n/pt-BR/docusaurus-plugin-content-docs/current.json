@@ -13,5 +13,9 @@
   },
   "sidebar.documentationSidebar.category.Samples": {
     "message": "Exemplos"
+  },
+  "sidebar.documentationSidebar.category.Guides": {
+    "message": "Guias",
+    "description": "The label for category Guides in sidebar documentationSidebar"
   }
 }
