@@ -1,0 +1,45 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="RoomScreen.uss" />
+
+    <!--
+        SceneA and SceneB share this document. The list is filled from code, so adding an
+        example is a line of data rather than a change here.
+    -->
+    <ui:VisualElement name="room" class="screen room" picking-mode="Ignore">
+
+        <ui:VisualElement class="panel room__title">
+            <ui:Label text="Scene Transition Examples" class="room__title-name" />
+            <ui:Label class="room__title-sub"
+                      text="Each example is one line of code. The panel in the corner lives in a scene that is never unloaded, so it watches every transition from start to finish." />
+            <ui:Button name="remove-scenes" class="room__teardown"
+                       text="Remove the sample's scenes from Build Settings, and exit Play Mode" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="room__body">
+            <ui:VisualElement class="panel examples">
+                <ui:VisualElement class="examples__head">
+                    <ui:Label text="EXAMPLES" class="examples__title" />
+                    <ui:Label name="count" text="" class="examples__count" />
+                </ui:VisualElement>
+                <ui:ScrollView name="list" mode="Vertical" class="examples__scroll" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+
+    <!--
+        Shown instead of the examples when the sample's scenes are not in the Build Settings.
+        One panel, two states: the ask, and the "now restart" confirmation. The sample never
+        edits the Build Settings without being told to — that is project-wide state.
+    -->
+    <ui:VisualElement name="setup" class="screen setup">
+        <ui:VisualElement class="panel setup__card">
+            <ui:Label name="setup-title" class="setup__title" text="" />
+            <ui:Label name="setup-body" class="setup__body" text="" />
+            <ui:VisualElement class="setup__actions">
+                <ui:Button name="setup-primary" class="setup__button setup__button--primary" text="" />
+                <ui:Button name="setup-secondary" class="setup__button" text="" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

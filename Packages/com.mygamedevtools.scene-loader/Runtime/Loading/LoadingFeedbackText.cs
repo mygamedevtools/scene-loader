@@ -3,25 +3,21 @@ using UnityEngine.UI;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>Displays loading progress as a percentage in a legacy UI <see cref="Text"/>.</summary>
     [AddComponentMenu("Scene Loading/Loading Text (Legacy)")]
     [RequireComponent(typeof(Text))]
-    public class LoadingFeedbackText : MonoBehaviour
+    public class LoadingFeedbackText : LoadingFeedback
     {
-        public LoadingBehavior loadingBehavior;
-
         Text _text;
 
-        void Awake()
+        protected override void Awake()
         {
             _text = GetComponent<Text>();
             _text.text = "0";
+
+            base.Awake();
         }
 
-        void Start()
-        {
-            loadingBehavior.Progress.Progressed += UpdateText;
-        }
-
-        void UpdateText(float progress) => _text.text = Mathf.CeilToInt(progress * 100).ToString();
+        protected override void OnProgressed(float progress) => _text.text = Mathf.CeilToInt(progress * 100).ToString();
     }
 }

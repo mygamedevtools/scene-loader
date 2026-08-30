@@ -1,0 +1,251 @@
+@import url("Shared.uss");
+
+/*
+    The room UI, in SceneA and SceneB. The persistent HUD holds the top-right corner, so the
+    header is capped short of it and the list runs the full height underneath.
+*/
+.room {
+    justify-content: flex-start;
+    /* Clears the HUD panel, so the header never runs under it. */
+    padding-right: var(--hud-width);
+}
+
+.room__title {
+    align-self: flex-start;
+    /* Without this the subtitle sets the card's width in one long line. */
+    max-width: 520px;
+    padding: 13px 17px;
+}
+
+.room__title-name {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: var(--text-strong);
+}
+
+.room__title-sub {
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-top: 3px;
+    white-space: normal;
+}
+
+.room__body {
+    flex-direction: row;
+    align-items: stretch;
+    flex-grow: 1;
+    margin-top: 14px;
+    min-height: 0;
+}
+
+/* ---- the examples list ---- */
+.examples {
+    width: 404px;
+    padding: 0;
+}
+
+.examples__head {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 15px 11px 15px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--divider);
+}
+
+.examples__title {
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 1.3px;
+    color: var(--text-faint);
+}
+
+.examples__count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-ghost);
+}
+
+/* Seven examples do not fit, and adding an eighth should not change the layout. */
+.examples__scroll {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 6px;
+}
+
+/* The scroller is a real element tree in UI Toolkit, so it is styled rather than themed. */
+.examples__scroll .unity-scroller--vertical {
+    width: 6px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.examples__scroll .unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.examples__scroll .unity-scroller--vertical .unity-base-slider__dragger {
+    background-color: rgb(57, 65, 76);
+    border-width: 0;
+    border-radius: 3px;
+    width: 6px;
+    margin-left: 0;
+}
+
+/* The scroller's arrow buttons are noise at this size. */
+.examples__scroll .unity-scroller__low-button,
+.examples__scroll .unity-scroller__high-button {
+    display: none;
+}
+
+/* ---- one example ---- */
+.example {
+    padding: 11px 13px;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0);
+    margin-bottom: 2px;
+    transition-property: background-color, border-color, translate;
+    transition-duration: 120ms;
+}
+
+.example:hover {
+    background-color: rgba(81, 137, 189, 0.13);
+    border-color: rgba(81, 137, 189, 0.42);
+    translate: 2px 0;
+}
+
+.example--active {
+    background-color: rgba(81, 137, 189, 0.22);
+    border-color: var(--accent);
+}
+
+.example__head {
+    flex-direction: row;
+    align-items: center;
+}
+
+.example__name {
+    font-size: 15px;
+    -unity-font-style: bold;
+    color: var(--text);
+}
+
+.example__tag {
+    margin-left: auto;
+    font-size: 11px;
+    -unity-font-style: bold;
+    letter-spacing: 0.6px;
+    color: var(--text-faint);
+    border-width: 1px;
+    border-color: rgb(57, 65, 76);
+    border-radius: 4px;
+    padding: 1px 5px;
+}
+
+.example__tag--scene  { color: rgb(134, 182, 226); border-color: rgb(60, 90, 120); }
+.example__tag--prefab { color: rgb(154, 211, 164); border-color: rgb(61, 102, 71); }
+.example__tag--uitk   { color: rgb(216, 178, 113); border-color: rgb(109, 87, 48); }
+.example__tag--handle { color: rgb(195, 154, 211); border-color: rgb(93, 63, 104); }
+
+.example__desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    white-space: normal;
+}
+
+/*
+    The line of code that ran. No monospace font asset ships with the sample, so the code
+    lines are set apart by colour and letter-spacing rather than by face.
+*/
+.example__code {
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    color: rgb(127, 168, 205);
+    margin-top: 5px;
+    white-space: normal;
+}
+
+/* ---- the teardown button, tucked under the header ---- */
+.room__teardown {
+    align-self: flex-start;
+    margin-top: 11px;
+    margin-left: 0;
+    padding: 5px 11px;
+    font-size: 12px;
+    /* It edits a project-wide setting and ends the session: it should look like it. */
+    color: var(--danger);
+    background-color: rgba(180, 80, 80, 0.12);
+    border-width: 1px;
+    border-color: rgb(109, 58, 58);
+    border-radius: 5px;
+    transition-property: background-color, color;
+    transition-duration: 120ms;
+}
+
+.room__teardown:hover {
+    color: rgb(242, 200, 200);
+    background-color: rgba(180, 80, 80, 0.28);
+}
+
+/* ================================================================
+   The Build Settings gate. Shown when the sample cannot run yet.
+   ================================================================ */
+.setup {
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(9, 11, 14, 0.92);
+}
+
+.setup__card {
+    width: 560px;
+    padding: 26px 28px;
+}
+
+.setup__title {
+    font-size: 19px;
+    -unity-font-style: bold;
+    color: var(--text-strong);
+}
+
+.setup__body {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    white-space: normal;
+}
+
+.setup__actions {
+    flex-direction: row;
+    margin-top: 22px;
+}
+
+.setup__button {
+    margin-left: 0;
+    margin-right: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--text);
+    background-color: rgba(255, 255, 255, 0.04);
+    border-width: 1px;
+    border-color: rgb(57, 65, 76);
+    border-radius: 6px;
+    transition-property: background-color, border-color;
+    transition-duration: 120ms;
+}
+
+.setup__button:hover {
+    background-color: rgba(255, 255, 255, 0.09);
+}
+
+.setup__button--primary {
+    color: rgb(255, 255, 255);
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.setup__button--primary:hover {
+    background-color: rgb(97, 154, 206);
+}

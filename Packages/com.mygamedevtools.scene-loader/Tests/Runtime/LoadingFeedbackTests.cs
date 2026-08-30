@@ -32,7 +32,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator SliderFeedback()
         {
             var feedbackSlider = new GameObject("Slider", typeof(Slider)).AddComponent<LoadingFeedbackSlider>();
-            feedbackSlider.loadingBehavior = _loadingBehavior;
+            feedbackSlider.LoadingBehavior = _loadingBehavior;
 
             var slider = feedbackSlider.GetComponent<Slider>();
             Assert.AreEqual(0, slider.value);
@@ -48,7 +48,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator TextFeedback()
         {
             var feedbackText = new GameObject("Text", typeof(Text)).AddComponent<LoadingFeedbackText>();
-            feedbackText.loadingBehavior = _loadingBehavior;
+            feedbackText.LoadingBehavior = _loadingBehavior;
 
             var text = feedbackText.GetComponent<Text>();
             Assert.AreEqual("0", text.text);
@@ -65,7 +65,7 @@ namespace MyGameDevTools.SceneLoading.Tests
         public IEnumerator TextMeshFeedback()
         {
             var feedbackText = new GameObject("TextMesh", typeof(TextMeshProUGUI)).AddComponent<LoadingFeedbackTextMeshPro>();
-            feedbackText.loadingBehavior = _loadingBehavior;
+            feedbackText.LoadingBehavior = _loadingBehavior;
 
             var text = feedbackText.GetComponent<TextMeshProUGUI>();
             Assert.AreEqual("0", text.text);
