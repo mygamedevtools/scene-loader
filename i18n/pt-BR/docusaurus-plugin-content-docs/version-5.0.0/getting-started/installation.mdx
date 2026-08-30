@@ -1,0 +1,101 @@
+---
+sidebar_position: 1
+description: Como instalar o pacote My Scene Manager.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Instalação
+
+Você pode instalar o pacote via **OpenUPM**, **Git**, **Tarball** ou **Unity Asset Store**:
+
+As versões são assinadas com a [assinatura de pacotes do UPM](https://docs.unity3d.com/6000.3/Documentation/Manual/upm-signature.html), que o **Package Manager** verifica a partir do **Unity 6.3**. O método que você escolher determina se você recebe essa assinatura:
+
+| Método | Assinatura |
+|---|---|
+| **OpenUPM** | Assinado — republica o tarball da versão sem alterações |
+| **Tarball** | Assinado |
+| **Git** | Sem assinatura, sempre |
+| **Asset Store** | Não se aplica — importado em `Assets/` em vez de gerenciado pelo Package Manager |
+
+Versões publicadas antes da introdução da assinatura (`4.1.1` e anteriores) não são assinadas.
+
+<Tabs defaultValue={(() => {
+          if (typeof window !== "undefined") {
+              const hash = window.location.hash.replace("#", "").toLowerCase();
+              return ["openupm", "git", "tarball", "asset-store"].includes(hash) ? hash : "openupm";
+          }
+          return "openupm";
+      })()}>
+<TabItem value="openupm" label="OpenUPM" default>
+
+Esse pacote está disponível no registro [OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader).
+Você pode instalar um pacote **OpenUPM** tanto pelo [openupm-cli](https://github.com/openupm/openupm-cli) quanto manualmente pelo **Package Manager**.
+
+<Tabs>
+<TabItem value="openupm-cli" label="openupm-cli" default>
+
+Requer [openupm-cli](https://github.com/openupm/openupm-cli) e [nodejs 18 ou mais recente](https://nodejs.org/en/download/).
+
+Na pasta do seu projeto Unity, abra o terminal e digite:
+
+```sh
+openupm add com.mygamedevtools.scene-loader
+```
+
+Isso atualiza automaticamente os seus **Scoped Registries** e instala o pacote no seu projeto.
+</TabItem>
+
+<TabItem value="manually" label="Package Manager">
+* Abra `Edit/Project Settings/Package Manager`.
+* Adicione um novo **Scoped Registry** (ou edite o registro _OpenUPM_ existente):
+    ```
+    Name: Open UPM
+    URL: https://package.openupm.com
+    Scope(s): com.mygamedevtools
+    ```
+* Clique em `Apply`.
+* Abra `Window/Package Manager`.
+* Na coluna da esquerda, selecione `Open UPM` dentro de `My Registries`.
+* Selecione `My Scene Manager` dentro de `My GameDev Tools`.
+* Clique em `Install`.
+</TabItem>
+</Tabs>
+
+</TabItem>
+
+<TabItem value="git" label="Git">
+
+Requer [Git](https://git-scm.com/) instalado e disponível no PATH.
+
+1. Abra `Window/Package Manager`.
+2. Clique em <kbd>+</kbd>.
+3. Selecione `Install package from git URL...`.
+4. Cole `https://github.com/mygamedevtools/scene-loader.git#upm` no campo de URL.
+5. Clique em `Add`.
+</TabItem>
+
+<TabItem value="tarball" label="Tarball">
+
+1. Escolha a [versão](https://github.com/mygamedevtools/scene-loader/releases) que você quer instalar e baixe o arquivo `com.mygamedevtools.scene-loader-<release>.tgz`.
+2. Abra `Window/Package Manager`.
+3. Clique em <kbd>+</kbd>.
+4. Selecione `Install package from tarball...`.
+5. Selecione o arquivo `com.mygamedevtools.scene-loader-<release>.tgz` que você baixou.
+</TabItem>
+
+<TabItem value="asset-store" label="Unity Asset Store">
+1. Obtenha o pacote gratuitamente na [Asset Store](https://assetstore.unity.com/packages/slug/313159).
+2. Com o seu projeto Unity aberto, clique em `Open in Unity`.
+3. O `Package Manager` abrirá com o pacote selecionado.
+4. Clique em `Download` ou `Update`, dependendo do cache local.
+5. Clique em `Import`.
+6. Confira se tudo está selecionado e clique em `Import` novamente.
+
+:::warning
+Ao atualizar pela Asset Store, remova a versão anterior completamente antes de importar a nova.
+:::
+
+</TabItem>
+</Tabs>

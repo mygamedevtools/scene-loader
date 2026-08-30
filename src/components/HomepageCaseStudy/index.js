@@ -31,7 +31,7 @@ export default function CaseStudy() {
                 Replacing it took one TransitionAsync call. The loading screen became a scene, the after-load setup moved onto the operation's events, and the sample HUD stayed loaded through every transition without DontDestroyOnLoad.
               </Translate>
             </p>
-            <Link className="button button--primary" to="/docs/next/case-studies/unity-3d-game-kit">
+            <Link className="button button--primary" to="/docs/case-studies/unity-3d-game-kit">
               <Translate id="homepage.caseStudy.link">Read the case study</Translate>
             </Link>
           </div>
