@@ -13,6 +13,10 @@ This page walks through that integration on Unity `6000.5`, built-in render pipe
 Two of the package's 5.0 fixes came out of this exact integration: the fader running on scaled, unclamped time, and `MinimumDisplayTime` living in the sample instead of the package. The page describes the result on 5.0, where neither needs working around.
 :::
 
+The result, before the details:
+
+<video controls muted loop playsInline width="100%" src="/img/3d-game-kit.mp4" />
+
 ## What the Game Kit had
 
 `ScreenFader.prefab` lives in `Resources`, instantiates itself, is marked `DontDestroyOnLoad` and carries three overlay canvases: `BlackFader`, `GameOverCanvas` and `LoadingCanvas`. `SceneController.Transition` drove them from a coroutine:
