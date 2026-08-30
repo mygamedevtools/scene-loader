@@ -134,14 +134,31 @@ namespace MyGameDevTools.SceneLoading
             return default;
         }
 
-        public Scene GetLoadedSceneAt(int index) => _loadedScenes[index].Scene;
+        public bool TryGetLoadedSceneAt(int index, out Scene scene)
+        {
+            if (index < 0 || index >= _loadedScenes.Count)
+            {
+                scene = default;
+                return false;
+            }
 
-        public Scene GetLoadedSceneByName(string name)
+            scene = _loadedScenes[index].Scene;
+            return true;
+        }
+
+        public bool TryGetLoadedSceneByName(string name, out Scene scene)
         {
             foreach (SceneBackendHandle handle in _loadedScenes)
-                if (handle.Scene.name == name)
-                    return handle.Scene;
-            throw new ArgumentException($"[{GetType().Name}] Could not find any loaded scene with the name '{name}'.", nameof(name));
+            {
+                if (handle.Scene.name != name)
+                    continue;
+
+                scene = handle.Scene;
+                return true;
+            }
+
+            scene = default;
+            return false;
         }
 
         public SceneOperation LoadAsync(SceneParameters sceneParameters)

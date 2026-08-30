@@ -167,22 +167,35 @@ namespace MyGameDevTools.SceneLoading
         public static Scene GetActiveScene() => Default.GetActiveScene();
 
         /// <summary>
-        /// Gets the loaded scene at the <paramref name="index"/> of the loaded scenes list.
+        /// Gets the loaded scene at the <paramref name="index"/> of the loaded scenes list,
+        /// reporting whether there is one.
         /// </summary>
+        /// <remarks>
+        /// <see cref="LoadedSceneCount"/> is the range, and it moves: a scene loading or unloading
+        /// elsewhere changes it between the moment you read it and the moment you index with it.
+        /// Answering rather than throwing is what makes that safe to walk.
+        /// </remarks>
         /// <param name="index">Index of the target scene in the loaded scenes list.</param>
-        /// <returns>The loaded scene at the <paramref name="index"/> of the loaded scenes list.</returns>
-        public static Scene GetLoadedSceneAt(int index) => Default.GetLoadedSceneAt(index);
+        /// <param name="scene">The loaded scene at that index, or an invalid scene if the index is out of range.</param>
+        /// <returns>Whether a loaded scene exists at <paramref name="index"/>.</returns>
+        public static bool TryGetLoadedSceneAt(int index, out Scene scene) => Default.TryGetLoadedSceneAt(index, out scene);
 
         /// <summary>Gets the last loaded scene.</summary>
         /// <returns>The last loaded scene, or an invalid scene if there are no loaded scenes.</returns>
         public static Scene GetLastLoadedScene() => Default.GetLastLoadedScene();
 
         /// <summary>
-        /// Gets a loaded scene by its <paramref name="name"/>.
+        /// Gets a loaded scene by its <paramref name="name"/>, reporting whether there is one.
         /// </summary>
+        /// <remarks>
+        /// This looks only at scenes the manager has finished loading. A scene still being loaded
+        /// is not one of them, so this is not a guard against starting a second load of the same
+        /// scene — for that, keep the handle the first <see cref="LoadAsync"/> returned.
+        /// </remarks>
         /// <param name="name">Name of the loaded scene to be found.</param>
-        /// <returns>A loaded scene with the given <paramref name="name"/>.</returns>
-        public static Scene GetLoadedSceneByName(string name) => Default.GetLoadedSceneByName(name);
+        /// <param name="scene">The loaded scene with that name, or an invalid scene if there is none.</param>
+        /// <returns>Whether a loaded scene with the given <paramref name="name"/> was found.</returns>
+        public static bool TryGetLoadedSceneByName(string name, out Scene scene) => Default.TryGetLoadedSceneByName(name, out scene);
     }
 }
 #endif

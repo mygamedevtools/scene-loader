@@ -49,6 +49,8 @@ public static class SampleSceneSetup
         // Walk the scenes actually in play rather than asking GetSceneByName, which reports a
         // valid Scene for one the Build Settings merely know about. sceneCount covers loaded and
         // still-loading alike, so this cannot start a second load for one already in flight.
+        // MySceneManager.TryGetLoadedSceneByName is not the shorter way to write this: it answers
+        // for scenes that have finished loading, which is the half of the question that is easy.
         for (int i = 0; i < SceneManager.sceneCount; i++)
             if (SceneManager.GetSceneAt(i).name == hudScene)
                 return;
