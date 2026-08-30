@@ -2,8 +2,16 @@ namespace MyGameDevTools.SceneLoading
 {
     /// <summary>
     /// Where a <see cref="SceneOperation"/> is in its lifecycle. An operation skips the phases
-    /// its kind has no use for — a plain load never reaches <see cref="ScreenIn"/>.
+    /// its kind has no use for — a plain load never reaches <see cref="ScreenIn"/> — but it never
+    /// revisits one: each phase below occurs at most once, so a listener can read the sequence as
+    /// forward progress.
     /// </summary>
+    /// <remarks>
+    /// These describe the work that was asked for. A transition also loads and unloads its
+    /// loading screen's own scene, and none of that is reported here: the screen's arrival and
+    /// departure are <see cref="ScreenIn"/> and <see cref="ScreenOut"/>, not a second pass
+    /// through <see cref="Loading"/> and <see cref="Unloading"/>.
+    /// </remarks>
     public enum SceneOperationState
     {
         /// <summary>Created, not started.</summary>
