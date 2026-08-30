@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MyGameDevTools.SceneLoading::MyGameDevTools.SceneLoading.MinimumDisplayTime
   _loadingBehavior: {fileID: 4317783803547458177}
-  _seconds: 2
+  seconds: 2
 --- !u!1 &1404446155736316269
 GameObject:
   m_ObjectHideFlags: 0

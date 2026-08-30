@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MyGameDevTools.SceneLoading
 {
@@ -19,8 +20,8 @@ namespace MyGameDevTools.SceneLoading
     {
         [Tooltip("How long the screen stays up, measured from when it appeared.")]
         [Min(0)]
-        [SerializeField]
-        float _seconds = 2f;
+        [FormerlySerializedAs("_seconds")]
+        public float seconds = 2f;
 
         float _shownAt;
 
@@ -32,7 +33,7 @@ namespace MyGameDevTools.SceneLoading
 
         void Update()
         {
-            if (Progress == null || Time.unscaledTime - _shownAt < _seconds)
+            if (Progress == null || Time.unscaledTime - _shownAt < seconds)
                 return;
 
             Progress.ReleaseCompletion(this);
