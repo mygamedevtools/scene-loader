@@ -8,7 +8,7 @@ export default function Installation() {
   return (
     <section>
       <div className="container">
-        <h2 className="text--center">📥 <Translate id="homepage.installation.title">Installation</Translate></h2>
+        <h2 className="text--center"><Translate id="homepage.installation.title">Install it</Translate></h2>
         <p className="text--center"><Translate id="homepage.installation.text">Choose your preferred installation method.</Translate></p>
         <div className={styles.installationButtons}>
           <Link to="/docs/getting-started/installation#openupm" className={clsx("button button--lg margin--sm", styles.buttonOpenUpm)}>

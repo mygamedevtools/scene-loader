@@ -9,7 +9,7 @@ export default function CaseStudy() {
     <section>
       <div className="container">
         <h2 className="text--center">
-          🎮 <Translate id="homepage.caseStudy.title">In a Real Project</Translate>
+          <Translate id="homepage.caseStudy.title">In a real project</Translate>
         </h2>
         <div className={styles.caseStudy}>
           <video

@@ -1,0 +1,5 @@
+/* Captions line up with the code block they introduce, rather than floating centred above it. */
+.caption {
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 0.6rem;
+}
