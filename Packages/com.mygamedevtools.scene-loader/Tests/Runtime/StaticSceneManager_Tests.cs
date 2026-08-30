@@ -37,7 +37,8 @@ namespace MyGameDevTools.SceneLoading.Tests
         [SetUp]
         public void TestSetup()
         {
-            MySceneManager.SetActiveScene(MySceneManager.GetLoadedSceneAt(0));
+            Assert.True(MySceneManager.TryGetLoadedSceneAt(0, out Scene firstLoadedScene));
+            MySceneManager.SetActiveScene(firstLoadedScene);
 
             _scenesActivated = 0;
             _scenesUnloaded = 0;
@@ -62,8 +63,10 @@ namespace MyGameDevTools.SceneLoading.Tests
             Scene activeScene = SceneManager.GetActiveScene();
             Assert.AreEqual(activeScene, MySceneManager.GetActiveScene());
             Assert.AreEqual(activeScene, MySceneManager.GetLastLoadedScene());
-            Assert.AreEqual(activeScene, MySceneManager.GetLoadedSceneAt(0));
-            Assert.AreEqual(activeScene, MySceneManager.GetLoadedSceneByName(activeScene.name));
+            Assert.True(MySceneManager.TryGetLoadedSceneAt(0, out Scene sceneAtIndex));
+            Assert.AreEqual(activeScene, sceneAtIndex);
+            Assert.True(MySceneManager.TryGetLoadedSceneByName(activeScene.name, out Scene sceneByName));
+            Assert.AreEqual(activeScene, sceneByName);
         }
 
         [UnityTest]
