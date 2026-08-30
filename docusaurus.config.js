@@ -63,9 +63,15 @@ const config = {
           // Point "Edit this page" at the translation rather than the English
           // source when browsing a localized page.
           editLocalizedFiles: true,
-          // 5.0.0 has shipped, so it is the default at /docs/. `current` is now
-          // whatever comes next and serves from /docs/next/ until it ships, at
-          // which point it becomes `lastVersion` and gets its own snapshot.
+          // 5.0.0 has shipped, so it is the default at /docs/.
+          //
+          // `current` — the docs/ folder everyone edits — is not published while
+          // its content is identical to the released snapshot: a version labelled
+          // "Unreleased" that reads the same as 5.0.x only makes the dropdown
+          // harder to use. Set this back to true when work on the next version
+          // starts diverging, and give `current` a label and an unreleased banner
+          // again at that point.
+          includeCurrentVersion: false,
           lastVersion: '5.0.0',
           versions: {
             '5.0.0': {
@@ -75,11 +81,6 @@ const config = {
             },
             '4.1.0': {
               label: '4.1.x'
-            },
-            current: {
-              label: 'Unreleased',
-              path: 'next',
-              banner: 'unreleased'
             },
           }
         },
