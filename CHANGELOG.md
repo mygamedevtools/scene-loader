@@ -1,5 +1,17 @@
 # Changelog
 
+# [5.0.0](https://github.com/mygamedevtools/scene-loader/compare/4.1.3...5.0.0) (2026-08-30)
+
+
+### Features
+
+* rebuild the API around SceneRef and SceneOperation ([#106](https://github.com/mygamedevtools/scene-loader/issues/106)) ([1cd900c](https://github.com/mygamedevtools/scene-loader/commit/1cd900c44b566204d76e7dae0239382164f3eb55))
+
+
+### BREAKING CHANGES
+
+* The 5.x update collapses 64 async methods into 4 and replaces ILoadSceneInfo with SceneRef, Task<SceneResult> with SceneOperation, and ISceneData/IAsyncSceneOperation with ISceneBackend. CancellationToken and IProgress<float> leave the public API, and loading screen gates become holds instead of toggles. There is no compatibility layer, so every call site that needs changing produces a compile error at exactly the line to change. Asset Store users must remove the previous version completely before importing 5.0. Refer to the upgrade guide at https://scene-loader.mygamedevtools.com/docs/upgrades/from-4-to-5 for more details.
+
 ## [4.1.3](https://github.com/mygamedevtools/scene-loader/compare/4.1.2...4.1.3) (2026-07-27)
 
 
