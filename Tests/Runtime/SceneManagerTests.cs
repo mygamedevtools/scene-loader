@@ -142,17 +142,20 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
-        public void GetLoadedSceneByName_Invalid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        public void TryGetLoadedSceneByName_Invalid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            Assert.Throws<ArgumentException>(() => manager.GetLoadedSceneByName("not-a-real-scene"));
+            Assert.False(manager.TryGetLoadedSceneByName("not-a-real-scene", out Scene scene), "The name matches nothing, which is an answer rather than a fault.");
+            Assert.False(scene.IsValid());
         }
 
         [UnityTest]
-        public IEnumerator GetLoadedSceneByName_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        public IEnumerator TryGetLoadedSceneByName_Valid([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
             yield return manager.LoadAsync(new SceneParameters((SceneRef)SceneBuilder.SceneNames[1])).ToCoroutine();
 
-            Assert.True(manager.GetLoadedSceneByName(SceneBuilder.SceneNames[1]).IsValid());
+            Assert.True(manager.TryGetLoadedSceneByName(SceneBuilder.SceneNames[1], out Scene scene));
+            Assert.AreEqual(SceneBuilder.SceneNames[1], scene.name);
+            Assert.True(scene.IsValid());
         }
 
         [Test]
@@ -163,10 +166,13 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
 
         [Test]
-        public void GetLoadedSceneAt_IndexError([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
+        public void TryGetLoadedSceneAt_OutOfRange([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => manager.GetLoadedSceneAt(-1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => manager.GetLoadedSceneAt(1));
+            Assert.False(manager.TryGetLoadedSceneAt(-1, out Scene before), "Below the range is an answer, not a fault.");
+            Assert.False(before.IsValid());
+
+            Assert.False(manager.TryGetLoadedSceneAt(1, out Scene after), "And so is past the end — the count it is read against moves.");
+            Assert.False(after.IsValid());
         }
 
         [UnityTest]
@@ -208,7 +214,10 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(loadedScenes[^1], manager.GetLastLoadedScene());
 
             for (int i = 0; i < length; i++)
-                Assert.AreEqual(loadedScenes[i], manager.GetLoadedSceneAt(i));
+            {
+                Assert.True(manager.TryGetLoadedSceneAt(i, out Scene sceneAtIndex));
+                Assert.AreEqual(loadedScenes[i], sceneAtIndex);
+            }
 
             Assert.That(setActive ? loadedScenes[^1] == manager.GetActiveScene() : loadedScenes[^1] != manager.GetActiveScene());
             Assert.AreEqual(length, _scenesLoaded);
@@ -481,7 +490,8 @@ namespace MyGameDevTools.SceneLoading.Tests
                 {
                     List<string> loaded = new();
                     for (int i = 0; i < manager.LoadedSceneCount; i++)
-                        loaded.Add(manager.GetLoadedSceneAt(i).name);
+                        if (manager.TryGetLoadedSceneAt(i, out Scene loadedScene))
+                            loaded.Add(loadedScene.name);
 
                     Assert.Fail($"Timed out waiting for TotalSceneCount to reach {expected}. It is {manager.TotalSceneCount}, with these loaded: {string.Join(", ", loaded)}.");
                 }

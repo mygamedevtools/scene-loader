@@ -115,7 +115,9 @@ namespace MyGameDevTools.SceneLoading.Tests
             yield return manager.LoadAsync(new SceneParameters(sceneRefs)).ToCoroutine();
 
             Assert.AreEqual(2, manager.LoadedSceneCount);
-            Assert.AreNotEqual(manager.GetLoadedSceneAt(0), manager.GetLoadedSceneAt(1));
+            Assert.True(manager.TryGetLoadedSceneAt(0, out Scene first));
+            Assert.True(manager.TryGetLoadedSceneAt(1, out Scene second));
+            Assert.AreNotEqual(first, second);
         }
 
         /// <summary>A handle that cannot match anything must fail loudly and say what did not link.</summary>
