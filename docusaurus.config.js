@@ -63,19 +63,21 @@ const config = {
           // Point "Edit this page" at the translation rather than the English
           // source when browsing a localized page.
           editLocalizedFiles: true,
-          // 4.1.x is what is on the Asset Store and OpenUPM, so it stays the
-          // default at /docs/. `current` documents the unreleased 5.0.0 and
-          // serves from /docs/next/ until it ships, at which point it becomes
-          // `lastVersion` and 5.0.0 gets its own snapshot.
-          lastVersion: '4.1.0',
+          // 5.0.0 has shipped, so it is the default at /docs/. `current` is now
+          // whatever comes next and serves from /docs/next/ until it ships, at
+          // which point it becomes `lastVersion` and gets its own snapshot.
+          lastVersion: '5.0.0',
           versions: {
-            '4.1.0': {
+            '5.0.0': {
               // Minor-level label: patch releases don't change the docs, so
               // this only needs a bump when a new minor ships.
+              label: '5.0.x'
+            },
+            '4.1.0': {
               label: '4.1.x'
             },
             current: {
-              label: '5.0.0 (pre-release)',
+              label: 'Unreleased',
               path: 'next',
               banner: 'unreleased'
             },
@@ -155,8 +157,8 @@ const config = {
               {
                 label: 'From 4.x to 5.x',
                 // 5.0.0 is still the pre-release version, so this guide lives
-                // under /docs/next/ rather than beside the 4.1.x guides.
-                to: 'docs/next/upgrades/from-4-to-5'
+                // 5.0.0 is the default version, so this is the released path.
+                to: 'docs/upgrades/from-4-to-5'
               },
               {
                 label: 'From 3.x to 4.x',
