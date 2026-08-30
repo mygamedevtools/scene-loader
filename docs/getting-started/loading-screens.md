@@ -127,9 +127,11 @@ Their `LoadingBehavior` field is optional: when left empty, it is taken from the
 
 The `LoadingFader` component performs **fade in/out** transitions.
 Add it to an [UI Canvas Group] [GameObject] to control the group's alpha value during the visual transitions.
-You can also set the fade time and customize the fade in/out animation curves to suit your preference.
+You can set the fade in and fade out times separately, cap how far a single frame may advance a fade with `maxFrameStep`, and customize the fade in/out animation curves to suit your preference.
 
 It holds both gates for the length of each fade, so adding the component is itself the statement that the transition should wait for the fades — there is nothing to enable on the `LoadingBehavior`.
+
+Both fades run on **unscaled, clamped** time. Unscaled, because a transition started from a paused game — quitting to the menu from a pause screen at `timeScale = 0` — would otherwise never advance the fade, and never open the gate it is holding. Clamped, because the frame a scene activates on is routinely long enough to spend an entire fade before anything is drawn, leaving the first frame the player sees already mostly transparent; `maxFrameStep` (1/30 s by default) is the most one frame may count for.
 
 ### Custom components
 
@@ -190,13 +192,14 @@ Each gate is released when its slide has **finished**, not when it starts, so th
 
 ### Minimum display time
 
-A scene that loads in two frames produces a loading screen that flashes on and off, which reads as a glitch. The sample's `MinimumDisplayTime` component keeps a screen up for at least a set time, and it is the reason `HoldCompletion` exists:
+A scene that loads in two frames produces a loading screen that flashes on and off, which reads as a glitch. The `MinimumDisplayTime` component keeps a screen up for at least a set time, measured on the unscaled clock, and it is the reason `HoldCompletion` exists:
 
 ```cs
+[AddComponentMenu("Scene Loading/Minimum Display Time")]
 public class MinimumDisplayTime : LoadingScreenComponent
 {
-    [SerializeField]
-    float _seconds = 2f;
+    [Min(0)]
+    public float seconds = 2f;
 
     float _shownAt;
 
@@ -208,7 +211,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 
     void Update()
     {
-        if (Progress == null || Time.unscaledTime - _shownAt < _seconds)
+        if (Progress == null || Time.unscaledTime - _shownAt < seconds)
             return;
 
         Progress.ReleaseCompletion(this);
@@ -217,7 +220,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 }
 ```
 
-Drop it next to a `LoadingBehavior` and the `LoadingCompleted` cue waits for it — the fader, or whatever else plays the screen out, starts once both the load and the timer are done.
+Drop it next to a `LoadingBehavior` and the `LoadingCompleted` cue waits for it — the fader, or whatever else plays the screen out, starts once both the load and the timer are done. A load that already ran longer than `seconds` is not delayed at all.
 
 ## Loading screens that are not scenes
 
@@ -328,7 +331,7 @@ The fades run through UI Toolkit's own scheduler, so the screen needs no `MonoBe
 
 ## Loading Scene Sample
 
-Every screen on this page is in the [Loading Scene Examples](../samples/loading-scene-examples.md) sample as a working, runnable reference: the uGUI `Loading_Screen` scene, the UI Toolkit `Loading_Animated` scene, `PrefabLoadingScreen`, `UIDocumentLoadingScreen` and `MinimumDisplayTime`.
+Every screen on this page is in the [Loading Scene Examples](../samples/loading-scene-examples.md) sample as a working, runnable reference: the uGUI `Loading_Screen` scene, the UI Toolkit `Loading_Animated` scene, `PrefabLoadingScreen` and `UIDocumentLoadingScreen`.
 
 [MonoBehaviour]: https://docs.unity3d.com/Manual/class-MonoBehaviour.html
 [GameObject]: https://docs.unity3d.com/Manual/class-GameObject.html

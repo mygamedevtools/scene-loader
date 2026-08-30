@@ -54,6 +54,10 @@ versão major a chance de dar problema é maior.
 * **`LoadingScreenComponent`** é a base para tudo que vive em uma tela de carregamento. A
   referência ao `LoadingBehavior` é opcional e, quando ausente, é buscada nos pais.
 * **`SceneManagerLog`** dá ao pacote uma única camada de logging configurável e roteável.
+* **Consultas de cena respondem em vez de lançar exceção.** `GetLoadedSceneAt` e `GetLoadedSceneByName`
+  viraram `TryGetLoadedSceneAt` / `TryGetLoadedSceneByName`.
+* **`LoadingFader` faz o fade em tempo não escalado e limitado**, com `fadeInTime` / `fadeOutTime`
+  separados, e `MinimumDisplayTime` é um componente do pacote.
 * **Corrigido:** `LoadingProgress` não lança mais exceção quando uma transição é iniciada duas vezes — liberar uma
   retenção duas vezes é inofensivo.
 
@@ -218,6 +222,43 @@ public class LoadingFeedbackImageFill : LoadingScreenComponent
     protected override void OnBound() => Progress.Progressed += p => _image.fillAmount = p;
 }
 ```
+
+### `GetLoadedSceneAt` / `GetLoadedSceneByName` → `TryGetLoadedSceneAt` / `TryGetLoadedSceneByName` {/* #getloadedsceneat--getloadedscenebyname--trygetloadedsceneat--trygetloadedscenebyname */}
+
+Os dois lançavam exceção quando nada correspondia, então "essa cena está carregada?" só podia ser
+perguntado por meio de uma exceção. As formas `Try` respondem, e a versão por índice checa os limites
+explicitamente — `LoadedSceneCount` muda enquanto outros carregamentos e descarregamentos rodam, então
+é seguro percorrê-la.
+
+```cs
+// 4.x
+try { var hud = sceneManager.GetLoadedSceneByName("HUD"); }
+catch (ArgumentException) { /* não carregada */ }
+
+// 5.x
+if (sceneManager.TryGetLoadedSceneByName("HUD", out Scene hud))
+    hud.GetRootGameObjects();
+```
+
+`TryGetLoadedSceneByName` enxerga cenas que **terminaram** de carregar, então não serve de proteção
+contra iniciar um segundo carregamento da mesma cena. Para isso, guarde a `SceneOperation` que o
+primeiro `LoadAsync` retornou.
+
+### `LoadingFader.fadeTime` → `fadeInTime` / `fadeOutTime` {/* #loadingfaderfadetime--fadeintime--fadeouttime */}
+
+O único `fadeTime` virou dois campos. Telas existentes migram sozinhas: o valor serializado cai em
+`fadeInTime`, então o fade para o qual elas foram ajustadas mantém o tempo, e `fadeOutTime` começa
+no padrão de um segundo.
+
+Os fades também rodam agora em tempo **não escalado e limitado**. Uma transição iniciada a partir de
+um jogo pausado não trava mais em `timeScale = 0`, e um único frame longo — a cena sendo ativada —
+avança um fade no máximo `maxFrameStep` (1/30 s por padrão), em vez de consumi-lo antes que qualquer
+coisa seja desenhada.
+
+`MinimumDisplayTime` saiu do exemplo Loading Scene Examples e entrou no pacote, em
+`MyGameDevTools.SceneLoading`, então um jogo pode depender dele sem copiar o arquivo. Se você tinha
+copiado a versão do exemplo, apague a sua cópia — as duas têm o mesmo nome. O campo `_seconds` virou
+um `seconds` público; valores serializados são preservados.
 
 ## Todo método da 4.x e seu equivalente na 5.x {/* #every-4x-method-and-its-5x-equivalent */}
 

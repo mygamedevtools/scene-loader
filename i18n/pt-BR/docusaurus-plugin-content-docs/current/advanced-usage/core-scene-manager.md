@@ -35,13 +35,15 @@ public interface ISceneManager : IDisposable
 
     Scene GetActiveScene();
 
-    Scene GetLoadedSceneAt(int index);
+    bool TryGetLoadedSceneAt(int index, out Scene scene);
 
     Scene GetLastLoadedScene();
 
-    Scene GetLoadedSceneByName(string name);
+    bool TryGetLoadedSceneByName(string name, out Scene scene);
 }
 ```
+
+As duas consultas são métodos `Try`: elas respondem se a cena está lá em vez de lançar exceção quando não está, então `TryGetLoadedSceneAt` é seguro de chamar enquanto `LoadedSceneCount` muda por causa de um carregamento ou descarregamento em outro lugar. `TryGetLoadedSceneByName` só enxerga cenas que **terminaram** de carregar — uma cena ainda a caminho não é uma delas, então ele não serve de proteção contra iniciar o mesmo carregamento duas vezes. Para isso, guarde a `SceneOperation` que o primeiro `LoadAsync` retornou.
 
 :::info
 **Quatro métodos async cobrem todos os casos.** `SceneParameters` e `LoadingScreen` convertem a partir de qualquer tipo de referência, então carregar uma cena pelo nome e cinco por `AssetReference` é o mesmo método com argumentos diferentes.

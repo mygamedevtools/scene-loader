@@ -128,9 +128,11 @@ O campo `LoadingBehavior` deles é opcional: quando deixado vazio, ele é obtido
 
 O componente `LoadingFader` realiza transições de **fade in/out**.
 Adicione-o a um [GameObject] com [UI Canvas Group] para controlar o valor de alpha do grupo durante as transições visuais.
-Você também pode definir o tempo de fade e personalizar as curvas de animação do fade in/out como preferir.
+Você pode definir os tempos de fade in e fade out separadamente, limitar o quanto um único frame pode avançar um fade com `maxFrameStep` e personalizar as curvas de animação do fade in/out como preferir.
 
 Ele retém os dois gates durante cada fade, então basta adicionar o componente para declarar que a transição deve esperar pelos fades — não há nada para habilitar no `LoadingBehavior`.
+
+Os dois fades rodam em tempo **não escalado e limitado**. Não escalado porque uma transição iniciada a partir de um jogo pausado — voltar ao menu por uma tela de pausa com `timeScale = 0` — nunca avançaria o fade e nunca abriria o gate que ele está retendo. Limitado porque o frame em que uma cena é ativada costuma ser longo o bastante para consumir um fade inteiro antes que qualquer coisa seja desenhada, deixando o primeiro frame que o jogador vê já quase transparente; `maxFrameStep` (1/30 s por padrão) é o máximo que um frame pode contar.
 
 ### Componentes personalizados {/* #custom-components */}
 
@@ -191,13 +193,14 @@ Cada gate é liberado quando o respectivo deslize **termina**, não quando come�
 
 ### Tempo mínimo de exibição {/* #minimum-display-time */}
 
-Uma cena que carrega em dois frames produz uma tela de carregamento que apenas pisca, o que parece um bug. O componente `MinimumDisplayTime` do exemplo mantém a tela visível por pelo menos um tempo definido, e é a razão de `HoldCompletion` existir:
+Uma cena que carrega em dois frames produz uma tela de carregamento que apenas pisca, o que parece um bug. O componente `MinimumDisplayTime` mantém a tela visível por pelo menos um tempo definido, medido no relógio não escalado, e é a razão de `HoldCompletion` existir:
 
 ```cs
+[AddComponentMenu("Scene Loading/Minimum Display Time")]
 public class MinimumDisplayTime : LoadingScreenComponent
 {
-    [SerializeField]
-    float _seconds = 2f;
+    [Min(0)]
+    public float seconds = 2f;
 
     float _shownAt;
 
@@ -209,7 +212,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 
     void Update()
     {
-        if (Progress == null || Time.unscaledTime - _shownAt < _seconds)
+        if (Progress == null || Time.unscaledTime - _shownAt < seconds)
             return;
 
         Progress.ReleaseCompletion(this);
@@ -218,7 +221,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 }
 ```
 
-Coloque-o junto de um `LoadingBehavior` e o sinal `LoadingCompleted` espera por ele — o fader, ou o que quer que leve a tela embora, começa assim que o carregamento e o temporizador tiverem terminado.
+Coloque-o junto de um `LoadingBehavior` e o sinal `LoadingCompleted` espera por ele — o fader, ou o que quer que leve a tela embora, começa assim que o carregamento e o temporizador tiverem terminado. Um carregamento que já durou mais do que `seconds` não é atrasado.
 
 ## Telas de carregamento que não são cenas {/* #loading-screens-that-are-not-scenes */}
 
@@ -329,7 +332,7 @@ Os fades rodam pelo próprio scheduler do UI Toolkit, então a tela não precisa
 
 ## Exemplo de Cena de Carregamento {/* #loading-scene-sample */}
 
-Toda tela desta página está no exemplo [Loading Scene Examples](../samples/loading-scene-examples.md) como uma referência funcional e executável: a cena uGUI `Loading_Screen`, a cena UI Toolkit `Loading_Animated`, `PrefabLoadingScreen`, `UIDocumentLoadingScreen` e `MinimumDisplayTime`.
+Toda tela desta página está no exemplo [Loading Scene Examples](../samples/loading-scene-examples.md) como uma referência funcional e executável: a cena uGUI `Loading_Screen`, a cena UI Toolkit `Loading_Animated`, `PrefabLoadingScreen` e `UIDocumentLoadingScreen`.
 
 [MonoBehaviour]: https://docs.unity3d.com/Manual/class-MonoBehaviour.html
 [GameObject]: https://docs.unity3d.com/Manual/class-GameObject.html

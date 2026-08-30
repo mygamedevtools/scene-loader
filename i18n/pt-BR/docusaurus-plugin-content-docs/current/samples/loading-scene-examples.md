@@ -143,7 +143,7 @@ void OnOperationStarted(SceneOperation operation)
 - `LoadingBehavior` na raiz do canvas, ancorando o `LoadingProgress`.
 - `LoadingFader` no mesmo `CanvasGroup`, retendo a transição pela duração de cada fade.
 - `LoadingFeedbackSlider` e `LoadingFeedbackText` exibindo o progresso.
-- `MinimumDisplayTime`, um componente do exemplo que mantém a tela visível por dois segundos.
+- `MinimumDisplayTime`, mantendo a tela visível por dois segundos por mais rápido que o carregamento seja.
 
 Nenhum deles é ligado aos outros no Inspector. Todo componente abaixo do `LoadingBehavior` o encontra nos pais, e cada um que precisa que a transição espere faz sua própria **retenção** nos gates do progresso. A transição espera até o último deles liberar.
 
@@ -267,13 +267,14 @@ O gate abre quando o deslize termina, não quando começa, então a cena de saí
 
 ### Tempo mínimo de exibição {/* #minimum-display-time */}
 
-`MinimumDisplayTime` é o menor `LoadingScreenComponent` do exemplo, e ele faz uma distinção que vale a pena conhecer:
+`MinimumDisplayTime` é o menor `LoadingScreenComponent` que a cena usa — ele vem com o pacote, não com o exemplo — e faz uma distinção que vale a pena conhecer:
 
 ```cs
+[AddComponentMenu("Scene Loading/Minimum Display Time")]
 public class MinimumDisplayTime : LoadingScreenComponent
 {
-    [SerializeField]
-    float _seconds = 2f;
+    [Min(0)]
+    public float seconds = 2f;
 
     float _shownAt;
 
@@ -285,7 +286,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 
     void Update()
     {
-        if (Progress == null || Time.unscaledTime - _shownAt < _seconds)
+        if (Progress == null || Time.unscaledTime - _shownAt < seconds)
             return;
 
         Progress.ReleaseCompletion(this);
@@ -299,4 +300,4 @@ Ele retém a **conclusão**, não o gate de ocultação. Reter o gate de oculta�
 ## Conclusão {/* #wrap-up */}
 
 Com este exemplo, você pôde executar, a partir de uma única lista, todas as formas que uma transição pode assumir, observar cada uma delas pelo mesmo HUD e ler três telas de carregamento — uma cena, um prefab e um documento UI Toolkit — que controlam a mesma transição da mesma maneira.
-Use os scripts `PrefabLoadingScreen`, `UIDocumentLoadingScreen` e `MinimumDisplayTime` como ponto de partida para criar suas próprias experiências de carregamento ✨.
+Use os scripts `PrefabLoadingScreen` e `UIDocumentLoadingScreen` como ponto de partida para criar suas próprias experiências de carregamento ✨.

@@ -54,6 +54,10 @@ major version makes it more likely to bite.
 * **`LoadingScreenComponent`** is the base for everything that lives on a loading screen. The
   `LoadingBehavior` reference is optional and found on the parents.
 * **`SceneManagerLog`** gives the package one configurable, routable logging layer.
+* **Scene lookups answer instead of throwing.** `GetLoadedSceneAt` and `GetLoadedSceneByName` are
+  `TryGetLoadedSceneAt` / `TryGetLoadedSceneByName`.
+* **`LoadingFader` fades on unscaled, clamped time**, with separate `fadeInTime` / `fadeOutTime`,
+  and `MinimumDisplayTime` is a package component.
 * **Fixed:** `LoadingProgress` no longer throws when a transition is started twice — releasing a
   hold twice is harmless.
 
@@ -218,6 +222,41 @@ public class LoadingFeedbackImageFill : LoadingScreenComponent
     protected override void OnBound() => Progress.Progressed += p => _image.fillAmount = p;
 }
 ```
+
+### `GetLoadedSceneAt` / `GetLoadedSceneByName` → `TryGetLoadedSceneAt` / `TryGetLoadedSceneByName`
+
+Both threw when nothing matched, so "is this scene loaded?" could only be asked through an
+exception. The `Try` forms answer instead, and the index one bounds-checks explicitly —
+`LoadedSceneCount` moves while other loads and unloads run, so it is safe to walk.
+
+```cs
+// 4.x
+try { var hud = sceneManager.GetLoadedSceneByName("HUD"); }
+catch (ArgumentException) { /* not loaded */ }
+
+// 5.x
+if (sceneManager.TryGetLoadedSceneByName("HUD", out Scene hud))
+    hud.GetRootGameObjects();
+```
+
+`TryGetLoadedSceneByName` sees scenes that have **finished** loading, so it is not a guard against
+starting a second load of the same scene. For that, keep the `SceneOperation` the first `LoadAsync`
+returned.
+
+### `LoadingFader.fadeTime` → `fadeInTime` / `fadeOutTime`
+
+The single `fadeTime` is two fields. Existing screens migrate on their own: the serialized value
+lands on `fadeInTime`, so the fade they were tuned for keeps its timing, and `fadeOutTime` starts
+at its default of one second.
+
+The fades also run on **unscaled, clamped** time now. A transition started from a paused game no
+longer stalls at `timeScale = 0`, and a single long frame — the scene activating — can advance a
+fade by at most `maxFrameStep` (1/30 s by default) instead of spending it before anything is drawn.
+
+`MinimumDisplayTime` moved from the Loading Scene Examples sample into the package, under
+`MyGameDevTools.SceneLoading`, so a game can depend on it without copying the file. If you had
+copied the sample's version, delete your copy — both share the same name. Its `_seconds` field is a
+public `seconds`; serialized values carry across.
 
 ## Every 4.x method and its 5.x equivalent
 
