@@ -1,0 +1,38 @@
+{
+    "name": "Sample.LoadingScene.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3eae0364be2026648bf74846acb8a731",
+        "GUID:c579267770062bf448e75eb160330b7f",
+        "GUID:15fc0a57446b3144c949da3e2b9737a9",
+        "GUID:78bd2ddd6e276394a9615c203e574844",
+        "GUID:457756d89b35d2941b3e7b37b4ece6f1"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.core",
+            "expression": "12.1",
+            "define": "CONVERT_MATERIALS"
+        },
+        {
+            "name": "com.unity.render-pipelines.high-definition",
+            "expression": "12.1",
+            "define": "CONVERT_HDRP"
+        },
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "12.1",
+            "define": "CONVERT_URP"
+        }
+    ],
+    "noEngineReferences": false
+}
