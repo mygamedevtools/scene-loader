@@ -13,7 +13,7 @@ This page walks through that integration on Unity `6000.5`, built-in render pipe
 Two of the package's 5.0 fixes came out of this exact integration: the fader running on scaled, unclamped time, and `MinimumDisplayTime` living in the sample instead of the package. The page describes the result on 5.0, where neither needs working around.
 :::
 
-The result, before the details:
+The result, before the details — `Start → Level1` through the real transition point, with the sample HUD ticking through the phases on top of the loading screen:
 
 <video controls muted loop playsInline width="100%" src="/img/3d-game-kit.mp4" />
 

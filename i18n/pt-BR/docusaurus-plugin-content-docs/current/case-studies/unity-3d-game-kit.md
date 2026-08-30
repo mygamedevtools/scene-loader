@@ -13,7 +13,7 @@ Esta página percorre essa integração na Unity `6000.5`, render pipeline built
 Duas das correções da 5.0 do pacote saíram exatamente desta integração: o fader rodando em tempo escalado e sem limite, e o `MinimumDisplayTime` vivendo no exemplo em vez de no pacote. A página descreve o resultado na 5.0, onde nenhuma das duas precisa de contorno.
 :::
 
-O resultado, antes dos detalhes:
+O resultado, antes dos detalhes — `Start → Level1` pelo ponto de transição real, com o HUD do exemplo percorrendo as fases por cima da tela de carregamento:
 
 <video controls muted loop playsInline width="100%" src="/img/3d-game-kit.mp4" />
 
