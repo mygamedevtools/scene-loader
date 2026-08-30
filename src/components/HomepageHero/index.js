@@ -4,13 +4,16 @@ import clsx from "clsx";
 import styles from "./styles.module.css";
 import Translate from '@docusaurus/Translate';
 
-const SCENE_START = require("@site/static/img/scene-start.jpg").default;
-const SCENE_LEVEL1 = require("@site/static/img/scene-level1.jpg").default;
+const SCENE_A = require("@site/static/img/sample-scene-a.jpg").default;
+const SCENE_B = require("@site/static/img/sample-scene-b.jpg").default;
 
-/** Two real frames from the 3D Game Kit, rendered out of the editor. */
+/**
+ * The package's own sample rooms, captured from the running editor. Using our
+ * scenes rather than Unity's 3D Game Kit keeps the hero on art we license.
+ */
 const SCENES = [
-  { url: SCENE_START, name: "Start.unity" },
-  { url: SCENE_LEVEL1, name: "Level1.unity" },
+  { url: SCENE_A, name: "SceneA.unity" },
+  { url: SCENE_B, name: "SceneB.unity" },
 ];
 
 const SLANT = 32;   // how far the cut leans over the hero's height, in % of width
