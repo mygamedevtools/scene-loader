@@ -5,31 +5,63 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  padding: 8rem 0;
+  padding: 7rem 0 6rem;
+  min-height: 40rem;
 }
 
 .heroBackground {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 0;
 }
 
-.heroVideo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Two frames stacked: the outgoing one is clipped away along a leaning diagonal,
+   revealing the incoming one underneath. That single clip-path is the whole
+   mechanism — nothing is drawn between the scenes. */
+.sceneLayer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  will-change: clip-path;
+}
+
+.cut {
+  position: absolute;
+  inset: 0;
+  background: #dceef7;
+  pointer-events: none;
+  will-change: clip-path, opacity;
 }
 
 .heroOverlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 16, 26, 0.52) 0%,
+    rgba(4, 16, 26, 0.62) 55%,
+    rgba(4, 16, 26, 0.78) 100%
+  );
+}
+
+.sceneTag {
+  position: absolute;
+  bottom: 1.25rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  color: #cfe6f3;
+  background: rgba(6, 26, 42, 0.82);
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
+}
+
+.sceneTagOut {
+  right: 1.5rem;
+}
+
+.sceneTagIn {
+  left: 1.5rem;
 }
 
 .heroContent {
@@ -78,7 +110,117 @@
   border: none;
 }
 
+/* ---- the operation rail: the one piece of furniture the hero adds ---- */
+
+.rail {
+  margin: 2.75rem auto 0;
+  width: 100%;
+  max-width: 44rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem 1.15rem 0.95rem;
+  border-radius: 7px;
+  background: rgba(5, 18, 30, 0.76);
+  border: 1px solid rgba(177, 212, 224, 0.26);
+  text-align: left;
+}
+
+.railOp {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.72rem;
+  color: rgba(177, 212, 224, 0.6);
+}
+
+.railFn {
+  color: #b1d4e0;
+}
+
+.railStr {
+  color: #aedca2;
+}
+
+.chips {
+  display: flex;
+  gap: 0.3rem;
+}
+
+/* Colours lifted from the sample's OperationHud.uss / Shared.uss so the hero
+   and the shipped debug HUD agree on what each state looks like. */
+.chip {
+  flex: 1;
+  text-align: center;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.2rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  color: rgb(92, 102, 115);
+  border: 1px solid rgb(46, 52, 61);
+}
+
+.chipPast {
+  color: rgb(125, 139, 153);
+  border-color: rgb(58, 68, 80);
+}
+
+.chipNow {
+  background: #5189bd;
+  border-color: #5189bd;
+  color: #fff;
+  font-weight: 500;
+}
+
+.chipDone {
+  background: #4a9d6a;
+  border-color: #4a9d6a;
+  color: #fff;
+  font-weight: 500;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.track {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+.track i {
+  display: block;
+  height: 100%;
+  background: #b1d4e0;
+}
+
+.pct {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.72rem;
+  color: #dceef7;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4rem;
+  text-align: right;
+}
+
+@media only screen and (max-width: 996px) {
+  .sceneTag {
+    display: none;
+  }
+}
+
 @media only screen and (max-width: 768px) {
+  .hero {
+    min-height: 34rem;
+    padding: 5rem 0 4rem;
+  }
+
   .heroTitle {
     font-size: 2.5rem;
   }
@@ -90,68 +232,22 @@
   .indexCtaGitHubButton {
     display: none;
   }
-}
 
-/* .hero {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background-image: url("@site/static/img/hero.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative;
-  padding: 8rem 0;
-}
-
-.hero h1,
-.hero p {
-  position: relative;
-  z-index: 1;
-  color: var(--ifm-color-white);
-}
-
-.heroOverlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.indexCta {
-  --ifm-button-size-multiplier: 1.6;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  display: flex;
-  gap: 1rem;
-}
-
-.indexCtaGitHubButtonWrapper {
-  display: flex;
-  z-index: 1;
-}
-
-.indexCtaGitHubButton {
-  overflow: hidden;
-}
-
-.buttonCta {
-  background-color: #0054a3;
-  color: var(--ifm-color-white);
-  z-index: 1;
-}
-
-.buttonCta:hover {
-  background-color: #004c93;
-  color: var(--ifm-color-white);
-}
-
-@media only screen and (max-width: 768px) {
-  .indexCtaGitHubButton {
-    display: none;
+  .rail {
+    margin-top: 2rem;
   }
-} */
+
+  .chips {
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    flex: 0 0 auto;
+  }
+
+  .railOp {
+    font-size: 0.66rem;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
