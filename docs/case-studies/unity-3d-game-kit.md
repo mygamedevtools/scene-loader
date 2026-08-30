@@ -3,7 +3,7 @@ sidebar_position: 1
 description: A real integration, step by step — replacing the 3D Game Kit's coroutine loader with My Scene Manager.
 ---
 
-# Case study: Unity's 3D Game Kit
+# Unity 3D Game Kit
 
 Unity's [3D Game Kit](https://assetstore.unity.com/packages/templates/tutorials/3d-game-kit-115747) is a complete small game with its own scene loading: a coroutine in `SceneController` that fades to a loading overlay, calls `SceneManager.LoadSceneAsync` in single mode, teleports the player to the right entrance and fades back in. It is the shape most projects arrive at on their own, which makes it a good subject for showing what an integration actually touches — and what it does not.
 
@@ -54,7 +54,36 @@ The `LoadingCanvas` subtree was pulled out of `ScreenFader.prefab` into its own 
 
 Nothing is wired between them in the Inspector: every component finds the `LoadingBehavior` on its parents. The `Canvas` sorting order was set to `50`, below the sample HUD's panel at `100`, so the HUD (below) stays on top of the screen while it is showing.
 
-The `LoadingCanvas` child, the `Loading` fade type and its `CanvasGroup` field were then deleted from `ScreenFader`. The `Black` and `GameOver` fades stay: the initial fade-in on the first scene and the death screen are not scene transitions.
+With the loading look owned by the scene, `ScreenFader` loses its `Loading` fade. The `Black` and `GameOver` fades stay: the initial fade-in on the first scene and the death screen are not scene transitions.
+
+```diff title="ScreenFader.cs"
+ public enum FadeType
+ {
+-    Black, Loading, GameOver,
++    Black, GameOver,
+ }
+
+ public CanvasGroup faderCanvasGroup;
+-public CanvasGroup loadingCanvasGroup;
+ public CanvasGroup gameOverCanvasGroup;
+
+ public static IEnumerator FadeSceneOut(FadeType fadeType = FadeType.Black)
+ {
+     CanvasGroup canvasGroup;
+     switch (fadeType)
+     {
+-        case FadeType.Black:
+-            canvasGroup = Instance.faderCanvasGroup;
+-            break;
+         case FadeType.GameOver:
+             canvasGroup = Instance.gameOverCanvasGroup;
+             break;
+         default:
+-            canvasGroup = Instance.loadingCanvasGroup;
++            canvasGroup = Instance.faderCanvasGroup;
+             break;
+     }
+```
 
 :::info
 Delete the old path rather than leaving it dormant. One source of truth for the loading look is the point; two paths that each work is how the next person picks the wrong one.
@@ -62,59 +91,77 @@ Delete the old path rather than leaving it dormant. One source of truth for the 
 
 ## The transition
 
-`SceneController.Transition` stays a coroutine — the Game Kit's callers are coroutines — but the sequencing moved onto the operation:
+`SceneController.Transition` stays a coroutine — the Game Kit's callers are coroutines — but the sequencing moved onto the operation. Every line of the original is still there; what changed is *who* runs it and *when*:
 
-```cs
-public const string LoadingSceneName = "Loading";
+```diff title="SceneController.cs"
++public const string LoadingSceneName = "Loading";
++
++// One place, so zone changes, restarts and the timeline reload all use the same screen.
++public static LoadingScreen CreateLoadingScreen() => new SceneLoadingScreen(LoadingSceneName);
++
+ protected IEnumerator Transition(string newSceneName, DestinationTag destinationTag, TransitionType transitionType)
+ {
+     m_Transitioning = true;
+     PersistentDataManager.SaveAllData();
 
-// One place, so zone changes, restarts and the timeline reload all use the same screen.
-public static LoadingScreen CreateLoadingScreen() => new SceneLoadingScreen(LoadingSceneName);
-
-protected IEnumerator Transition(string newSceneName, DestinationTag destinationTag, TransitionType transitionType)
-{
-    m_Transitioning = true;
-    PersistentDataManager.SaveAllData();
-    if (m_PlayerInput) m_PlayerInput.ReleaseControl();
-
-    SceneOperation operation = MySceneManager.TransitionAsync(newSceneName, CreateLoadingScreen());
-
-    // The screen is opaque and the old scene is about to go — the moment the fade-out used to mark.
-    operation.StateChanged += op =>
-    {
-        if (op.State == SceneOperationState.Unloading)
-            PersistentDataManager.ClearPersisters();
-    };
-
-    // Fires while the screen is still opaque, so the player is in place before it fades out.
-    void OnSceneLoaded(Scene scene)
-    {
-        if (scene.name != newSceneName)
-            return;
-
-        m_PlayerInput = FindObjectOfType<PlayerInput>();
-        if (m_PlayerInput) m_PlayerInput.ReleaseControl();
-        PersistentDataManager.LoadAllData();
-        SceneTransitionDestination entrance = GetDestination(destinationTag);
-        SetEnteringGameObjectLocation(entrance);
-        SetupNewScene(transitionType, entrance);
-        entrance?.OnReachDestination.Invoke();
-    }
-    operation.SceneLoaded += OnSceneLoaded;
-
-    try
-    {
-        // Rethrows if the operation faults — a scene missing from the Build Settings, say.
-        yield return operation.ToCoroutine();
-    }
-    finally
-    {
-        operation.SceneLoaded -= OnSceneLoaded;
-        m_Transitioning = false;
-    }
-
-    if (m_PlayerInput)
-        m_PlayerInput.GainControl();
-}
+     if (m_PlayerInput == null)
+         m_PlayerInput = FindObjectOfType<PlayerInput>();
+     if (m_PlayerInput) m_PlayerInput.ReleaseControl();
+-    yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
+-    PersistentDataManager.ClearPersisters();
+-    yield return SceneManager.LoadSceneAsync(newSceneName);
+-    m_PlayerInput = FindObjectOfType<PlayerInput>();
+-    if (m_PlayerInput) m_PlayerInput.ReleaseControl();
+-    PersistentDataManager.LoadAllData();
+-    SceneTransitionDestination entrance = GetDestination(destinationTag);
+-    SetEnteringGameObjectLocation(entrance);
+-    SetupNewScene(transitionType, entrance);
+-    if (entrance != null)
+-        entrance.OnReachDestination.Invoke();
+-    yield return StartCoroutine(ScreenFader.FadeSceneIn());
++
++    SceneOperation operation = MySceneManager.TransitionAsync(newSceneName, CreateLoadingScreen());
++
++    // The screen is opaque and the old scene is about to go — the moment the fade-out used to mark.
++    operation.StateChanged += op =>
++    {
++        if (op.State == SceneOperationState.Unloading)
++            PersistentDataManager.ClearPersisters();
++    };
++
++    // Fires while the screen is still opaque, so the player is in place before it fades out.
++    void OnSceneLoaded(Scene scene)
++    {
++        if (scene.name != newSceneName)
++            return;
++
++        m_PlayerInput = FindObjectOfType<PlayerInput>();
++        if (m_PlayerInput) m_PlayerInput.ReleaseControl();
++        PersistentDataManager.LoadAllData();
++        SceneTransitionDestination entrance = GetDestination(destinationTag);
++        SetEnteringGameObjectLocation(entrance);
++        SetupNewScene(transitionType, entrance);
++        if (entrance != null)
++            entrance.OnReachDestination.Invoke();
++    }
++    operation.SceneLoaded += OnSceneLoaded;
++
++    try
++    {
++        // Rethrows if the operation faults — a scene missing from the Build Settings, say.
++        yield return operation.ToCoroutine();
++    }
++    finally
++    {
++        operation.SceneLoaded -= OnSceneLoaded;
++        m_Transitioning = false;
++    }
++
+     if (m_PlayerInput)
+         m_PlayerInput.GainControl();
+-
+-    m_Transitioning = false;
+ }
 ```
 
 Each of the old steps has a phase it belongs to:
@@ -131,13 +178,17 @@ Each of the old steps has a phase it belongs to:
 
 ### Restarts and reloads
 
-`RestartZone` already went through `Transition` with the current zone as the target, so it needed nothing. The timeline's `SceneReloaderBehaviour` used to call `LoadSceneAsync(buildIndex)` in single mode; it is now one line:
+`RestartZone` already went through `Transition` with the current zone as the target, so it needed nothing. The timeline's `SceneReloaderBehaviour` loaded by build index in single mode, which would have destroyed every additively loaded scene:
 
-```cs
-MySceneManager.ReloadActiveSceneAsync(SceneController.CreateLoadingScreen());
+```diff title="SceneReloaderBehaviour.cs"
+ public void ReloadScene(GameObject sceneGameObject)
+ {
+-    SceneManager.LoadSceneAsync(sceneGameObject.scene.buildIndex);
++    MySceneManager.ReloadActiveSceneAsync(SceneController.CreateLoadingScreen());
+ }
 ```
 
-Both keep the additively loaded scenes, which the single-mode load would have destroyed.
+The reload now shows the same loading screen as every other transition, and keeps the HUD (below) alive through it.
 
 ## A persistent HUD without `DontDestroyOnLoad`
 
@@ -145,7 +196,7 @@ The sample's `SceneListenerHUD` scene is a UI Toolkit document that subscribes t
 
 A small component on the menu scene guarantees it is there:
 
-```cs
+```cs title="MenuSceneHud.cs"
 public class MenuSceneHud : MonoBehaviour
 {
     [SceneName] public string hudSceneName = "SceneListenerHUD";
@@ -172,16 +223,6 @@ public class MenuSceneHud : MonoBehaviour
 Two choices worth explaining. `Start` rather than `Awake`, because `MySceneManager.Default` is created by a `RuntimeInitializeOnLoadMethod` that runs after the first scene has loaded, so it does not exist yet in that scene's `Awake`. And the loop over `SceneManager.sceneCount` rather than `TryGetLoadedSceneByName`: the guard has to see a scene that is still **loading** — the menu can be re-entered while the HUD is on its way — and the manager's lookup only knows scenes that have finished. `SceneManager.GetSceneByName` is no good either: it returns a valid handle for any scene the Build Settings know about, loaded or not.
 
 This is the general pattern for anything that must outlive transitions: load it additively once, never make it active, and let the manager leave it alone.
-
-## What the integration found
-
-Two things did not work on the first pass, and both were the package's fault rather than the Game Kit's.
-
-**The fade-out could barely be seen.** A per-frame probe of `Start → Level1` caught a single 1.43 s frame as `Level1` activated — its `Awake`s, `Start`s and first render — which the fader counted in full, consuming 75 % of a 0.5 s fade before anything was drawn. The first frame the player saw was already three-quarters transparent. In 5.0, `LoadingFader` advances by `Mathf.Min(Time.unscaledDeltaTime, maxFrameStep)`, so one long frame counts for at most `maxFrameStep` (1/30 s by default) and the fade is spent on frames that are rendered. The same change moves it onto the unscaled clock, which is what keeps a transition started from a pause menu at `timeScale = 0` from stalling on its own fade.
-
-**`MinimumDisplayTime` was in the sample.** A game cannot depend on a sample assembly, so the first pass copied the file. It is a package component in 5.0, and the copy was deleted.
-
-The general lesson survives the fixes: anything time-based that has to be *seen* right after a scene activates should advance on clamped, unscaled time — and the way to know is to sample it per frame rather than to watch it.
 
 ## Checklist for your project
 

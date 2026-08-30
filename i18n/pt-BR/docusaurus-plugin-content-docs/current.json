@@ -14,8 +14,8 @@
   "sidebar.documentationSidebar.category.Samples": {
     "message": "Exemplos"
   },
-  "sidebar.documentationSidebar.category.Guides": {
-    "message": "Guias",
-    "description": "The label for category Guides in sidebar documentationSidebar"
+  "sidebar.documentationSidebar.category.Case Studies": {
+    "message": "Estudos de Caso",
+    "description": "The label for category Case Studies in sidebar documentationSidebar"
   }
 }
