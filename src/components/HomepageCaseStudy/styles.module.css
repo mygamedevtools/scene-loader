@@ -1,0 +1,29 @@
+.caseStudy {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.video {
+    flex: 0 0 55%;
+    max-width: 55%;
+    border-radius: var(--ifm-global-radius);
+    box-shadow: var(--ifm-global-shadow-md);
+}
+
+.text {
+    flex: 1;
+}
+
+@media (max-width: 996px) {
+    .caseStudy {
+        flex-direction: column;
+    }
+
+    .video {
+        flex-basis: auto;
+        max-width: 100%;
+        width: 100%;
+    }
+}
