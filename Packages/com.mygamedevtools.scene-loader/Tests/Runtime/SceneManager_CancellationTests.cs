@@ -58,6 +58,35 @@ namespace MyGameDevTools.SceneLoading.Tests
             Assert.AreEqual(SceneOperationState.Canceled, operation.State);
         }
 
+        /// <summary>
+        /// Zero tracked scenes and a valid active scene cannot both be true, however the unload
+        /// ended. Cancelling one is the way to end up asking.
+        /// </summary>
+        /// <remarks>
+        /// The unload used to drop its scenes from <c>_loadedScenes</c> before awaiting the engine
+        /// and reconcile the active scene only afterwards, leaving the pair disagreeing for the
+        /// length of the unload. This asserts the property, not the ordering that exposed it: by
+        /// the time the operation returns the window has closed either way, so it passes against
+        /// both. It is here to keep the invariant stated, and to fail if a future change reopens
+        /// the window past the end of the operation.
+        /// </remarks>
+        [UnityTest]
+        public IEnumerator Cancel_DuringUnload_LeavesNoActiveSceneBehind([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager, [ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneParametersList))] SceneParameters sceneParameters)
+        {
+            yield return manager.LoadAsync(sceneParameters).ToCoroutine();
+
+            SceneOperation operation = manager.UnloadAsync(sceneParameters);
+            operation.Cancel();
+
+            yield return operation.ToCoroutine();
+
+            if (manager.LoadedSceneCount != 0)
+                yield break;
+
+            Assert.False(manager.GetActiveScene().IsValid(),
+                $"No scenes are tracked, yet '{manager.GetActiveScene().name}' is still reported as active.");
+        }
+
         [UnityTest]
         public IEnumerator Cancel_AfterCompletion_DoesNothing([ValueSource(typeof(SceneTestEnvironment), nameof(SceneTestEnvironment.SceneManagers))] ISceneManager manager)
         {
