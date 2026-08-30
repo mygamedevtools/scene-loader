@@ -49,7 +49,7 @@ op.StateChanged += o => { if (o.State == SceneOperationState.ScreenOut) BeginInt
 SceneResult result = await op;   // or op.Cancel(), or yield return op.ToCoroutine()
 ```
 
-Here it is running in Unity's 3D Game Kit — the coroutine loader above replaced by that one call ([case study](https://scene-loader.mygamedevtools.com/docs/next/case-studies/unity-3d-game-kit)):
+Here it is running in Unity's 3D Game Kit — the coroutine loader above replaced by that one call ([case study](https://scene-loader.mygamedevtools.com/docs/case-studies/unity-3d-game-kit)):
 
 https://github.com/user-attachments/assets/946ef030-e0d3-4021-bf62-21a7cb6c2eae
 
@@ -65,7 +65,7 @@ https://github.com/user-attachments/assets/946ef030-e0d3-4021-bf62-21a7cb6c2eae
 ## 📦 Installation
 
 You can install the package via the **[Unity Asset Store](https://assetstore.unity.com/packages/slug/313159)**, **Tarball**, **[OpenUPM](https://openupm.com/packages/com.mygamedevtools.scene-loader)** and **Git**.
-Check the full installation guide in the [documentation](https://scene-loader.mygamedevtools.com/docs/next/getting-started/installation).
+Check the full installation guide in the [documentation](https://scene-loader.mygamedevtools.com/docs/getting-started/installation).
 
 #### Unity Asset Store
 
