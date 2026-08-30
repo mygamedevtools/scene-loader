@@ -95,6 +95,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff2b742ea1a074d9f8dd1bd91ffa14d1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Sample.LoadingScene::MinimumDisplayTime
+  m_EditorClassIdentifier: MyGameDevTools.SceneLoading::MyGameDevTools.SceneLoading.MinimumDisplayTime
   _loadingBehavior: {fileID: 8384717184835795698}
   _seconds: 2
