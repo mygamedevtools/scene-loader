@@ -1,3 +1,18 @@
 .featureIcon {
   color: var(--ifm-color-primary);
+  margin-bottom: 0.6rem;
+}
+
+/* Left-aligned: six cards of centred multi-line copy reads as a template, and every
+   line starting at a different x makes the set harder to scan. */
+.featureTitle {
+  font-size: 1.1rem;
+  margin: 0 0 0.35rem;
+}
+
+.featureText {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+  line-height: 1.55;
 }

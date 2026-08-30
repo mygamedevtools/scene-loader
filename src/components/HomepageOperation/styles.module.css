@@ -1,0 +1,61 @@
+.lead {
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 2rem;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.code {
+  flex: 1 1 62%;
+  min-width: 0;
+}
+
+.points {
+  flex: 1 1 38%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.point {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.pointIcon {
+  color: var(--ifm-color-primary);
+  margin-top: 0.2rem;
+}
+
+.pointTitle {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.pointText {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 996px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .code,
+  .points {
+    flex-basis: auto;
+    width: 100%;
+  }
+}

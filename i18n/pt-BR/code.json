@@ -317,13 +317,15 @@
     "message": "Começar Agora"
   },
   "homepage.installation.title": {
-    "message": "Instalação"
+    "message": "Instale o pacote",
+    "description": "Title of the installation section"
   },
   "homepage.installation.text": {
     "message": "Escolha seu método de instalação preferido."
   },
   "homepage.example.title": {
-    "message": "Examplo Rápido"
+    "message": "Uma linha no lugar de cinco",
+    "description": "Title of the code comparison section"
   },
   "homepage.example.text1": {
     "message": "Faça transições de cena assim:"
@@ -331,47 +333,17 @@
   "homepage.example.text2": {
     "message": "Ao invés de:"
   },
-  "Simple Scene Transitions": {
-    "message": "Transições de Cenas Simplificadas"
-  },
-  "Load and switch scenes effortlessly, with support for loading screens.": {
-    "message": "Carregue e troque de cenas com eficiência, com suporte a telas de carregamento."
-  },
-  "Addressables Support": {
-    "message": "Suporte a Addressables"
-  },
-  "Manage Addressable and non-Addressable scenes in a unified and intuitive way.": {
-    "message": "Gerencie cenas Addressable e não Addressble de forma unificada e intuitiva."
-  },
-  "Integrated Async/Await": {
-    "message": "Suporte a Async/Await"
-  },
-  "Load and unload scenes asynchronously using async/await for cleaner code.": {
-    "message": "Carregue e descarregue cenas de forma assíncrona usando async/await para um código mais limpo."
-  },
   "homepage.feature.loadingScreen.title": {
-    "message": "Tela de Carregamento"
+    "message": "Telas de carregamento além de cenas",
+    "description": "Feature title"
   },
   "homepage.feature.loadingScreen.subtitle": {
-    "message": "Crie facilmente telas de carregamento com componentes integrados."
-  },
-  "Simple & Powerful API": {
-    "message": "API Simples e Poderosa"
-  },
-  "A clean API that makes integration and maintenance easy.": {
-    "message": "Uma API limpa que torna fácil a integração e manutenção."
-  },
-  "Fully Modular": {
-    "message": "Totalmente Modular"
-  },
-  "Pick only the components you need and customize them as you like.": {
-    "message": "Escolha apenas os componentes que precisa e customize-os conforme sua necessidade."
+    "message": "Use uma cena, um prefab ou um documento de UI Toolkit, com um componente pronto para cada caso.",
+    "description": "Feature text"
   },
   "homepage.featureTable.title": {
-    "message": "Tabela de Comparação"
-  },
-  "homepage.featureComparison.staticApi": {
-    "message": "API Estática"
+    "message": "O que você escreveria no lugar",
+    "description": "Title of the comparison table"
   },
   "homepage.featureComparison.sceneLoading": {
     "message": "Carregamento de Cena Async"
@@ -388,9 +360,6 @@
   "homepage.featureComparison.asyncAwait": {
     "message": "Suporte a Async/Await"
   },
-  "homepage.featureComparison.coroutine": {
-    "message": "Suporte a Coroutines"
-  },
   "homepage.featureComparison.loading": {
     "message": "Tela de Carregamento Integrada"
   },
@@ -398,7 +367,8 @@
     "message": "Integração com Addressables"
   },
   "homepage.caseStudy.title": {
-    "message": "Em um Projeto Real"
+    "message": "Em um projeto real",
+    "description": "Title of the case study section"
   },
   "homepage.caseStudy.text1": {
     "message": "O 3D Game Kit da Unity vem com seu próprio carregador de cenas por corrotina: fade out, carregar em modo single, teleportar o jogador, fade in."
@@ -408,5 +378,121 @@
   },
   "homepage.caseStudy.link": {
     "message": "Leia o estudo de caso"
+  },
+  "homepage.example.text3": {
+    "message": "Essa mesma linha funciona tanto para cenas nas Build Settings quanto no Addressables.",
+    "description": "Caption below the comparison"
+  },
+  "homepage.feature.api.title": {
+    "message": "Quatro métodos, não sessenta e quatro",
+    "description": "Feature title"
+  },
+  "homepage.feature.api.text": {
+    "message": "Carregar, descarregar, fazer transição e obter. A versão 5 reduziu toda a API a eles.",
+    "description": "Feature text"
+  },
+  "homepage.feature.addressables.title": {
+    "message": "Uma string, qualquer origem",
+    "description": "Feature title"
+  },
+  "homepage.feature.addressables.text": {
+    "message": "A mesma chamada encontra a cena nas Build Settings ou no Addressables. Sem uma segunda API para aprender.",
+    "description": "Feature text"
+  },
+  "homepage.feature.await.title": {
+    "message": "Aguarde do seu jeito",
+    "description": "Feature title"
+  },
+  "homepage.feature.await.text": {
+    "message": "Use await diretamente, converta para Task ou use yield return em uma corrotina. É sempre a mesma operação.",
+    "description": "Feature text"
+  },
+  "homepage.feature.handle.title": {
+    "message": "Um handle para cada operação",
+    "description": "Feature title"
+  },
+  "homepage.feature.handle.text": {
+    "message": "Progresso, estado do ciclo de vida, eventos por cena e cancelamento — disponíveis depois da chamada, não registrados antes dela.",
+    "description": "Feature text"
+  },
+  "homepage.feature.observable.title": {
+    "message": "Acompanhe o que acontece",
+    "description": "Feature title"
+  },
+  "homepage.feature.observable.text": {
+    "message": "Uma camada de log relata cada etapa, então uma transição travada é diagnosticável em vez de misteriosa.",
+    "description": "Feature text"
+  },
+  "homepage.operation.title": {
+    "message": "Toda chamada devolve um handle",
+    "description": "Title of the operation section"
+  },
+  "homepage.operation.lead": {
+    "message": "Não é um callback registrado antes da chamada — é um objeto que você tem depois dela.",
+    "description": "Lead of the operation section"
+  },
+  "homepage.operation.progress.title": {
+    "message": "Progresso",
+    "description": "Operation point title"
+  },
+  "homepage.operation.progress.text": {
+    "message": "Um único número para a operação inteira, em vez de um AsyncOperation por cena para você mesmo somar.",
+    "description": "Operation point text"
+  },
+  "homepage.operation.states.title": {
+    "message": "Estados",
+    "description": "Operation point title"
+  },
+  "homepage.operation.states.text": {
+    "message": "Resolving, ScreenIn, Unloading, Loading, Activating, ScreenOut, Completed — cada um informado no momento em que acontece.",
+    "description": "Operation point text"
+  },
+  "homepage.operation.cancel.title": {
+    "message": "Cancelamento",
+    "description": "Operation point title"
+  },
+  "homepage.operation.cancel.text": {
+    "message": "Chame Cancel no handle. Sem token para propagar pelos seus pontos de chamada de antemão.",
+    "description": "Operation point text"
+  },
+  "homepage.proof.license": {
+    "message": "Licença",
+    "description": "Proof strip label"
+  },
+  "homepage.proof.unity": {
+    "message": "Unity",
+    "description": "Proof strip label"
+  },
+  "homepage.proof.dependencies": {
+    "message": "Dependências",
+    "description": "Proof strip label"
+  },
+  "homepage.proof.dependencies.value": {
+    "message": "Nenhuma",
+    "description": "Proof strip value"
+  },
+  "homepage.proof.addressables": {
+    "message": "Addressables",
+    "description": "Proof strip label"
+  },
+  "homepage.proof.addressables.value": {
+    "message": "Opcional",
+    "description": "Proof strip value"
+  },
+  "homepage.proof.pipelines": {
+    "message": "Render pipelines",
+    "description": "Proof strip label"
+  },
+  "homepage.featureComparison.multiScene": {
+    "message": "Múltiplas Cenas por Chamada",
+    "description": "Comparison row"
+  },
+  "homepage.featureComparison.lifecycle": {
+    "message": "Estados do Ciclo de Vida",
+    "description": "Comparison row"
+  },
+  "homepage.featureComparison.cancellation": {
+    "message": "Cancelamento",
+    "description": "Comparison row"
   }
 }

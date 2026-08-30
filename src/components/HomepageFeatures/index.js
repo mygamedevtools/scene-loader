@@ -1,39 +1,39 @@
 import React from "react";
 import clsx from "clsx";
 import Translate from '@docusaurus/Translate';
-import { FaRocket, FaCogs, FaSyncAlt, FaCode, FaBolt, FaBoxes } from "react-icons/fa";
+import { FaCompressArrowsAlt, FaCogs, FaSyncAlt, FaCode, FaBolt, FaSearch } from "react-icons/fa";
 import styles from './styles.module.css';
 
 const features = [
   {
-    title: <Translate>Simple Scene Transitions</Translate>,
-    description: <Translate>Load and switch scenes effortlessly, with support for loading screens.</Translate>,
-    icon: FaRocket,
+    title: <Translate id="homepage.feature.api.title">Four methods, not sixty-four</Translate>,
+    description: <Translate id="homepage.feature.api.text">Load, unload, transition, get. Version 5 collapsed the whole API into them.</Translate>,
+    icon: FaCompressArrowsAlt,
   },
   {
-    title: <Translate>Addressables Support</Translate>,
-    description: <Translate>Manage Addressable and non-Addressable scenes in a unified and intuitive way.</Translate>,
+    title: <Translate id="homepage.feature.addressables.title">One string, either source</Translate>,
+    description: <Translate id="homepage.feature.addressables.text">The same call finds a scene in your Build Settings or in Addressables. No second API to learn.</Translate>,
     icon: FaCogs,
   },
   {
-    title: <Translate>Integrated Async/Await</Translate>,
-    description: <Translate>Load and unload scenes asynchronously using async/await for cleaner code.</Translate>,
+    title: <Translate id="homepage.feature.await.title">Await it your way</Translate>,
+    description: <Translate id="homepage.feature.await.text">Await it directly, bridge it to a Task, or yield return it from a coroutine. Same operation either way.</Translate>,
     icon: FaSyncAlt,
   },
   {
-    title: <Translate id="homepage.feature.loadingScreen.title">Loading Screens</Translate>,
-    description: <Translate id="homepage.feature.loadingScreen.subtitle">Easily build loading screens with built-in components.</Translate>,
-    icon: FaBolt,
-  },
-  {
-    title: <Translate>Simple & Powerful API</Translate>,
-    description: <Translate>A clean API that makes integration and maintenance easy.</Translate>,
+    title: <Translate id="homepage.feature.handle.title">A handle for every operation</Translate>,
+    description: <Translate id="homepage.feature.handle.text">Progress, lifecycle state, per-scene events and cancellation — available after the call, not registered before it.</Translate>,
     icon: FaCode,
   },
   {
-    title: <Translate>Fully Modular</Translate>,
-    description: <Translate>Pick only the components you need and customize them as you like.</Translate>,
-    icon: FaBoxes,
+    title: <Translate id="homepage.feature.loadingScreen.title">Loading screens beyond scenes</Translate>,
+    description: <Translate id="homepage.feature.loadingScreen.subtitle">Drive one from a scene, a prefab or a UI Toolkit document, with a built-in component for each.</Translate>,
+    icon: FaBolt,
+  },
+  {
+    title: <Translate id="homepage.feature.observable.title">Watch it work</Translate>,
+    description: <Translate id="homepage.feature.observable.text">A logging layer reports each step, so a transition that stalls is diagnosable instead of mysterious.</Translate>,
+    icon: FaSearch,
   },
 ];
 
@@ -43,12 +43,10 @@ export default function Features() {
       <div className="container">
         <div className="row">
           {features.map((feature, idx) => (
-            <div key={idx} className={clsx("col col--4 margin-vert--sm")}>
-              <div className="text--center">
-                <feature.icon size={50} className={styles.featureIcon} />
-              </div>
-              <h3 className="text--center">{feature.title}</h3>
-              <p className="text--center">{feature.description}</p>
+            <div key={idx} className={clsx("col col--4 margin-vert--md")}>
+              <feature.icon size={34} className={styles.featureIcon} />
+              <h3 className={styles.featureTitle}>{feature.title}</h3>
+              <p className={styles.featureText}>{feature.description}</p>
             </div>
           ))}
         </div>
