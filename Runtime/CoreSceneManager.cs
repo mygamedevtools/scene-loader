@@ -402,15 +402,29 @@ namespace MyGameDevTools.SceneLoading
             SceneBackendHandle[] handles = SceneLinker.GetTrackedHandles(sceneRefs, _loadedScenes);
 
             operation.SetState(SceneOperationState.Unloading);
+
+            // The scenes leave _loadedScenes in the loop below, so the active scene has to move
+            // with them. Reconciling after the await instead left the manager reporting an active
+            // scene it no longer tracked for the length of the unload -- a pairing SetActiveScene
+            // itself rejects when you hand it one.
+            bool unloadingTheActiveScene = false;
+
             for (int i = 0; i < sceneCount; i++)
             {
                 SceneBackendHandle handle = handles[i];
                 _loadedScenes.Remove(handle);
+                unloadingTheActiveScene |= _activeScene == handle.Scene;
 
                 handle = handle.Backend.Unload(handle);
                 handles[i] = handle;
                 _unloadingScenes.Add(handle);
             }
+
+            // Reconciled before the await, with the scenes already out of _loadedScenes and the
+            // engine not yet finished. _unloadingScenes is fully populated by now, so
+            // GetLastLoadedScene answers with a genuinely remaining scene, or with none.
+            if (unloadingTheActiveScene)
+                SetActiveScene(GetLastLoadedScene());
 
             await SceneOperationPump.WaitForAll(handles, null);
 
@@ -419,8 +433,6 @@ namespace MyGameDevTools.SceneLoading
                 _unloadingScenes.Remove(handles[i]);
                 SceneUnloaded?.Invoke(handles[i].Scene);
                 operation.ReportSceneUnloaded(handles[i].Scene);
-                if (_activeScene == handles[i].Scene)
-                    SetActiveScene(GetLastLoadedScene());
             }
 
             return handles;
