@@ -49,6 +49,10 @@ op.StateChanged += o => { if (o.State == SceneOperationState.ScreenOut) BeginInt
 SceneResult result = await op;   // or op.Cancel(), or yield return op.ToCoroutine()
 ```
 
+Here it is running in Unity's 3D Game Kit — the coroutine loader above replaced by that one call ([case study](https://scene-loader.mygamedevtools.com/docs/next/case-studies/unity-3d-game-kit)):
+
+https://github.com/user-attachments/assets/946ef030-e0d3-4021-bf62-21a7cb6c2eae
+
 ## 🚀 Features
 
 - **Seamless Scene Transitions**: Transition between scenes with ease, with optional loading screens for a smooth user experience.
