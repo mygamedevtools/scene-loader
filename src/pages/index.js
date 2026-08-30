@@ -5,6 +5,7 @@ import Hero from "@site/src/components/HomepageHero"
 import Features from "@site/src/components/HomepageFeatures"
 import Installation from "@site/src/components/HomepageInstallation"
 import QuickStart from "@site/src/components/HomepageQuickStart"
+import CaseStudy from "@site/src/components/HomepageCaseStudy"
 import FeatureComparison from "@site/src/components/HomepageFeatureComparison";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
       <main>
         <Features />
         <QuickStart />
+        <CaseStudy />
         <Installation />
         <FeatureComparison />
       </main>

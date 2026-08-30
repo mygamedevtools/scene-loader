@@ -13,5 +13,9 @@
   },
   "sidebar.documentationSidebar.category.Samples": {
     "message": "Exemplos"
+  },
+  "sidebar.documentationSidebar.category.Case Studies": {
+    "message": "Estudos de Caso",
+    "description": "The label for category Case Studies in sidebar documentationSidebar"
   }
 }

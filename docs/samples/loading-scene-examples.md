@@ -142,7 +142,7 @@ void OnOperationStarted(SceneOperation operation)
 - `LoadingBehavior` on the canvas root, anchoring the `LoadingProgress`.
 - `LoadingFader` on the same `CanvasGroup`, holding the transition for the length of each fade.
 - `LoadingFeedbackSlider` and `LoadingFeedbackText` displaying the progress.
-- `MinimumDisplayTime`, a sample component that keeps the screen up for two seconds.
+- `MinimumDisplayTime`, keeping the screen up for two seconds however fast the load turns out to be.
 
 None of these are wired to each other in the Inspector. Every component below the `LoadingBehavior` finds it on its parents, and each one that needs the transition to wait takes a **hold** of its own on the progress gates. The transition waits for whoever releases last.
 
@@ -266,13 +266,14 @@ The gate opens when the slide finishes, not when it starts, so the outgoing scen
 
 ### Minimum display time
 
-`MinimumDisplayTime` is the smallest `LoadingScreenComponent` in the sample, and it makes a distinction worth knowing:
+`MinimumDisplayTime` is the smallest `LoadingScreenComponent` the scene uses — it ships with the package, not the sample — and it makes a distinction worth knowing:
 
 ```cs
+[AddComponentMenu("Scene Loading/Minimum Display Time")]
 public class MinimumDisplayTime : LoadingScreenComponent
 {
-    [SerializeField]
-    float _seconds = 2f;
+    [Min(0)]
+    public float seconds = 2f;
 
     float _shownAt;
 
@@ -284,7 +285,7 @@ public class MinimumDisplayTime : LoadingScreenComponent
 
     void Update()
     {
-        if (Progress == null || Time.unscaledTime - _shownAt < _seconds)
+        if (Progress == null || Time.unscaledTime - _shownAt < seconds)
             return;
 
         Progress.ReleaseCompletion(this);
@@ -298,4 +299,4 @@ It holds **completion**, not the hide gate. Holding the hide gate delays the tra
 ## Wrap-up
 
 With this sample, you were able to run every shape a transition can take from one list, watch each one through the same HUD, and read three loading screens — a scene, a prefab and a UI Toolkit document — that gate the same transition in the same way.
-Use the `PrefabLoadingScreen`, `UIDocumentLoadingScreen` and `MinimumDisplayTime` scripts as starting points to create your own loading experiences ✨.
+Use the `PrefabLoadingScreen` and `UIDocumentLoadingScreen` scripts as starting points to create your own loading experiences ✨.

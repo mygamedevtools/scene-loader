@@ -34,13 +34,15 @@ public interface ISceneManager : IDisposable
 
     Scene GetActiveScene();
 
-    Scene GetLoadedSceneAt(int index);
+    bool TryGetLoadedSceneAt(int index, out Scene scene);
 
     Scene GetLastLoadedScene();
 
-    Scene GetLoadedSceneByName(string name);
+    bool TryGetLoadedSceneByName(string name, out Scene scene);
 }
 ```
+
+The two lookups are `Try` methods: they answer whether a scene is there instead of throwing when it is not, so `TryGetLoadedSceneAt` is safe to call while `LoadedSceneCount` is moving under a load or unload elsewhere. `TryGetLoadedSceneByName` sees scenes that have **finished** loading only — a scene still on its way is not one of them, so it is not a guard against starting the same load twice. For that, keep the `SceneOperation` the first `LoadAsync` returned.
 
 :::info
 **Four async methods cover every case.** `SceneParameters` and `LoadingScreen` convert from every kind of reference, so loading one scene by name and five by `AssetReference` are the same method with different arguments.

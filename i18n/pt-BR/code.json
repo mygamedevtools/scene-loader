@@ -396,5 +396,17 @@
   },
   "homepage.featureComparison.addressables": {
     "message": "Integração com Addressables"
+  },
+  "homepage.caseStudy.title": {
+    "message": "Em um Projeto Real"
+  },
+  "homepage.caseStudy.text1": {
+    "message": "O 3D Game Kit da Unity vem com seu próprio carregador de cenas por corrotina: fade out, carregar em modo single, teleportar o jogador, fade in."
+  },
+  "homepage.caseStudy.text2": {
+    "message": "Substituí-lo levou uma única chamada de TransitionAsync. A tela de carregamento virou uma cena, a configuração pós-carregamento passou para os eventos da operação, e o HUD do exemplo continuou carregado por todas as transições sem DontDestroyOnLoad."
+  },
+  "homepage.caseStudy.link": {
+    "message": "Leia o estudo de caso"
   }
 }
