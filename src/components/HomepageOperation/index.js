@@ -1,10 +1,12 @@
 import React from "react";
 import Translate from "@docusaurus/Translate";
 import CodeBlock from "@theme/CodeBlock";
+import { FaTachometerAlt, FaListOl, FaBan } from "react-icons/fa";
 import styles from "./styles.module.css";
 
 const points = [
   {
+    icon: FaTachometerAlt,
     title: <Translate id="homepage.operation.progress.title">Progress</Translate>,
     text: (
       <Translate id="homepage.operation.progress.text">
@@ -13,6 +15,7 @@ const points = [
     ),
   },
   {
+    icon: FaListOl,
     title: <Translate id="homepage.operation.states.title">States</Translate>,
     text: (
       <Translate id="homepage.operation.states.text">
@@ -21,6 +24,7 @@ const points = [
     ),
   },
   {
+    icon: FaBan,
     title: <Translate id="homepage.operation.cancel.title">Cancellation</Translate>,
     text: (
       <Translate id="homepage.operation.cancel.text">
@@ -55,9 +59,12 @@ SceneResult result = await op;   // or op.Cancel(), or yield return op.ToCorouti
           </div>
           <ul className={styles.points}>
             {points.map((point, idx) => (
-              <li key={idx}>
-                <h3 className={styles.pointTitle}>{point.title}</h3>
-                <p className={styles.pointText}>{point.text}</p>
+              <li key={idx} className={styles.point}>
+                <point.icon size={20} className={styles.pointIcon} aria-hidden="true" />
+                <div>
+                  <h3 className={styles.pointTitle}>{point.title}</h3>
+                  <p className={styles.pointText}>{point.text}</p>
+                </div>
               </li>
             ))}
           </ul>

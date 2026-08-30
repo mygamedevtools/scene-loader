@@ -1,7 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import Translate from '@docusaurus/Translate';
-import { FaCompressArrowsAlt, FaCogs, FaSyncAlt, FaCode, FaBolt, FaStethoscope } from "react-icons/fa";
+import { FaCompressArrowsAlt, FaCogs, FaSyncAlt, FaCode, FaBolt, FaSearch } from "react-icons/fa";
 import styles from './styles.module.css';
 
 const features = [
@@ -33,7 +33,7 @@ const features = [
   {
     title: <Translate id="homepage.feature.observable.title">Watch it work</Translate>,
     description: <Translate id="homepage.feature.observable.text">A logging layer reports each step, so a transition that stalls is diagnosable instead of mysterious.</Translate>,
-    icon: FaStethoscope,
+    icon: FaSearch,
   },
 ];
 
