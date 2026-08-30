@@ -4,26 +4,22 @@ using UnityEngine;
 
 namespace MyGameDevTools.SceneLoading
 {
+    /// <summary>Displays loading progress as a percentage in a <see cref="TextMeshProUGUI"/>.</summary>
     [AddComponentMenu("Scene Loading/Loading Text")]
     [RequireComponent(typeof(TextMeshProUGUI))]
-    public class LoadingFeedbackTextMeshPro : MonoBehaviour
+    public class LoadingFeedbackTextMeshPro : LoadingFeedback
     {
-        public LoadingBehavior loadingBehavior;
-
         TextMeshProUGUI _text;
 
-        void Awake()
+        protected override void Awake()
         {
             _text = GetComponent<TextMeshProUGUI>();
             _text.SetText("0");
+
+            base.Awake();
         }
 
-        void Start()
-        {
-            loadingBehavior.Progress.Progressed += UpdateText;
-        }
-
-        void UpdateText(float progress) => _text.SetText(Mathf.CeilToInt(progress * 100).ToString());
+        protected override void OnProgressed(float progress) => _text.SetText(Mathf.CeilToInt(progress * 100).ToString());
     }
 }
 #endif

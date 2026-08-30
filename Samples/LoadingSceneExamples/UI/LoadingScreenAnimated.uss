@@ -1,0 +1,109 @@
+@import url("Shared.uss");
+
+/*
+    The animated loading screen — a scene screen, but a UI Toolkit one.
+
+    Two panels slide in to meet in the middle, and the transition waits for them: the gates
+    are held from Awake and released when each slide finishes. Watch the panels close before
+    progress starts and open only after it reaches 100%.
+*/
+/* The panels are the curtain and cover the whole screen; the HUD draws over them. */
+
+/*
+    No border where the two meet. An accent edge on each inner side reads as a 4px seam straight
+    through the content once they close — the panels are a curtain, not a diagram of itself.
+    They carry slightly different shades instead, so the join is legible while they slide and
+    almost invisible once shut.
+*/
+.animated__panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    transition-property: translate;
+    transition-duration: 420ms;
+}
+
+.animated__panel--left {
+    left: 0;
+    background-color: rgb(20, 23, 29);
+    translate: -100% 0;
+}
+
+.animated__panel--right {
+    right: 0;
+    background-color: rgb(24, 28, 35);
+    translate: 100% 0;
+}
+
+.animated__panel--closed {
+    translate: 0 0;
+}
+
+.animated__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 260ms;
+}
+
+.animated__content--visible {
+    opacity: 1;
+}
+
+/*
+    A ring with one lightened side. USS has no @keyframes, so the spin is stepped from
+    the panel's scheduler rather than declared here.
+*/
+.animated__mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 26px;
+    border-width: 3px;
+    border-color: var(--accent);
+    border-top-color: rgba(81, 137, 189, 0.18);
+    margin-bottom: 18px;
+}
+
+.animated__label {
+    font-size: 13px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    color: var(--text-faint);
+}
+
+.animated__value {
+    font-size: 44px;
+    -unity-font-style: bold;
+    color: var(--text-strong);
+    margin-top: 4px;
+}
+
+/* Where the accent earns its place, now that it is not drawing a seam. */
+.animated__track {
+    width: 260px;
+    height: 3px;
+    background-color: rgb(35, 40, 48);
+    margin-top: 18px;
+    overflow: hidden;
+}
+
+.animated__fill {
+    height: 3px;
+    width: 0%;
+    background-color: var(--accent);
+    transition-property: width;
+    transition-duration: 120ms;
+}
+
+.animated__hint {
+    font-size: 13px;
+    color: var(--text-ghost);
+    margin-top: 16px;
+}

@@ -1,0 +1,47 @@
+@import url("Shared.uss");
+
+/*
+    The UI Toolkit loading screen. Deliberately the leanest of the three: no card, no border,
+    just a number and a line. It owns its LoadingProgress rather than finding one on a
+    LoadingBehavior, which is the point it exists to make.
+*/
+.minimal {
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(11, 13, 16);
+}
+
+.minimal__row {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.minimal__value {
+    font-size: 19px;
+    -unity-font-style: bold;
+    letter-spacing: 0.5px;
+    color: var(--text);
+}
+
+.minimal__track {
+    width: 380px;
+    height: 2px;
+    background-color: rgb(34, 39, 46);
+    margin-top: 16px;
+    overflow: hidden;
+}
+
+.minimal__fill {
+    height: 2px;
+    width: 0%;
+    background-color: var(--accent);
+    transition-property: width;
+    transition-duration: 100ms;
+}
+
+.minimal__hint {
+    font-size: 12px;
+    letter-spacing: 0.7px;
+    color: rgb(63, 72, 84);
+    margin-top: 20px;
+}
