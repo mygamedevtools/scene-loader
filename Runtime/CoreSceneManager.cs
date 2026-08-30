@@ -271,7 +271,11 @@ namespace MyGameDevTools.SceneLoading
 
                 if (loadingScreen is SceneLoadingScreen sceneScreen)
                 {
-                    loadingSceneHandles = await LoadScenesAsync(operation, await ResolveAsync(operation, new[] { sceneScreen.SceneRef }));
+                    // Scaffolding, not the transition's subject: the caller asked to reach the
+                    // target scenes, so the screen's own scene is not what Loading, Activating or
+                    // Progress are describing. See LoadScenesAsync.
+                    SceneRef[] screenRefs = await ResolveAsync(operation, new[] { sceneScreen.SceneRef }, isRequestedWork: false);
+                    loadingSceneHandles = await LoadScenesAsync(operation, screenRefs, isRequestedWork: false);
                     if (operation.IsCancellationRequested)
                         return;
 
@@ -313,7 +317,9 @@ namespace MyGameDevTools.SceneLoading
 
                 if (loadingSceneHandles != null)
                 {
-                    await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(loadingSceneHandles[0].Scene) });
+                    // Scaffolding again, and this one is why Unloading used to occur twice: once
+                    // for the scene being transitioned away from, once for the screen itself.
+                    await UnloadScenesAsync(operation, new[] { SceneRef.FromScene(loadingSceneHandles[0].Scene) }, isRequestedWork: false);
                     if (operation.IsCancellationRequested)
                         return;
                 }
@@ -347,28 +353,38 @@ namespace MyGameDevTools.SceneLoading
                 await SceneOperationPump.NextFrame();
         }
 
-        async Task<SceneRef[]> ResolveAsync(SceneOperation operation, SceneRef[] sceneRefs)
+        async Task<SceneRef[]> ResolveAsync(SceneOperation operation, SceneRef[] sceneRefs, bool isRequestedWork = true)
         {
             if (SceneRefResolver.TryResolveAllImmediate(sceneRefs, out SceneRef[] immediate))
                 return immediate;
 
-            operation.SetState(SceneOperationState.Resolving);
+            if (isRequestedWork)
+                operation.SetState(SceneOperationState.Resolving);
+
             return await SceneRefResolver.ResolveAllAsync(sceneRefs);
         }
 
-        async Task<SceneBackendHandle[]> LoadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs, int setIndexActive = -1, LoadingScreen screen = null)
+        /// <param name="isRequestedWork">
+        /// Whether these scenes are what the caller asked the operation for. A loading screen's
+        /// own scene passes <see langword="false"/>: it is scaffolding, and describing it would
+        /// have the operation announce phases and sweep <see cref="SceneOperation.Progress"/> for
+        /// a scene the caller never mentioned. The scenes are still linked and tracked either way.
+        /// </param>
+        async Task<SceneBackendHandle[]> LoadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs, int setIndexActive = -1, LoadingScreen screen = null, bool isRequestedWork = true)
         {
             int scenesToLoad = sceneRefs.Length;
             SceneBackendHandle[] handles = new SceneBackendHandle[scenesToLoad];
 
-            operation.SetState(SceneOperationState.Loading);
+            if (isRequestedWork)
+                operation.SetState(SceneOperationState.Loading);
+
             for (int i = 0; i < scenesToLoad; i++)
                 handles[i] = SceneBackendRegistry.GetBackend(sceneRefs[i].Kind).Load(sceneRefs[i]);
 
             if (screen != null)
                 operation.Progressed += screen.ReportProgress;
 
-            await SceneOperationPump.WaitForAll(handles, operation);
+            await SceneOperationPump.WaitForAll(handles, operation, reportProgress: isRequestedWork);
 
             if (screen != null)
                 operation.Progressed -= screen.ReportProgress;
@@ -376,7 +392,9 @@ namespace MyGameDevTools.SceneLoading
             if (operation.IsCancellationRequested)
                 return handles;
 
-            operation.SetState(SceneOperationState.Activating);
+            if (isRequestedWork)
+                operation.SetState(SceneOperationState.Activating);
+
             SceneLinker.Link(handles, _loadedScenes);
 
             _loadedScenes.AddRange(handles);
@@ -392,16 +410,18 @@ namespace MyGameDevTools.SceneLoading
             return handles;
         }
 
-        async Task<SceneBackendHandle[]> UnloadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs)
+        /// <param name="isRequestedWork">See <see cref="LoadScenesAsync"/>.</param>
+        async Task<SceneBackendHandle[]> UnloadScenesAsync(SceneOperation operation, SceneRef[] sceneRefs, bool isRequestedWork = true)
         {
             // Unload resolves too, so unloading by the same string that loaded a scene matches
             // it — an address and the scene's name need not be the same word.
-            sceneRefs = await ResolveForUnloadAsync(operation, sceneRefs);
+            sceneRefs = await ResolveForUnloadAsync(operation, sceneRefs, isRequestedWork);
 
             int sceneCount = sceneRefs.Length;
             SceneBackendHandle[] handles = SceneLinker.GetTrackedHandles(sceneRefs, _loadedScenes);
 
-            operation.SetState(SceneOperationState.Unloading);
+            if (isRequestedWork)
+                operation.SetState(SceneOperationState.Unloading);
 
             // The scenes leave _loadedScenes in the loop below, so the active scene has to move
             // with them. Reconciling after the await instead left the manager reporting an active
@@ -442,11 +462,11 @@ namespace MyGameDevTools.SceneLoading
         /// Resolves references for an unload, leaving unresolvable keys alone — the "no loaded
         /// scene matches this" error below says more than "not in the build settings" would.
         /// </summary>
-        async Task<SceneRef[]> ResolveForUnloadAsync(SceneOperation operation, SceneRef[] sceneRefs)
+        async Task<SceneRef[]> ResolveForUnloadAsync(SceneOperation operation, SceneRef[] sceneRefs, bool isRequestedWork = true)
         {
             try
             {
-                return await ResolveAsync(operation, sceneRefs);
+                return await ResolveAsync(operation, sceneRefs, isRequestedWork);
             }
             catch (ArgumentException)
             {

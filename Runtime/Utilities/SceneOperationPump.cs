@@ -20,6 +20,7 @@ namespace MyGameDevTools.SceneLoading
         {
             public SceneBackendHandle[] Handles;
             public SceneOperation Operation;
+            public bool ReportProgress;
             public Action Continuation;
             public float Waited;
             public bool Warned;
@@ -45,9 +46,16 @@ namespace MyGameDevTools.SceneLoading
         /// Completes when every handle is done, reporting their average progress to
         /// <paramref name="operation"/> meanwhile.
         /// </summary>
-        public static BackendGroupAwaiter WaitForAll(SceneBackendHandle[] handles, SceneOperation operation)
+        /// <param name="reportProgress">
+        /// Whether these handles are part of what <see cref="SceneOperation.Progress"/> measures.
+        /// A transition loads its loading screen's own scene through here too, and that scene is
+        /// not what the caller asked for — reporting it swept the value to 1 and back to 0 before
+        /// the target scenes had started. Separate from <paramref name="operation"/> so that a
+        /// group can stay cancellable without counting toward the progress the caller reads.
+        /// </param>
+        public static BackendGroupAwaiter WaitForAll(SceneBackendHandle[] handles, SceneOperation operation, bool reportProgress = true)
         {
-            return new BackendGroupAwaiter(handles, operation);
+            return new BackendGroupAwaiter(handles, operation, reportProgress);
         }
 
         /// <summary>
@@ -95,13 +103,14 @@ namespace MyGameDevTools.SceneLoading
             }
         }
 
-        internal static void Track(SceneBackendHandle[] handles, SceneOperation operation, Action continuation)
+        internal static void Track(SceneBackendHandle[] handles, SceneOperation operation, bool reportProgress, Action continuation)
         {
             _entries ??= new List<Entry>(8);
             _entries.Add(new Entry
             {
                 Handles = handles,
                 Operation = operation,
+                ReportProgress = reportProgress,
                 Continuation = continuation,
             });
         }
@@ -210,7 +219,8 @@ namespace MyGameDevTools.SceneLoading
                 bool canceled = entry.Operation != null && entry.Operation.IsCancellationRequested;
                 if (!canceled)
                 {
-                    entry.Operation?.ReportProgress(SceneLinker.GetAverageProgress(entry.Handles));
+                    if (entry.ReportProgress)
+                        entry.Operation?.ReportProgress(SceneLinker.GetAverageProgress(entry.Handles));
 
                     if (!SceneLinker.HasCompletedAll(entry.Handles))
                     {
@@ -246,16 +256,18 @@ namespace MyGameDevTools.SceneLoading
 
             readonly SceneBackendHandle[] _handles;
             readonly SceneOperation _operation;
+            readonly bool _reportProgress;
 
-            internal BackendGroupAwaiter(SceneBackendHandle[] handles, SceneOperation operation)
+            internal BackendGroupAwaiter(SceneBackendHandle[] handles, SceneOperation operation, bool reportProgress)
             {
                 _handles = handles;
                 _operation = operation;
+                _reportProgress = reportProgress;
             }
 
             public readonly BackendGroupAwaiter GetAwaiter() => this;
 
-            public readonly void OnCompleted(Action continuation) => Track(_handles, _operation, continuation);
+            public readonly void OnCompleted(Action continuation) => Track(_handles, _operation, _reportProgress, continuation);
 
             public readonly void GetResult() { }
         }

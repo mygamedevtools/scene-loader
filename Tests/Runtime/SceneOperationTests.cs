@@ -42,6 +42,68 @@ namespace MyGameDevTools.SceneLoading.Tests
             void Watch(SceneOperation started) => started.StateChanged += o => states.Add(o.State);
         }
 
+        /// <summary>
+        /// The whole sequence, in order and without repeats. A transition loads and unloads the
+        /// loading screen's own scene as well as the target, and reporting that work made
+        /// Loading, Activating and Unloading each occur twice meaning different things — the
+        /// second Loading arriving after the first had already finished, so a listener reading
+        /// the states as forward progress went backwards.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Transition_MovesThroughItsStatesInOrder_WithoutRepeatingAny()
+        {
+            yield return Manager.LoadAsync(new SceneParameters((SceneRef)SceneBuilder.SceneNames[1], true)).ToCoroutine();
+
+            // Subscribed through OperationStarted for the same reason as the load above: nothing
+            // guarantees the first state waits for the call to return.
+            List<SceneOperationState> states = new();
+            Manager.OperationStarted += Watch;
+
+            SceneOperation operation = Manager.TransitionAsync(SceneBuilder.SceneNames[2], SceneBuilder.SceneNames[0]);
+
+            Manager.OperationStarted -= Watch;
+
+            yield return operation.ToCoroutine();
+
+            CollectionAssert.AreEqual(new[]
+            {
+                SceneOperationState.ScreenIn,
+                SceneOperationState.Unloading,
+                SceneOperationState.Loading,
+                SceneOperationState.Activating,
+                SceneOperationState.ScreenOut,
+                SceneOperationState.Completed,
+            }, states);
+
+            void Watch(SceneOperation started) => started.StateChanged += o => states.Add(o.State);
+        }
+
+        /// <summary>
+        /// Progress belongs to the scenes that were asked for. Loading the screen's own scene
+        /// used to drive it too, so a bar filled to 1, dropped back to 0 and filled again.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Transition_Progress_OnlyMovesForward()
+        {
+            yield return Manager.LoadAsync(new SceneParameters((SceneRef)SceneBuilder.SceneNames[1], true)).ToCoroutine();
+
+            List<float> reported = new();
+            Manager.OperationStarted += Watch;
+
+            SceneOperation operation = Manager.TransitionAsync(SceneBuilder.SceneNames[2], SceneBuilder.SceneNames[0]);
+
+            Manager.OperationStarted -= Watch;
+
+            yield return operation.ToCoroutine();
+
+            for (int i = 1; i < reported.Count; i++)
+                Assert.GreaterOrEqual(reported[i], reported[i - 1], $"Progress went backwards at report {i}: {string.Join(", ", reported)}.");
+
+            Assert.AreEqual(1f, operation.Progress);
+
+            void Watch(SceneOperation started) => started.Progressed += reported.Add;
+        }
+
         [UnityTest]
         public IEnumerator Transition_ReachesScreenOutBeforeItCompletes()
         {
