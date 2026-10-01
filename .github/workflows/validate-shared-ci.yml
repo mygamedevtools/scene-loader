@@ -1,0 +1,27 @@
+# Temporary: exercises the shared release and packaging workflows without publishing.
+# Remove before merging.
+name: 🧪 Validate shared CI
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  release-dry-run:
+    name: Release (dry run)
+    uses: mygamedevtools/unity-package-ci/.github/workflows/versioning-semver.yml@main
+    with:
+      dryRun: true
+      blockPullRequestRelease: false
+      blockReleaseCommit: true
+      unitypackage-export-method: PackageExporter.ExportPackage
+    secrets: inherit
+
+  package-dry-run:
+    name: Package (no publish)
+    uses: mygamedevtools/unity-package-ci/.github/workflows/packaging.yml@main
+    with:
+      version: 5.0.0
+      unitypackage-export-method: PackageExporter.ExportPackage
+      publish: false
+    secrets: inherit
