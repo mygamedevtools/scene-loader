@@ -10,10 +10,19 @@ namespace MyGameDevTools.SceneLoading.Tests
     /// the whole thing exists for: the screen stays up for its minimum, and whatever plays it out
     /// starts when it should instead of running to its end against an empty screen.
     /// </summary>
+    /// <remarks>
+    /// These tests read the same clock the component does, <see cref="Time.unscaledTime"/>, which
+    /// only advances between frames. That makes every assertion exact: in a frame where less than
+    /// the minimum has passed the cue is held, in the first frame where it has passed the cue is
+    /// raised, however long any single frame took. Waiting a fixed real time instead and asserting
+    /// what state the component should be in by then assumes a frame is shorter than the minimum,
+    /// which a loaded CI runner does not guarantee.
+    /// </remarks>
     public class MinimumDisplayTimeTests
     {
         LoadingBehavior _loadingBehavior;
         MinimumDisplayTime _minimumDisplayTime;
+        float _shownAt;
 
         [TearDown]
         public void Teardown()
@@ -43,10 +52,13 @@ namespace MyGameDevTools.SceneLoading.Tests
             // The load a real screen would be waiting on, finishing immediately.
             progress.SetLoadingCompleted();
 
-            yield return null;
-            Assert.False(completed, "Loading finished, but the screen has not been up long enough to be told.");
-
-            yield return new WaitForSecondsRealtime(.4f);
+            // Checked in the frame it bound as well, where no time has passed at all: that is
+            // what tells a hold apart from a cue that was never delayed in the first place.
+            while (!MinimumHasPassed)
+            {
+                Assert.False(completed, "Loading finished, but the screen has not been up long enough to be told.");
+                yield return null;
+            }
 
             Assert.True(completed, "Its time is up, so the cue it was holding is raised.");
         }
@@ -62,7 +74,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             bool completed = false;
             progress.LoadingCompleted += () => completed = true;
 
-            yield return new WaitForSecondsRealtime(.2f);
+            yield return WaitForTheMinimum();
 
             Assert.False(completed, "Nothing has finished loading yet, so there is no cue to raise.");
 
@@ -87,7 +99,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             progress.SetLoadingCompleted();
 
-            yield return new WaitForSecondsRealtime(.4f);
+            yield return WaitForTheMinimum();
 
             Assert.True(completed, "The clock is stopped, but the minimum is not measured against it.");
         }
@@ -102,7 +114,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.True(_minimumDisplayTime.enabled, "It polls while it is still holding the cue.");
 
-            yield return new WaitForSecondsRealtime(.2f);
+            yield return WaitForTheMinimum();
 
             Assert.False(_minimumDisplayTime.enabled);
         }
@@ -119,7 +131,27 @@ namespace MyGameDevTools.SceneLoading.Tests
             _minimumDisplayTime.seconds = seconds;
             _minimumDisplayTime.LoadingBehavior = _loadingBehavior;
 
+            // The clock does not move within a frame, so this is the very value the component
+            // recorded when it bound, and the tests can predict its decisions exactly.
+            _shownAt = Time.unscaledTime;
+
             return _loadingBehavior.Progress;
+        }
+
+        /// <summary>
+        /// Whether the component, in this frame, considers its minimum served. Its Update runs
+        /// before a test coroutine resumes, so by the time this is read it has already acted on it.
+        /// </summary>
+        bool MinimumHasPassed => Time.unscaledTime - _shownAt >= _minimumDisplayTime.seconds;
+
+        /// <summary>
+        /// Resumes in the first frame the component has had the chance to let go, no matter how
+        /// many frames, or how few, it took to get there.
+        /// </summary>
+        IEnumerator WaitForTheMinimum()
+        {
+            while (!MinimumHasPassed)
+                yield return null;
         }
     }
 }
