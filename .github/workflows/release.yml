@@ -9,5 +9,7 @@ on:
 jobs:
   create-release:
     name: Release
-    uses: ./.github/workflows/versioning-semver.yml
+    uses: mygamedevtools/unity-package-ci/.github/workflows/versioning-semver.yml@v1
+    with:
+      unitypackage-export-method: PackageExporter.ExportPackage
     secrets: inherit
