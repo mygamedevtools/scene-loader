@@ -14,7 +14,7 @@ on:
 jobs:
   create-preview-release:
     name: Preview Release
-    uses: mygamedevtools/unity-package-ci/.github/workflows/versioning-manual.yml@main
+    uses: mygamedevtools/unity-package-ci/.github/workflows/versioning-manual.yml@v1
     with:
       bumpType: ${{ inputs.bumpType }}
       unitypackage-export-method: PackageExporter.ExportPackage
