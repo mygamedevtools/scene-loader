@@ -37,7 +37,7 @@ on:
 jobs:
   test:
     name: Tests
-    uses: mygamedevtools/unity-package-ci/.github/workflows/test.yml@v1
+    uses: mygamedevtools/unity-package-ci/.github/workflows/test.yml@perf/nographics-tests
     with:
       coverage-assemblies: '+MyGameDevTools.SceneLoading'
       test-mode: playmode
