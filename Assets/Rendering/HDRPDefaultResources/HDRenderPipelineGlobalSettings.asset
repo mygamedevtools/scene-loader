@@ -196,6 +196,7 @@ MonoBehaviour:
       - rid: 2229682585042157935
       - rid: 2229682585042157936
       - rid: 7734890093593493695
+      - rid: 4878626599862534144
     m_RuntimeSettings:
       m_List: []
   renderingLayerNames:
@@ -881,6 +882,12 @@ MonoBehaviour:
         m_setupCS: {fileID: 7200000, guid: 33be2e9a5506b2843bdb2bdff9cad5e1, type: 3}
         m_preTaaCS: {fileID: 7200000, guid: a679dba8ec4d9ce45884a270b0e22dda, type: 3}
         m_taaCS: {fileID: 7200000, guid: 3923900e2b41b5e47bc25bfdcbcdc9e6, type: 3}
+    - rid: 4878626599862534144
+      type: {class: MipGenRenderPipelineRuntimeResources, ns: UnityEngine.Rendering, asm: Unity.RenderPipelines.Universal.Runtime}
+      data:
+        m_ColorPyramidPS: {fileID: 4800000, guid: 63b92baba208e314c8fdebe52ca0cc34, type: 3}
+        m_ColorPyramidCS: {fileID: 7200000, guid: 28969cfddd9ef3f4e94b971690146a4f, type: 3}
+        m_DepthPyramidCS: {fileID: 7200000, guid: 90a204702cd44e54cac7ed4fc6e5d86b, type: 3}
     - rid: 7734890093593493695
       type: {class: WorldRenderPipelineResources, ns: UnityEngine.PathTracing.Core, asm: Unity.PathTracing.Runtime}
       data:
@@ -892,3 +899,4 @@ MonoBehaviour:
         _skyBoxMesh: {fileID: 4300000, guid: 0529e6c5f6dea8c4a8c2835ed7de57cb, type: 2}
         _sixFaceSkyBoxMesh: {fileID: 4300000, guid: a80925ceebd011741b42509226cefc74, type: 2}
         _buildLightGridShader: {fileID: 7200000, guid: 16e47c1641bd0104e92b624601457bb0, type: 3}
+        _solidColorShader: {fileID: 4800000, guid: 3765a7ac691541038de4d587b94ae768, type: 3}
