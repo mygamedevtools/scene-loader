@@ -11,5 +11,6 @@ jobs:
     name: Release
     uses: mygamedevtools/unity-package-ci/.github/workflows/versioning-semver.yml@v1
     with:
+      package-path: Packages/com.mygamedevtools.scene-loader
       unitypackage-export-method: PackageExporter.ExportPackage
     secrets: inherit

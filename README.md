@@ -121,7 +121,9 @@ Upgrading from 4.x? Start with the [upgrade guide](https://scene-loader.mygamede
 
 ## 🤝 Contributing
 
-We welcome contributions! Please check our [contribution guidelines](./CONTRIBUTING.md).
+We welcome contributions! Please check our [contribution guidelines](https://github.com/mygamedevtools/.github/blob/main/CONTRIBUTING.md).
+
+The documentation site lives on the [`docs`](https://github.com/mygamedevtools/scene-loader/tree/docs) branch, so open documentation pull requests against it rather than `main`.
 
 ## 📄 License
 

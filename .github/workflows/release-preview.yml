@@ -17,5 +17,6 @@ jobs:
     uses: mygamedevtools/unity-package-ci/.github/workflows/versioning-manual.yml@v1
     with:
       bumpType: ${{ inputs.bumpType }}
+      package-path: Packages/com.mygamedevtools.scene-loader
       unitypackage-export-method: PackageExporter.ExportPackage
     secrets: inherit
