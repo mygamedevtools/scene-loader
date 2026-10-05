@@ -87,3 +87,5 @@ crashlytics-build.properties
 # Website
 .docusaurus
 node_modules/
+# Project Auditor settings, recreated by the Editor
+ProjectSettings/ProjectAuditorSettings.asset
