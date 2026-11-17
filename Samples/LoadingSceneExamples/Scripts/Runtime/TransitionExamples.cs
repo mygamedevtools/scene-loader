@@ -249,26 +249,34 @@ public class TransitionExamples : MonoBehaviour
 
     VisualElement BuildRow(Example example, int index)
     {
+        // The kit's list row (mgt-*) for the look; the sample's own classes (example*) for
+        // the layout and the selected state, in RoomScreen.uss.
         VisualElement row = new();
+        row.AddToClassList("mgt-list-item");
         row.AddToClassList("example");
 
         VisualElement head = new();
-        head.AddToClassList("example__head");
+        head.AddToClassList("mgt-list-item__head");
 
         Label name = new(example.Name);
+        name.AddToClassList("mgt-text");
+        name.AddToClassList("mgt-text--strong");
         name.AddToClassList("example__name");
 
+        // Neutral on purpose: the kit keeps colored badges for status, and a tag is a category.
         Label tag = new(example.Tag);
+        tag.AddToClassList("mgt-badge");
         tag.AddToClassList("example__tag");
-        tag.AddToClassList($"example__tag--{example.Tag.ToLowerInvariant()}");
 
         head.Add(name);
         head.Add(tag);
 
         Label description = new(example.Description);
-        description.AddToClassList("example__desc");
+        description.AddToClassList("mgt-text");
+        description.AddToClassList("mgt-text--muted");
 
         Label code = new(example.Code);
+        code.AddToClassList("mgt-code");
         code.AddToClassList("example__code");
 
         row.Add(head);
