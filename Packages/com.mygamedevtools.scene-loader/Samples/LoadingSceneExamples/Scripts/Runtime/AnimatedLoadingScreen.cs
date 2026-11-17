@@ -26,11 +26,8 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
     VisualElement _left;
     VisualElement _right;
     VisualElement _content;
-    VisualElement _mark;
     VisualElement _fill;
     Label _value;
-
-    float _spin;
 
     protected override void Awake()
     {
@@ -39,12 +36,8 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
         _left    = root.Q<VisualElement>("panel-left");
         _right   = root.Q<VisualElement>("panel-right");
         _content = root.Q<VisualElement>("content");
-        _mark    = root.Q<VisualElement>("mark");
         _fill    = root.Q<VisualElement>("fill");
         _value   = root.Q<Label>("value");
-
-        // USS has no @keyframes, so the ring is stepped from the panel's own scheduler.
-        _mark.schedule.Execute(SpinMark).Every(16);
 
         base.Awake();
     }
@@ -121,12 +114,6 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
 
         _value.text = $"{percent}%";
         _fill.style.width = Length.Percent(percent);
-    }
-
-    void SpinMark()
-    {
-        _spin = (_spin + 4f) % 360f;
-        _mark.style.rotate = new StyleRotate(new Rotate(new Angle(_spin, AngleUnit.Degree)));
     }
 
     long Milliseconds() => (long)(Mathf.Max(0, _slideSeconds) * 1000f);

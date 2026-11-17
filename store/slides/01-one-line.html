@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>One line instead of five</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .before { margin-top: 30px; padding: 20px 26px; font-size: 15px; line-height: 1.75; }
+  .before .code { color: var(--mgt-palette-dust); }
+  .becomes { margin: 18px 0; }
+  .after { padding: 20px 26px; font-size: 22px; border-color: var(--mgt-color-accent); }
+  .lede { margin-top: 20px; max-width: 760px; }
+</style></head>
+<body>
+  <div class="scenes"><img src="img/level1.jpg" alt=""><img class="right" src="img/level2.jpg" alt=""><div class="seam"></div></div>
+  <div class="veil"></div>
+  <svg class="stripes" viewBox="0 0 300 200" aria-hidden="true"><line x1="152" y1="-20" x2="320" y2="148" style="stroke: var(--mgt-color-stripe-1)" stroke-width="16"/><line x1="176" y1="-20" x2="320" y2="124" style="stroke: var(--mgt-color-stripe-2)" stroke-width="16"/><line x1="200" y1="-20" x2="320" y2="100" style="stroke: var(--mgt-color-stripe-3)" stroke-width="16"/></svg>
+  <div class="content">
+    <div class="eyebrow"><i></i><i></i><i></i><span class="label accent">My Scene Manager</span></div><h1>One line instead of five</h1>
+    <div class="panel before"><div class="code">yield return SceneManager.LoadSceneAsync(<span class="str">"my-loading-scene"</span>, LoadSceneMode.Additive);
+yield return SceneManager.LoadSceneAsync(<span class="str">"my-target-scene"</span>, LoadSceneMode.Additive);
+SceneManager.SetActiveScene(SceneManager.GetSceneByName(<span class="str">"my-target-scene"</span>));
+SceneManager.UnloadSceneAsync(<span class="str">"my-loading-scene"</span>);
+SceneManager.UnloadSceneAsync(<span class="str">"my-previous-scene"</span>);</div></div>
+    <div class="becomes"><span class="label">Becomes</span></div>
+    <div class="panel after"><div class="code"><span class="type">MySceneManager</span>.TransitionAsync(<span class="str">"my-target-scene"</span>, <span class="str">"my-loading-scene"</span>);</div></div>
+    <p class="lede">The same call works whether the scene comes from your Build Settings or from Addressables.</p>
+  </div>
+</body></html>

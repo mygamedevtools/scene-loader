@@ -17,6 +17,13 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public class OperationHud : MonoBehaviour
 {
+    // The UI kit's phase chips (MyGamedevToolsUI/Styles/Brand.uss).
+    const string PhaseClass = "mgt-phase";
+    const string PhaseDoneClass = "mgt-phase--done";
+    const string PhaseCurrentClass = "mgt-phase--current";
+    const string PhaseCompletedClass = "mgt-phase--completed";
+    const string PhaseFailedClass = "mgt-phase--failed";
+
     /// <summary>
     /// Every phase a transition passes through, in order. Rendered up front and lit as the
     /// operation walks them, so the whole lifecycle is visible rather than just the current step.
@@ -119,10 +126,7 @@ public class OperationHud : MonoBehaviour
         operation.Completed += OnCompleted;
 
         _kind.text = $"{operation.Kind} operation";
-        _kind.RemoveFromClassList("hud__idle");
-        _kind.AddToClassList("hud__kind");
-
-        _dot.AddToClassList("hud__dot--busy");
+        SetBusy(true);
         _cancel.style.display = DisplayStyle.Flex;
 
         SetProgress(0);
@@ -138,19 +142,19 @@ public class OperationHud : MonoBehaviour
         for (int i = 0; i < _chips.Count; i++)
         {
             VisualElement chip = _chips[i];
-            chip.RemoveFromClassList("phase--done");
-            chip.RemoveFromClassList("phase--current");
-            chip.RemoveFromClassList("phase--completed");
+            chip.RemoveFromClassList(PhaseDoneClass);
+            chip.RemoveFromClassList(PhaseCurrentClass);
+            chip.RemoveFromClassList(PhaseCompletedClass);
 
             if (current < 0 || i > current)
                 continue;
 
             if (i < current)
-                chip.AddToClassList("phase--done");
+                chip.AddToClassList(PhaseDoneClass);
             else if (_timeline[i] == SceneOperationState.Completed)
-                chip.AddToClassList("phase--completed");
+                chip.AddToClassList(PhaseCompletedClass);
             else
-                chip.AddToClassList("phase--current");
+                chip.AddToClassList(PhaseCurrentClass);
         }
 
         // Canceled and Faulted are not points on the timeline — they replace the rest of it.
@@ -160,7 +164,7 @@ public class OperationHud : MonoBehaviour
 
     void OnCompleted(SceneOperation operation)
     {
-        _dot.RemoveFromClassList("hud__dot--busy");
+        SetBusy(false);
         _cancel.style.display = DisplayStyle.None;
         Detach();
     }
@@ -182,11 +186,22 @@ public class OperationHud : MonoBehaviour
     void ShowIdle()
     {
         _kind.text = "No operation running";
-        _kind.RemoveFromClassList("hud__kind");
-        _kind.AddToClassList("hud__idle");
         _percent.text = string.Empty;
         _cancel.style.display = DisplayStyle.None;
-        _dot.RemoveFromClassList("hud__dot--busy");
+        SetBusy(false);
+    }
+
+    /// <summary>
+    /// The dot and the operation label read the same state: amber and bold while something runs,
+    /// green and muted when the scene is settled. The text says it too, so the state never
+    /// depends on color alone.
+    /// </summary>
+    void SetBusy(bool busy)
+    {
+        _dot.EnableInClassList("mgt-dot--warning", busy);
+        _dot.EnableInClassList("mgt-dot--success", !busy);
+        _kind.EnableInClassList("mgt-text--strong", busy);
+        _kind.EnableInClassList("mgt-text--muted", !busy);
     }
 
     void BuildTimeline()
@@ -197,7 +212,7 @@ public class OperationHud : MonoBehaviour
         foreach (SceneOperationState state in _timeline)
         {
             Label chip = new(state.ToString());
-            chip.AddToClassList("phase");
+            chip.AddToClassList(PhaseClass);
             _phases.Add(chip);
             _chips.Add(chip);
         }
@@ -206,8 +221,8 @@ public class OperationHud : MonoBehaviour
     void AppendTerminal(SceneOperationState state)
     {
         Label chip = new(state.ToString());
-        chip.AddToClassList("phase");
-        chip.AddToClassList("phase--failed");
+        chip.AddToClassList(PhaseClass);
+        chip.AddToClassList(PhaseFailedClass);
         _phases.Add(chip);
         _chips.Add(chip);
     }

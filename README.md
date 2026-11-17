@@ -1,13 +1,16 @@
 <p align="center">
-  <img src="./docs/img/banner.jpg" alt="My Scene Manager" width="100%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/img/banner-dark.png">
+    <img src="./docs/img/banner-light.png" alt="My Scene Manager: scene transitions, in one line." width="100%">
+  </picture>
 </p>
 
 <p align=center>
-  <a href=""><img src="https://img.shields.io/badge/Unity-6.6-57b9d3.svg?color=5189bd&logo=unity" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/mygamedevtools/scene-loader?color=5189bd" /></a>
-  <a href="https://github.com/mygamedevtools/scene-loader/releases/latest"><img src="https://img.shields.io/github/v/release/mygamedevtools/scene-loader?color=5189bd&sort=semver" /></a>
-  <a href="https://openupm.com/packages/com.mygamedevtools.scene-loader/"><img src="https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?color=5189bd&label=openupm&registry_uri=https://package.openupm.com" /></a>
-  <a href="https://openupm.com/packages/com.mygamedevtools.scene-loader/"><img src="https://img.shields.io/badge/dynamic/json?color=5189bd&label=downloads&query=%24.downloads&suffix=%2Fmonth&url=https%3A%2F%2Fpackage.openupm.com%2Fdownloads%2Fpoint%2Flast-month%2Fcom.mygamedevtools.scene-loader" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Unity-6.6-57b9d3.svg?color=E4572E&logo=unity" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/mygamedevtools/scene-loader?color=E4572E" /></a>
+  <a href="https://github.com/mygamedevtools/scene-loader/releases/latest"><img src="https://img.shields.io/github/v/release/mygamedevtools/scene-loader?color=E4572E&sort=semver" /></a>
+  <a href="https://openupm.com/packages/com.mygamedevtools.scene-loader/"><img src="https://img.shields.io/npm/v/com.mygamedevtools.scene-loader?color=E4572E&label=openupm&registry_uri=https://package.openupm.com" /></a>
+  <a href="https://openupm.com/packages/com.mygamedevtools.scene-loader/"><img src="https://img.shields.io/badge/dynamic/json?color=E4572E&label=downloads&query=%24.downloads&suffix=%2Fmonth&url=https%3A%2F%2Fpackage.openupm.com%2Fdownloads%2Fpoint%2Flast-month%2Fcom.mygamedevtools.scene-loader" /></a>
 </p>
 
 <p align=center>

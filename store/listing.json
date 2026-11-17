@@ -1,0 +1,52 @@
+{
+  "package": "scene-loader",
+  "title": "My Scene Manager",
+  "publisher": "My GameDev Tools",
+  "tagline": "Scene transitions, in one line.",
+  "summary": "Load, unload and transition scenes with one call, from the Build Settings or Addressables alike. Every operation returns a handle you can await, watch and cancel.",
+  "category": "Tools/Utilities",
+  "unity": "6000.0",
+  "keywords": [
+    "scene",
+    "scenes",
+    "loading",
+    "loading-screen",
+    "transition",
+    "addressables",
+    "async",
+    "await",
+    "scene-management"
+  ],
+  "dependencies": [],
+  "aiDisclosure": "AI tools were used to assist with engineering the package.",
+  "includesUiKit": true,
+  "links": {
+    "documentation": "https://scene-loader.mygamedevtools.com",
+    "support": "https://github.com/mygamedevtools/scene-loader/issues"
+  },
+  "media": {
+    "cover": "media/cover.png"
+  },
+  "screenshots": [
+    {
+      "caption": "One line instead of five.",
+      "image": "media/01-one-line.png"
+    },
+    {
+      "caption": "A transition, mid-flight.",
+      "image": "media/02-mid-flight.png"
+    },
+    {
+      "caption": "Every state, while it runs.",
+      "image": "media/03-every-state.png"
+    },
+    {
+      "caption": "One API, either source.",
+      "image": "media/04-either-source.png"
+    },
+    {
+      "caption": "The Loading Scene Examples sample.",
+      "image": "media/05-sample.png"
+    }
+  ]
+}

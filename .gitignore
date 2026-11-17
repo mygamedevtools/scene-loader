@@ -89,3 +89,7 @@ crashlytics-build.properties
 node_modules/
 # Project Auditor settings, recreated by the Editor
 ProjectSettings/ProjectAuditorSettings.asset
+
+# Asset Store listing output, rendered by the design system (npm run store -- <path>/store)
+store/dist/
+store/media/

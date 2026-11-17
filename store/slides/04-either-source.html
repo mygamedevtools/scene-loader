@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>One API, either source</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .lede { margin-top: 12px; max-width: 760px; }
+  .call { margin-top: 30px; padding: 20px 26px; font-size: 22px; border-color: var(--mgt-color-accent); align-self: flex-start; }
+  .links { position: relative; height: 40px; width: 900px; }
+  .links i { position: absolute; top: 0; width: 2px; height: 100%; background: rgba(245, 240, 225, 0.45); }
+  .sources { display: grid; grid-template-columns: 320px 320px; gap: 40px; }
+  .source { padding: 18px 24px; }
+  .source h3 { font-family: var(--mgt-font-family-display); font-weight: 400; font-size: 22px; margin-bottom: 10px; }
+  .source .code { font-size: 15px; color: var(--mgt-color-code-string); }
+  .note { margin-top: 24px; max-width: 760px; }
+</style></head>
+<body>
+  <div class="scenes"><img src="img/level1.jpg" alt=""><img class="right" src="img/level2.jpg" alt=""><div class="seam"></div></div>
+  <div class="veil"></div>
+  <svg class="stripes" viewBox="0 0 300 200" aria-hidden="true"><line x1="152" y1="-20" x2="320" y2="148" style="stroke: var(--mgt-color-stripe-1)" stroke-width="16"/><line x1="176" y1="-20" x2="320" y2="124" style="stroke: var(--mgt-color-stripe-2)" stroke-width="16"/><line x1="200" y1="-20" x2="320" y2="100" style="stroke: var(--mgt-color-stripe-3)" stroke-width="16"/></svg>
+  <div class="content">
+    <div class="eyebrow"><i></i><i></i><i></i><span class="label accent">My Scene Manager</span></div><h1>One API, either source</h1>
+    <p class="lede">A plain string finds the scene wherever it lives. No second API, no #if.</p>
+    <div class="panel call"><div class="code"><span class="type">MySceneManager</span>.TransitionAsync(<span class="str">"my-target-scene"</span>, <span class="str">"my-loading-scene"</span>);</div></div>
+    <div class="links"><i style="left: 160px"></i><i style="left: 520px"></i></div>
+    <div class="sources">
+      <div class="panel source"><h3>Build Settings</h3><div class="code">"my-target-scene"</div></div>
+      <div class="panel source"><h3>Addressables</h3><div class="code">"my-target-scene"</div></div>
+    </div>
+    <p class="note">Addressables support turns on only when that package is installed, so My Scene Manager has no required dependencies.</p>
+  </div>
+</body></html>

@@ -1,0 +1,106 @@
+/* Asset Store images: the screenshot or scene fills the canvas, and the brand sits on top of it
+   (eyebrow, headline, corner stripes). Served by render.mjs from the design-system repo, so tokens,
+   fonts and logos come from there. Slides are 1200×675 CSS pixels and the cover 975×650, all
+   rendered at 2x. */
+@import url('/build/tokens.css');
+@import url('/assets/fonts/fonts.css');
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body {
+  width: 1200px;
+  height: 675px;
+  overflow: hidden;
+  position: relative;
+  background: var(--mgt-palette-ink);
+  color: var(--mgt-palette-cream);
+  font-family: var(--mgt-font-family-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* Two Game Kit scenes split on a diagonal: Level1 on the left, Level2 on the right. */
+.scenes { position: absolute; inset: 0; }
+.scenes img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scenes .right { clip-path: polygon(72% 0, 100% 0, 100% 100%, 54% 100%); }
+.scenes .seam {
+  position: absolute; inset: 0;
+  clip-path: polygon(71.9% 0, 72.1% 0, 54.1% 100%, 53.9% 100%);
+  background: rgba(245, 240, 225, 0.5);
+}
+
+.veil { position: absolute; inset: 0; background: rgba(22, 22, 29, var(--veil, 0.82)); }
+
+/* Corner stripes: the brand's three bands, bleeding off the top and right edges, above the image. */
+.stripes { position: absolute; top: 0; right: 0; height: var(--stripes-height, 44%); aspect-ratio: 3 / 2; pointer-events: none; }
+
+.content { position: absolute; inset: 0; padding: 48px 64px 52px; display: flex; flex-direction: column; }
+
+.eyebrow { display: flex; align-items: center; gap: 6px; }
+.eyebrow i { width: 26px; height: 6px; display: block; background: var(--mgt-color-stripe-1); }
+.eyebrow i:nth-child(2) { background: var(--mgt-color-stripe-2); }
+.eyebrow i:nth-child(3) { background: var(--mgt-color-stripe-3); margin-right: 8px; }
+
+.label {
+  font-family: var(--mgt-font-family-mono);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mgt-color-text-muted);
+}
+.label.accent { color: var(--mgt-color-accent); }
+
+h1 {
+  font-family: var(--mgt-font-family-display);
+  font-weight: 400;
+  font-synthesis: none;
+  text-transform: uppercase;
+  line-height: 1;
+  font-size: 46px;
+  margin-top: 14px;
+  max-width: 760px;
+}
+
+.lede { font-size: 20px; line-height: 1.45; color: var(--mgt-palette-cream); }
+.note { font-size: 16px; line-height: 1.5; color: var(--mgt-palette-dust); }
+
+.panel {
+  background: rgba(34, 34, 44, 0.92);
+  border: 1px solid var(--mgt-color-border);
+  border-radius: 12px;
+}
+
+.code {
+  font-family: var(--mgt-font-family-mono);
+  color: var(--mgt-color-code-text);
+  white-space: pre;
+}
+.code .type { color: var(--mgt-color-code-keyword); }
+.code .str { color: var(--mgt-color-code-string); }
+
+.chip {
+  font-family: var(--mgt-font-family-mono);
+  font-weight: 500;
+  font-size: 12px;
+  height: 26px; padding: 0 11px;
+  display: inline-flex; align-items: center;
+  border-radius: 13px;
+  border: 1px solid var(--mgt-color-border);
+  color: var(--mgt-color-text-muted);
+}
+.chip.done { color: var(--mgt-color-success-text); border-color: var(--mgt-color-success-border); }
+.chip.current { color: var(--mgt-color-warning-text); background: var(--mgt-color-warning-bg); border-color: var(--mgt-color-warning-border); }
+
+.bar { height: 6px; border-radius: 3px; background: var(--mgt-color-border); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--mgt-color-accent); }
+
+.tag {
+  font-family: var(--mgt-font-family-mono);
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(16, 16, 21, 0.85);
+  color: var(--mgt-palette-cream);
+}
