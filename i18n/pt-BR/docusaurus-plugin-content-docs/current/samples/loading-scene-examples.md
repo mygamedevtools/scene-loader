@@ -65,7 +65,7 @@ Toda tela de carregamento do exemplo permanece visível por pelo menos **dois se
 
 ### O HUD de operação {/* #the-operation-hud */}
 
-A barra no topo da tela é a cena `SceneListenerHUD`. Ela mostra a cena ativa, o tipo de operação em execução e seu progresso, e acende cada fase do ciclo de vida da operação conforme ela avança:
+O painel no canto superior direito é a cena `SceneListenerHUD`. Ela mostra a cena ativa, o tipo de operação em execução e seu progresso, e acende cada fase do ciclo de vida da operação conforme ela avança:
 
 `Resolving → ScreenIn → Unloading → Loading → Activating → ScreenOut → Completed`
 

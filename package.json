@@ -19,6 +19,7 @@
     "@docusaurus/preset-classic": "^3.10.2",
     "@docusaurus/theme-mermaid": "^3.10.2",
     "@mdx-js/react": "^3.1.1",
+    "@mygamedevtools/docusaurus-theme": "https://github.com/mygamedevtools/design-system/releases/download/v1.0.0/mygamedevtools-docusaurus-theme-1.0.0.tgz",
     "clsx": "^2.0.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.3.1",

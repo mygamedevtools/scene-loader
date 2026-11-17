@@ -4,15 +4,19 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import { themes as prismThemes } from 'prism-react-renderer';
+import mgtTheme from '@mygamedevtools/docusaurus-theme';
+import prismTheme from './src/prism/mgtPrismTheme.js';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'My Scene Manager',
-  tagline: 'Enhance your scene loading experience',
-  favicon: 'img/favicon.ico',
+  tagline: 'Scene transitions, in one line.',
+  favicon: 'img/mgt/favicon.svg',
+
+  // The design-system theme serves its logo files under /img/mgt/.
+  staticDirectories: ['static', mgtTheme.staticDir],
 
   // Set the production url of your site here
   url: 'https://scene-loader.mygamedevtools.com',
@@ -94,15 +98,18 @@ const config = {
 
   themes: ['@docusaurus/theme-mermaid'],
 
+  plugins: ['@mygamedevtools/docusaurus-theme'],
+
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/social-card.jpg',
+      image: 'img/social-card.png',
       navbar: {
         title: 'My Scene Manager',
         logo: {
-          alt: 'My GameDev Tools Logo',
-          src: 'img/logo.svg',
+          alt: 'My Gamedev Tools',
+          src: 'img/mgt/mark-light.svg',
+          srcDark: 'img/mgt/mark-dark.svg',
         },
         items: [
           {
@@ -132,8 +139,9 @@ const config = {
           },
         ],
       },
+      // No `style: 'dark'`: Infima's .footer--dark would override the theme's footer colors,
+      // and the theme already keeps the footer ink in both modes.
       footer: {
-        style: 'dark',
         links: [
           {
             title: 'Docs',
@@ -199,19 +207,22 @@ const config = {
           },
         ],
         logo: {
-          alt: "My GameDev Tools Logo",
-          src: '/img/logo_full.svg',
-          href: "https://github.com/mygamedevtools",
-          height: 54
+          alt: 'My Gamedev Tools',
+          // The footer is always ink, so use the dark-background lockup.
+          src: '/img/mgt/lockup-horizontal-dark.svg',
+          href: 'https://github.com/mygamedevtools',
+          height: 36
         },
-        copyright: `Copyright © ${new Date().getFullYear()} My GameDev Tools. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} My Gamedev Tools. Built with Docusaurus.`,
       },
       prism: {
-        theme: prismThemes.oneLight,
-        darkTheme: prismThemes.oneDark,
+        // Code blocks are ink in both modes (--mgt-color-code-*), so one theme covers both.
+        theme: prismTheme,
+        darkTheme: prismTheme,
         additionalLanguages: ['csharp', 'bash', 'diff']
       },
       colorMode: {
+        // Dark is ink, light is cream; first-time visitors get their OS preference.
         defaultMode: "dark",
         respectPrefersColorScheme: true
       },

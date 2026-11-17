@@ -9,7 +9,7 @@
     flex: 0 0 55%;
     max-width: 55%;
     border-radius: var(--ifm-global-radius);
-    box-shadow: var(--ifm-global-shadow-md);
+    border: 1px solid var(--mgt-color-border);
 }
 
 .text {

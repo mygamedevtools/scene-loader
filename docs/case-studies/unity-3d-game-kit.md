@@ -7,7 +7,7 @@ description: A real integration, step by step — replacing the 3D Game Kit's co
 
 Unity's [3D Game Kit](https://assetstore.unity.com/packages/templates/tutorials/3d-game-kit-115747) is a complete small game with its own scene loading: a coroutine in `SceneController` that fades to a loading overlay, calls `SceneManager.LoadSceneAsync` in single mode, teleports the player to the right entrance and fades back in. It is the shape most projects arrive at on their own, which makes it a good subject for showing what an integration actually touches — and what it does not.
 
-This page walks through that integration on Unity `6000.5`, built-in render pipeline, uGUI, no Addressables. Every scene is in the Build Settings, so a bare `string` is all a reference needs.
+This page walks through that integration on Unity `6000.6`, Universal Render Pipeline, uGUI, no Addressables. Every scene is in the Build Settings, so a bare `string` is all a reference needs.
 
 :::tip
 Two of the package's 5.0 fixes came out of this exact integration: the fader running on scaled, unclamped time, and `MinimumDisplayTime` living in the sample instead of the package. The page describes the result on 5.0, where neither needs working around.
@@ -27,7 +27,7 @@ SaveAllData → ReleaseControl → ScreenFader.FadeSceneOut(Loading) → ClearPe
 → LoadAllData → teleport player to the entrance → ScreenFader.FadeSceneIn → GainControl
 ```
 
-`Scenes/UI/Loading.unity` was in the Build Settings but unused — a camera, an `EventSystem`, post-processing and stale copies of the canvases.
+`Scenes/UI/Loading.unity` shipped with the kit but nothing loaded it — a camera, an `EventSystem`, post-processing and stale copies of the canvases.
 
 Three things stand out. The loading look lives in an overlay that has to survive scenes, so it is `DontDestroyOnLoad`. Every step after the fade has to be sequenced by hand. And single-mode loading destroys everything, so anything meant to persist has to be `DontDestroyOnLoad` too.
 
@@ -71,6 +71,20 @@ With the loading look owned by the scene, `ScreenFader` loses its `Loading` fade
 -public CanvasGroup loadingCanvasGroup;
  public CanvasGroup gameOverCanvasGroup;
 
+ public static IEnumerator FadeSceneIn()
+ {
+     CanvasGroup canvasGroup;
+     if (Instance.faderCanvasGroup.alpha > 0.1f)
+         canvasGroup = Instance.faderCanvasGroup;
+-    else if (Instance.gameOverCanvasGroup.alpha > 0.1f)
+-        canvasGroup = Instance.gameOverCanvasGroup;
+-    else
+-        canvasGroup = Instance.loadingCanvasGroup;
++    else
++        canvasGroup = Instance.gameOverCanvasGroup;
+     …
+ }
+
  public static IEnumerator FadeSceneOut(FadeType fadeType = FadeType.Black)
  {
      CanvasGroup canvasGroup;
@@ -109,12 +123,12 @@ Delete the old path rather than leaving it dormant. One source of truth for the 
      PersistentDataManager.SaveAllData();
 
      if (m_PlayerInput == null)
-         m_PlayerInput = FindObjectOfType<PlayerInput>();
+         m_PlayerInput = FindFirstObjectByType<PlayerInput>();
      if (m_PlayerInput) m_PlayerInput.ReleaseControl();
 -    yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
 -    PersistentDataManager.ClearPersisters();
 -    yield return SceneManager.LoadSceneAsync(newSceneName);
--    m_PlayerInput = FindObjectOfType<PlayerInput>();
+-    m_PlayerInput = FindFirstObjectByType<PlayerInput>();
 -    if (m_PlayerInput) m_PlayerInput.ReleaseControl();
 -    PersistentDataManager.LoadAllData();
 -    SceneTransitionDestination entrance = GetDestination(destinationTag);
@@ -139,7 +153,7 @@ Delete the old path rather than leaving it dormant. One source of truth for the 
 +        if (scene.name != newSceneName)
 +            return;
 +
-+        m_PlayerInput = FindObjectOfType<PlayerInput>();
++        m_PlayerInput = FindFirstObjectByType<PlayerInput>();
 +        if (m_PlayerInput) m_PlayerInput.ReleaseControl();
 +        PersistentDataManager.LoadAllData();
 +        SceneTransitionDestination entrance = GetDestination(destinationTag);

@@ -64,7 +64,7 @@ Every loading screen in the sample stays up for at least **two seconds**, howeve
 
 ### The operation HUD
 
-The bar at the top of the screen is the `SceneListenerHUD` scene. It names the active scene, the kind of operation running, its progress, and lights each phase of the operation's lifecycle as it walks through them:
+The panel in the top-right corner is the `SceneListenerHUD` scene. It names the active scene, the kind of operation running, its progress, and lights each phase of the operation's lifecycle as it walks through them:
 
 `Resolving → ScreenIn → Unloading → Loading → Activating → ScreenOut → Completed`
 

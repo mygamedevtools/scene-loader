@@ -5,8 +5,9 @@
 .strip {
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid var(--ifm-color-emphasis-300);
+  border: 1px solid var(--mgt-color-border);
   border-radius: var(--ifm-global-radius);
+  background: var(--mgt-color-surface);
   overflow: hidden;
 }
 
@@ -16,7 +17,7 @@
   flex-direction: column;
   gap: 0.15rem;
   padding: 0.9rem 1.2rem;
-  border-right: 1px solid var(--ifm-color-emphasis-300);
+  border-right: 1px solid var(--mgt-color-border);
 }
 
 .fact:last-child {
@@ -26,9 +27,9 @@
 .label {
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.66rem;
-  letter-spacing: 0.13em;
+  letter-spacing: var(--mgt-font-letter-spacing-label);
   text-transform: uppercase;
-  color: var(--ifm-color-emphasis-600);
+  color: var(--mgt-color-text-muted);
 }
 
 .value {
@@ -39,6 +40,6 @@
 @media (max-width: 768px) {
   .fact {
     flex-basis: 50%;
-    border-bottom: 1px solid var(--ifm-color-emphasis-300);
+    border-bottom: 1px solid var(--mgt-color-border);
   }
 }

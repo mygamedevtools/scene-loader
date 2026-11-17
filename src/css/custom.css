@@ -1,34 +1,18 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Site-specific styles. The brand (fonts, colors, primary color, navbar rule, admonitions)
+ * comes from @mygamedevtools/docusaurus-theme; only what this site adds lives here.
  */
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #0054a3;
-  --ifm-color-primary-dark: #004c93;
-  --ifm-color-primary-darker: #00478b;
-  --ifm-color-primary-darkest: #003b72;
-  --ifm-color-primary-light: #005cb3;
-  --ifm-color-primary-lighter: #0061bb;
-  --ifm-color-primary-lightest: #006dd4;
-
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* Code blocks are ink in both modes (see src/prism/mgtPrismTheme.js), so the highlighted
+     line is a light wash in both. */
+  --docusaurus-highlighted-code-line-bg: rgb(245 240 225 / 0.1);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #3db8ff;
-  --ifm-color-primary-dark: #1dacff;
-  --ifm-color-primary-darker: #0ea7ff;
-  --ifm-color-primary-darkest: #00a0fd;
-  --ifm-color-primary-light: #5dc4ff;
-  --ifm-color-primary-lighter: #6cc9ff;
-  --ifm-color-primary-lightest: #9cdbff;
-
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+/* In dark mode the sunken code background is close to the page, so outline code blocks with
+   the border token, as the design-system site does. */
+div.theme-code-block {
+  box-shadow: 0 0 0 1px var(--mgt-color-border);
 }
 
 .header-github-link:hover:before {
@@ -49,12 +33,25 @@ section {
   padding: 4rem 2rem;
 }
 
+/* Alternate homepage sections between the page background and the raised surface, so the
+   rhythm comes from the bg/surface tokens rather than a tint. */
 main section:nth-child(2n) {
-  background-color: var(--ifm-color-emphasis-100);
+  background-color: var(--mgt-color-surface);
+  border-block: 1px solid var(--mgt-color-border);
 }
 
 div.docusaurus-mermaid-container {
   display: flex;
   justify-content: center;
   margin-bottom: var(--ifm-spacing-vertical)
+}
+
+/* Docusaurus dims the footer logo to 50%; the brand rules say no effects on the mark. */
+.footer [class*='footerLogoLink'] {
+  opacity: 1;
+}
+
+/* In dark mode the page and the footer are both ink, so separate them with a rule. */
+[data-theme='dark'] .footer {
+  border-top: 1px solid var(--mgt-color-border);
 }

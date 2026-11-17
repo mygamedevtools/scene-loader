@@ -26,7 +26,8 @@ Take the following loading scene hierarchy as an example — it is the `Loading_
 * Loading Screen - ([Canvas], [CanvasScaler], [CanvasGroup], `LoadingBehavior`, `LoadingFader`, `MinimumDisplayTime`)
   * Backdrop - ([Image])
   * Card - ([Image])
-    * Value - ([Text], `LoadingFeedbackText`)
+    * Readout - ([HorizontalLayoutGroup])
+      * Value - ([Text], `LoadingFeedbackText`)
     * Track - ([Slider], `LoadingFeedbackSlider`)
       * Fill - ([Image])
 
@@ -339,6 +340,7 @@ Every screen on this page is in the [Loading Scene Examples](../samples/loading-
 [CanvasScaler]: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-CanvasScaler.html
 [Image]: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-Image.html
 [Text]: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-Text.html
+[HorizontalLayoutGroup]: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-HorizontalLayoutGroup.html
 [UI Legacy Text]: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-Text.html
 [UI Text Mesh Pro]: https://docs.unity3d.com/Packages/com.unity.textmeshpro@3.0/api/TMPro.TextMeshProUGUI.html
 [UI Slider]: https://docs.unity3d.com/Packages/com.unity.ugui@1.0/manual/script-Slider.html

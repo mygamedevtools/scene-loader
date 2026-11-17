@@ -29,7 +29,7 @@
 }
 
 .comparisonTable thead {
-  background-color: var(--ifm-table-head-color);
+  background-color: var(--mgt-color-surface);
 }
 
 .comparisonTable th,
@@ -38,14 +38,16 @@
   border-width: 0;
 }
 
+/* Supported / not / partly is a status, so these use the status text colors; each also
+   has its own icon shape, so color is never the only cue. */
 .checkmark {
-  color: var(--ifm-color-primary);
+  color: var(--mgt-color-success-text);
 }
 
 .crossmark {
-  color: var(--ifm-color-danger);
+  color: var(--mgt-color-error-text);
 }
 
 .exclamation {
-  color: var(--ifm-color-warning);
+  color: var(--mgt-color-warning-text);
 }
