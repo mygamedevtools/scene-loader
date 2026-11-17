@@ -25,7 +25,7 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
 
     [Tooltip("One cycle of the eyebrow animation: the bars light up in turn, hold, then fade out together.")]
     [SerializeField]
-    float _eyebrowCycleSeconds = 1.5f;
+    float _eyebrowCycleSeconds = .8f;
 
     [Tooltip("Opacity of an eyebrow bar while it is off, so the eyebrow never disappears.")]
     [Range(0, 1)]
