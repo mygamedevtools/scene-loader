@@ -1,0 +1,34 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:mgt="MyGameDevTools.UI" editor-extension-mode="False">
+    <Style src="LoadingScreenAnimated.uss" />
+
+    <!--
+        A loading screen that is a scene, built with UI Toolkit rather than uGUI. The panels
+        are driven by AnimatedLoadingScreen, which holds both gates from Awake and releases
+        them when each slide finishes.
+
+        The content is the kit's branded loading screen: corner stripes, the mark, an eyebrow,
+        the percentage in the display face and an accent progress bar.
+    -->
+    <ui:VisualElement name="root" class="mgt-root mgt-screen mgt-screen--transparent animated">
+        <ui:VisualElement name="panel-left" class="animated__panel animated__panel--left" />
+        <ui:VisualElement name="panel-right" class="animated__panel animated__panel--right" />
+
+        <ui:VisualElement name="content" class="animated__content">
+            <mgt:CornerStripes />
+            <ui:VisualElement class="animated__column">
+                <mgt:BrandMark class="animated__mark" />
+                <ui:VisualElement class="mgt-eyebrow animated__eyebrow">
+                    <ui:VisualElement class="mgt-eyebrow__bar" />
+                    <ui:VisualElement class="mgt-eyebrow__bar mgt-eyebrow__bar--2" />
+                    <ui:VisualElement class="mgt-eyebrow__bar mgt-eyebrow__bar--3" />
+                    <ui:Label text="LOADING" class="mgt-label mgt-label--accent" />
+                </ui:VisualElement>
+                <ui:Label name="value" text="0%" class="mgt-value mgt-title--xl animated__value" />
+                <ui:VisualElement class="mgt-progress animated__progress">
+                    <ui:VisualElement name="fill" class="mgt-progress__fill" />
+                </ui:VisualElement>
+                <ui:Label text="GATES HELD UNTIL EACH SLIDE FINISHES" class="mgt-label animated__hint" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

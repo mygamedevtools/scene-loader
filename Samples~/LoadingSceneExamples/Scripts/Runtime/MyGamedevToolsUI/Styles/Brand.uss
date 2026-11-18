@@ -1,0 +1,489 @@
+/* My Gamedev Tools runtime UI: the brand for sample screens, HUDs and menus built with
+   UI Toolkit. Variables come from Tokens.uss (dark by default; add .mgt-theme-light to a
+   container for light). Editor windows don't use this; they keep Unity's own look.
+
+   USS can't change text case, so write labels, eyebrows and badges in uppercase.
+   UI Toolkit draws a radius larger than half the height as an ellipse instead of clamping it
+   to a pill, so pills here have a fixed height and a radius of exactly half of it. */
+
+/* Base ----------------------------------------------------------------------- */
+.mgt-root {
+    -unity-font-definition: url("../Fonts/RethinkSans-Regular.ttf");
+    font-size: var(--mgt-font-size-sm);
+    color: var(--mgt-color-text);
+}
+
+.mgt-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    background-color: var(--mgt-color-bg);
+    overflow: hidden;
+}
+
+.mgt-screen--transparent {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.mgt-panel {
+    background-color: var(--mgt-color-surface);
+    border-width: 1px;
+    border-color: var(--mgt-color-border);
+    border-radius: var(--mgt-radius-md);
+    padding: 16px;
+}
+
+.mgt-divider {
+    height: 1px;
+    background-color: var(--mgt-color-border);
+    margin: 12px 0;
+}
+
+/* Type ------------------------------------------------------------------------ */
+.mgt-title {
+    -unity-font-definition: url("../Fonts/RussoOne-Regular.ttf");
+    font-size: var(--mgt-font-size-xl);
+    color: var(--mgt-color-text);
+    white-space: normal;
+    margin: 0;
+    padding: 0;
+}
+
+.mgt-title--sm {
+    font-size: var(--mgt-font-size-lg);
+}
+
+.mgt-title--xl {
+    font-size: var(--mgt-font-size-3xl);
+}
+
+.mgt-text {
+    font-size: var(--mgt-font-size-sm);
+    color: var(--mgt-color-text);
+    white-space: normal;
+    margin: 0;
+    padding: 0;
+}
+
+.mgt-text--muted {
+    color: var(--mgt-color-text-muted);
+}
+
+.mgt-text--strong {
+    -unity-font-definition: url("../Fonts/RethinkSans-SemiBold.ttf");
+}
+
+.mgt-label {
+    -unity-font-definition: url("../Fonts/RedHatMono-Medium.ttf");
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--mgt-color-text-muted);
+    margin: 0;
+    padding: 0;
+}
+
+.mgt-label--accent {
+    color: var(--mgt-color-accent);
+}
+
+.mgt-value {
+    -unity-font-definition: url("../Fonts/RussoOne-Regular.ttf");
+    font-size: var(--mgt-font-size-2xl);
+    color: var(--mgt-color-text);
+    margin: 0;
+    padding: 0;
+}
+
+.mgt-code {
+    -unity-font-definition: url("../Fonts/RedHatMono-Regular.ttf");
+    font-size: var(--mgt-font-size-xs);
+    color: var(--mgt-color-code-text);
+    background-color: var(--mgt-color-code-bg);
+    border-radius: var(--mgt-radius-sm);
+    padding: 6px 8px;
+    margin: 0;
+    white-space: normal;
+}
+
+/* Eyebrow: three stripe bars and a label. Add three .mgt-eyebrow__bar children. */
+.mgt-eyebrow {
+    flex-direction: row;
+    align-items: center;
+}
+
+.mgt-eyebrow__bar {
+    width: 24px;
+    height: 6px;
+    margin-right: 4px;
+    background-color: var(--mgt-color-stripe-1);
+}
+
+.mgt-eyebrow__bar--2 {
+    background-color: var(--mgt-color-stripe-2);
+}
+
+.mgt-eyebrow__bar--3 {
+    background-color: var(--mgt-color-stripe-3);
+    margin-right: 10px;
+}
+
+/* Signature elements ------------------------------------------------------------ */
+/* BrandMark, CornerStripes and StatusIcon read custom properties declared on themselves (USS
+   doesn't pass inherited variables to custom properties), so these rules map them. */
+.mgt-mark {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    --mgt-mark-frame: var(--mgt-color-mark-frame);
+    --mgt-mark-axis-1: var(--mgt-color-mark-axis-1);
+    --mgt-mark-axis-2: var(--mgt-color-mark-axis-2);
+    --mgt-mark-axis-3: var(--mgt-color-mark-axis-3);
+}
+
+.mgt-stripes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    --mgt-stripes-1: var(--mgt-color-stripe-1);
+    --mgt-stripes-2: var(--mgt-color-stripe-2);
+    --mgt-stripes-3: var(--mgt-color-stripe-3);
+}
+
+.mgt-rule {
+    flex-direction: row;
+    height: var(--mgt-stripe-rule);
+}
+
+.mgt-rule > VisualElement {
+    flex-grow: 1;
+    background-color: var(--mgt-color-stripe-1);
+}
+
+.mgt-rule__segment--2 {
+    background-color: var(--mgt-color-stripe-2);
+}
+
+.mgt-rule__segment--3 {
+    background-color: var(--mgt-color-stripe-3);
+}
+
+/* Buttons --------------------------------------------------------------------- */
+.mgt-button {
+    -unity-font-definition: url("../Fonts/RethinkSans-SemiBold.ttf");
+    font-size: var(--mgt-font-size-sm);
+    color: var(--mgt-color-text);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1.5px;
+    border-color: var(--mgt-color-text);
+    height: 36px;
+    border-radius: 18px;
+    padding: 0 18px;
+    margin: 0 8px 0 0;
+    -unity-text-align: middle-center;
+    transition-property: background-color, border-color, color;
+    transition-duration: 120ms;
+}
+
+.mgt-button:hover {
+    background-color: var(--mgt-color-surface);
+}
+
+.mgt-button:active {
+    background-color: var(--mgt-color-border);
+}
+
+.mgt-button:focus {
+    border-color: var(--mgt-color-focus);
+}
+
+.mgt-button--primary {
+    color: var(--mgt-color-on-primary);
+    background-color: var(--mgt-color-primary);
+    border-color: var(--mgt-color-primary);
+}
+
+.mgt-button--primary:hover,
+.mgt-button--primary:active {
+    background-color: var(--mgt-color-primary-hover);
+    border-color: var(--mgt-color-primary-hover);
+}
+
+.mgt-button--small {
+    font-size: var(--mgt-font-size-xs);
+    height: 26px;
+    border-radius: 13px;
+    padding: 0 12px;
+}
+
+.mgt-button--danger {
+    color: var(--mgt-color-error-text);
+    border-color: var(--mgt-color-error-border);
+}
+
+.mgt-button--danger:hover,
+.mgt-button--danger:active {
+    background-color: var(--mgt-color-error-bg);
+}
+
+/* Progress ------------------------------------------------------------------- */
+.mgt-progress {
+    height: 6px;
+    background-color: var(--mgt-color-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mgt-progress--thin {
+    height: 2px;
+    border-radius: 0;
+}
+
+.mgt-progress__fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--mgt-color-accent);
+    transition-property: width;
+    transition-duration: 100ms;
+}
+
+/* Status --------------------------------------------------------------------- */
+.mgt-status-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    --mgt-icon-success: var(--mgt-color-success-text);
+    --mgt-icon-info: var(--mgt-color-info-text);
+    --mgt-icon-warning: var(--mgt-color-warning-text);
+    --mgt-icon-error: var(--mgt-color-error-text);
+}
+
+.mgt-badge {
+    -unity-font-definition: url("../Fonts/RedHatMono-Medium.ttf");
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    -unity-text-align: middle-center;
+    align-self: flex-start;
+    height: 18px;
+    border-radius: 9px;
+    padding: 0 8px;
+    margin: 0 4px 0 0;
+    border-width: 1px;
+    color: var(--mgt-color-text-muted);
+    border-color: var(--mgt-color-border);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.mgt-badge--success {
+    color: var(--mgt-color-success-text);
+    background-color: var(--mgt-color-success-bg);
+    border-color: var(--mgt-color-success-border);
+}
+
+.mgt-badge--info {
+    color: var(--mgt-color-info-text);
+    background-color: var(--mgt-color-info-bg);
+    border-color: var(--mgt-color-info-border);
+}
+
+.mgt-badge--warning {
+    color: var(--mgt-color-warning-text);
+    background-color: var(--mgt-color-warning-bg);
+    border-color: var(--mgt-color-warning-border);
+}
+
+.mgt-badge--error {
+    color: var(--mgt-color-error-text);
+    background-color: var(--mgt-color-error-bg);
+    border-color: var(--mgt-color-error-border);
+}
+
+.mgt-badge--solid.mgt-badge--success {
+    color: var(--mgt-color-on-success);
+    background-color: var(--mgt-color-success);
+    border-color: var(--mgt-color-success);
+}
+
+.mgt-badge--solid.mgt-badge--info {
+    color: var(--mgt-color-on-info);
+    background-color: var(--mgt-color-info);
+    border-color: var(--mgt-color-info);
+}
+
+.mgt-badge--solid.mgt-badge--warning {
+    color: var(--mgt-color-on-warning);
+    background-color: var(--mgt-color-warning);
+    border-color: var(--mgt-color-warning);
+}
+
+.mgt-badge--solid.mgt-badge--error {
+    color: var(--mgt-color-on-error);
+    background-color: var(--mgt-color-error);
+    border-color: var(--mgt-color-error);
+}
+
+.mgt-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background-color: var(--mgt-color-text-muted);
+    transition-property: background-color;
+    transition-duration: 200ms;
+}
+
+.mgt-dot--success {
+    background-color: var(--mgt-color-success);
+}
+
+.mgt-dot--info {
+    background-color: var(--mgt-color-info);
+}
+
+.mgt-dot--warning {
+    background-color: var(--mgt-color-warning);
+}
+
+.mgt-dot--error {
+    background-color: var(--mgt-color-error);
+}
+
+/* Callout: a StatusIcon, then a content element with a title label and a body label. */
+.mgt-callout {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border-width: 1px;
+    border-radius: var(--mgt-radius-md);
+    border-color: var(--mgt-color-border);
+}
+
+.mgt-callout > .mgt-status-icon {
+    margin-right: 10px;
+    margin-top: 1px;
+}
+
+.mgt-callout__content {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.mgt-callout__title {
+    -unity-font-definition: url("../Fonts/RedHatMono-Medium.ttf");
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin: 0 0 2px 0;
+    padding: 0;
+}
+
+.mgt-callout__body {
+    color: var(--mgt-color-text);
+    white-space: normal;
+    margin: 0;
+    padding: 0;
+}
+
+.mgt-callout--success {
+    background-color: var(--mgt-color-success-bg);
+    border-color: var(--mgt-color-success-border);
+}
+
+.mgt-callout--success .mgt-callout__title {
+    color: var(--mgt-color-success-text);
+}
+
+.mgt-callout--info {
+    background-color: var(--mgt-color-info-bg);
+    border-color: var(--mgt-color-info-border);
+}
+
+.mgt-callout--info .mgt-callout__title {
+    color: var(--mgt-color-info-text);
+}
+
+.mgt-callout--warning {
+    background-color: var(--mgt-color-warning-bg);
+    border-color: var(--mgt-color-warning-border);
+}
+
+.mgt-callout--warning .mgt-callout__title {
+    color: var(--mgt-color-warning-text);
+}
+
+.mgt-callout--error {
+    background-color: var(--mgt-color-error-bg);
+    border-color: var(--mgt-color-error-border);
+}
+
+.mgt-callout--error .mgt-callout__title {
+    color: var(--mgt-color-error-text);
+}
+
+/* Phases: a row of chips for an operation's timeline (e.g. scene-loader's HUD). */
+.mgt-phases {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.mgt-phase {
+    -unity-font-definition: url("../Fonts/RedHatMono-Medium.ttf");
+    font-size: 10px;
+    -unity-text-align: middle-center;
+    height: 18px;
+    border-radius: 9px;
+    padding: 0 7px;
+    margin: 0 4px 4px 0;
+    border-width: 1px;
+    border-color: var(--mgt-color-border);
+    color: var(--mgt-color-text-muted);
+    transition-property: background-color, border-color, color;
+    transition-duration: 140ms;
+}
+
+.mgt-phase--done {
+    color: var(--mgt-color-success-text);
+    border-color: var(--mgt-color-success-border);
+}
+
+.mgt-phase--current {
+    color: var(--mgt-color-warning-text);
+    background-color: var(--mgt-color-warning-bg);
+    border-color: var(--mgt-color-warning-border);
+}
+
+.mgt-phase--completed {
+    color: var(--mgt-color-on-success);
+    background-color: var(--mgt-color-success);
+    border-color: var(--mgt-color-success);
+}
+
+.mgt-phase--failed {
+    color: var(--mgt-color-on-error);
+    background-color: var(--mgt-color-error);
+    border-color: var(--mgt-color-error);
+}
+
+/* List rows: a clickable item with a title, a badge, a description and code. */
+.mgt-list-item {
+    padding: 10px 12px;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: var(--mgt-radius-md);
+    transition-property: background-color, border-color;
+    transition-duration: 120ms;
+}
+
+.mgt-list-item:hover {
+    background-color: var(--mgt-color-bg);
+    border-color: var(--mgt-color-border);
+}
+
+.mgt-list-item__head {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+}

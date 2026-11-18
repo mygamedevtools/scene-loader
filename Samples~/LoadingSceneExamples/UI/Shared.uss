@@ -1,0 +1,17 @@
+/*
+    Layout shared by the sample's UI Toolkit screens.
+
+    Colors, type and components come from the My Gamedev Tools UI kit
+    (Scripts/Runtime/MyGamedevToolsUI), which every PanelSettings in this sample loads through
+    MyGamedevToolsTheme.tss. This file only holds what the kit can't know: where the sample's
+    panels sit relative to each other. Use the kit's --mgt-* variables for any color here, so
+    the screens follow .mgt-theme-light if you add it.
+*/
+:root {
+    /*
+        The persistent HUD is a panel in the top-right corner. Only its width is shared: the
+        room's header is capped so the two never meet, and the loading screens centre their
+        content, which a corner panel does not sit on.
+    */
+    --hud-width: 400px;
+}

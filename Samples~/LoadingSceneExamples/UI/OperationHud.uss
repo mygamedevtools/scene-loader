@@ -1,0 +1,62 @@
+@import url("Shared.uss");
+
+/*
+    The persistent HUD: one panel in the top-right corner holding the active scene and whatever
+    operation is running. They answer the same question at different resolutions — where am I,
+    and what is happening to that — so they are read together.
+
+    Top-right rather than a full-width bar: the room owns the top-left for its header and the
+    left column for its examples list, and a corner panel leaves the centre of the screen clear
+    for the loading screens.
+
+    The panel, type, dot, button, phase chips and progress bar are UI kit components; this file
+    only places them.
+*/
+.hud {
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.hud__panel {
+    width: var(--hud-width);
+}
+
+/* ---- the active scene ---- */
+.hud__scene-row {
+    flex-direction: row;
+    align-items: center;
+    margin: 4px 0 12px 0;
+}
+
+.hud__dot {
+    margin-right: 8px;
+}
+
+/* ---- the operation ---- */
+.hud__op-head {
+    flex-direction: row;
+    align-items: center;
+    /* Keeps the row the same height whether or not the Cancel button is showing. */
+    min-height: 26px;
+    margin-bottom: 8px;
+}
+
+.hud__kind {
+    flex-grow: 1;
+}
+
+.hud__pct {
+    margin-right: 8px;
+}
+
+.hud__cancel {
+    margin-right: 0;
+}
+
+/*
+    The SceneOperationState timeline is .mgt-phases, which wraps: a corner panel is narrower
+    than the sequence, which is fine here in a way it would not be in a single-line bar.
+*/
+.hud__progress {
+    margin-top: 4px;
+}

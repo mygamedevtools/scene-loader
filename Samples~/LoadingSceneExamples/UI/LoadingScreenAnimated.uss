@@ -1,0 +1,89 @@
+@import url("Shared.uss");
+
+/*
+    The animated loading screen — a scene screen, but a UI Toolkit one.
+
+    Two panels slide in to meet in the middle, and the transition waits for them: the gates
+    are held from Awake and released when each slide finishes. Watch the panels close before
+    progress starts and open only after it reaches 100%.
+*/
+
+/* No padding: the panels are the curtain and cover the whole screen; the HUD draws over them. */
+.animated {
+    padding: 0;
+}
+
+/*
+    No border or second shade where the two meet: either reads as a seam straight through the
+    content once they close. The panels are a curtain, not a diagram of itself, and their
+    leading edges are legible against the scene while they slide.
+*/
+.animated__panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background-color: var(--mgt-color-bg);
+    transition-property: translate;
+    transition-duration: 420ms;
+}
+
+.animated__panel--left {
+    left: 0;
+    translate: -100% 0;
+}
+
+.animated__panel--right {
+    right: 0;
+    translate: 100% 0;
+}
+
+.animated__panel--closed {
+    translate: 0 0;
+}
+
+/* Fades in once the curtain is shut, stripes included, and out before it opens. */
+.animated__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 260ms;
+}
+
+.animated__content--visible {
+    opacity: 1;
+}
+
+.animated__column {
+    width: 380px;
+    align-items: flex-start;
+}
+
+.animated__mark {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+}
+
+.animated__eyebrow {
+    margin-bottom: 6px;
+}
+
+.animated__value {
+    margin-bottom: 14px;
+}
+
+.animated__progress {
+    width: 100%;
+}
+
+.animated__hint {
+    margin-top: 12px;
+}

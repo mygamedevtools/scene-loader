@@ -1,0 +1,154 @@
+@import url("Shared.uss");
+
+/*
+    The room UI, in SceneA and SceneB. The persistent HUD holds the top-right corner, so the
+    header is capped short of it and the list runs the full height underneath.
+
+    Panels, type, buttons, badges, list rows and code come from the UI kit; this file places
+    them and covers the two things the kit leaves to each screen: the selected row and the
+    scroller.
+*/
+.room {
+    justify-content: flex-start;
+    /* Clears the HUD panel, so the header never runs under it. */
+    padding-right: var(--hud-width);
+}
+
+.room__title {
+    align-self: flex-start;
+    /* Without this the subtitle sets the card's width in one long line. */
+    max-width: 520px;
+}
+
+.room__eyebrow {
+    margin-bottom: 10px;
+}
+
+.room__heading {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.room__mark {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+/* The teardown edits a project-wide setting and ends the session: danger, and small. */
+.room__teardown {
+    align-self: flex-start;
+    margin-top: 12px;
+}
+
+.room__body {
+    flex-direction: row;
+    align-items: stretch;
+    flex-grow: 1;
+    margin-top: 14px;
+    min-height: 0;
+}
+
+/* ---- the examples list ---- */
+.examples {
+    width: 404px;
+    padding: 0;
+}
+
+.examples__head {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--mgt-color-border);
+}
+
+.examples__count {
+    margin-left: auto;
+}
+
+/* Eight examples do not fit, and adding a ninth should not change the layout. */
+.examples__scroll {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 6px;
+}
+
+/* The scroller is a real element tree in UI Toolkit, so it is styled rather than themed. */
+.examples__scroll .unity-scroller--vertical {
+    width: 6px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.examples__scroll .unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.examples__scroll .unity-scroller--vertical .unity-base-slider__dragger {
+    background-color: var(--mgt-color-border);
+    border-width: 0;
+    border-radius: 3px;
+    width: 6px;
+    margin-left: 0;
+}
+
+/* The scroller's arrow buttons are noise at this size. */
+.examples__scroll .unity-scroller__low-button,
+.examples__scroll .unity-scroller__high-button {
+    display: none;
+}
+
+/* ---- one example: .mgt-list-item with a name, a badge, a description and its code ---- */
+.example {
+    margin-bottom: 2px;
+}
+
+/* The last example run. Amber is the accent, so it marks the one thing that just happened. */
+.example--active,
+.example--active:hover {
+    background-color: var(--mgt-color-bg);
+    border-color: var(--mgt-color-accent);
+}
+
+.example__name {
+    flex-grow: 1;
+}
+
+.example__tag {
+    margin-right: 0;
+    align-self: center;
+}
+
+.example__code {
+    margin-top: 6px;
+}
+
+/* ================================================================
+   The Build Settings gate. Shown when the sample cannot run yet.
+   ================================================================ */
+.setup {
+    align-items: center;
+    justify-content: center;
+}
+
+.setup__card {
+    width: 560px;
+    padding: 24px 28px;
+}
+
+.setup__eyebrow {
+    margin-bottom: 10px;
+}
+
+.setup__body {
+    margin-top: 8px;
+}
+
+.setup__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 22px;
+}

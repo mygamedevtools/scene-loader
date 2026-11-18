@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="OperationHud.uss" />
+
+    <!--
+        Lives in a scene that is never unloaded, so it watches every transition from start to
+        finish. picking-mode="Ignore" on the root: it spans the screen, and without it the
+        examples list underneath would stop receiving clicks.
+    -->
+    <ui:VisualElement name="hud" class="mgt-root mgt-screen mgt-screen--transparent hud" picking-mode="Ignore">
+        <ui:VisualElement name="panel" class="mgt-panel hud__panel">
+
+            <ui:Label text="ACTIVE SCENE" class="mgt-label" />
+            <ui:VisualElement class="hud__scene-row">
+                <ui:VisualElement name="dot" class="mgt-dot mgt-dot--success hud__dot" />
+                <ui:Label name="scene-name" text="—" class="mgt-title mgt-title--sm" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="hud__op-head">
+                <ui:Label name="kind" text="No operation running" class="mgt-text mgt-text--muted hud__kind" />
+                <ui:Label name="pct" text="" class="mgt-text mgt-text--strong hud__pct" />
+                <ui:Button name="cancel" text="Cancel" class="mgt-button mgt-button--small mgt-button--danger hud__cancel" />
+            </ui:VisualElement>
+            <ui:VisualElement name="phases" class="mgt-phases" />
+            <ui:VisualElement class="mgt-progress hud__progress">
+                <ui:VisualElement name="fill" class="mgt-progress__fill" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

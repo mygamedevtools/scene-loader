@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="LoadingScreenMinimal.uss" />
+
+    <!--
+        Instantiated by UIDocumentLoadingScreen into the transition's host scene. There is no
+        LoadingBehavior anywhere in it — the screen creates its own LoadingProgress and gates
+        the transition on that.
+    -->
+    <ui:VisualElement name="root" class="mgt-root mgt-screen minimal">
+        <ui:Label name="value" text="0%" class="mgt-value minimal__value" />
+        <ui:VisualElement class="mgt-progress mgt-progress--thin minimal__progress">
+            <ui:VisualElement name="fill" class="mgt-progress__fill" />
+        </ui:VisualElement>
+        <ui:Label text="UI TOOLKIT SCREEN · OWNS ITS LOADINGPROGRESS" class="mgt-label minimal__hint" />
+    </ui:VisualElement>
+</ui:UXML>

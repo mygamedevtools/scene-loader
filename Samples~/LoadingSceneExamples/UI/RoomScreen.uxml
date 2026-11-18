@@ -1,0 +1,60 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:mgt="MyGameDevTools.UI" editor-extension-mode="False">
+    <Style src="RoomScreen.uss" />
+
+    <!--
+        SceneA and SceneB share this document. The list is filled from code, so adding an
+        example is a line of data rather than a change here.
+    -->
+    <ui:VisualElement name="room" class="mgt-root mgt-screen mgt-screen--transparent room" picking-mode="Ignore">
+
+        <ui:VisualElement class="mgt-panel room__title">
+            <ui:VisualElement class="mgt-eyebrow room__eyebrow">
+                <ui:VisualElement class="mgt-eyebrow__bar" />
+                <ui:VisualElement class="mgt-eyebrow__bar mgt-eyebrow__bar--2" />
+                <ui:VisualElement class="mgt-eyebrow__bar mgt-eyebrow__bar--3" />
+                <ui:Label text="MY SCENE MANAGER" class="mgt-label mgt-label--accent" />
+            </ui:VisualElement>
+            <ui:VisualElement class="room__heading">
+                <mgt:BrandMark class="room__mark" />
+                <ui:Label text="Scene Transition Examples" class="mgt-title mgt-title--sm" />
+            </ui:VisualElement>
+            <ui:Label class="mgt-text mgt-text--muted"
+                      text="Each example is one line of code. The panel in the corner lives in a scene that is never unloaded, so it watches every transition from start to finish." />
+            <ui:Button name="remove-scenes" class="mgt-button mgt-button--small mgt-button--danger room__teardown"
+                       text="Remove the sample's scenes from Build Settings, and exit Play Mode" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="room__body">
+            <ui:VisualElement class="mgt-panel examples">
+                <ui:VisualElement class="examples__head">
+                    <ui:Label text="EXAMPLES" class="mgt-label" />
+                    <ui:Label name="count" text="" class="mgt-label examples__count" />
+                </ui:VisualElement>
+                <ui:ScrollView name="list" mode="Vertical" class="examples__scroll" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+
+    <!--
+        Shown instead of the examples when the sample's scenes are not in the Build Settings.
+        One panel, two states: the ask, and the "now restart" confirmation. The sample never
+        edits the Build Settings without being told to — that is project-wide state.
+    -->
+    <ui:VisualElement name="setup" class="mgt-root mgt-screen setup">
+        <ui:VisualElement class="mgt-panel setup__card">
+            <ui:VisualElement class="mgt-eyebrow setup__eyebrow">
+                <ui:VisualElement class="mgt-eyebrow__bar" />
+                <ui:VisualElement class="mgt-eyebrow__bar mgt-eyebrow__bar--2" />
+                <ui:VisualElement class="mgt-eyebrow__bar mgt-eyebrow__bar--3" />
+                <ui:Label text="SAMPLE SETUP" class="mgt-label mgt-label--accent" />
+            </ui:VisualElement>
+            <ui:Label name="setup-title" class="mgt-title mgt-title--sm" text="" />
+            <ui:Label name="setup-body" class="mgt-text mgt-text--muted setup__body" text="" />
+            <ui:VisualElement class="setup__actions">
+                <ui:Button name="setup-primary" class="mgt-button mgt-button--primary" text="" />
+                <ui:Button name="setup-secondary" class="mgt-button" text="" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
