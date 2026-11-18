@@ -1,3 +1,5 @@
+#if ENABLE_PERFORMANCE_TESTING
+// Needs com.unity.test-framework.performance, which the package does not depend on.
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -154,3 +156,4 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         }
     }
 }
+#endif
