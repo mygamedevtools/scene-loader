@@ -95,18 +95,29 @@ SceneParameters parameters = new[] { _targetScene, _additiveScene };
 MySceneManager.TransitionAsync(parameters, _loadingScene);
 ```
 
-And the awaited example is `async void`, the same shape a button handler in your own project would have. The operation is cancelled if the object goes away mid-flight, which is what `CancelWith` is for:
+And the awaited example is `async void`, the same shape a button handler in your own project would have. `CancelWith` ties the operation to a token, here `Application.exitCancellationToken`, so leaving Play Mode or quitting mid-flight cancels it:
 
 ```cs
 async void AwaitTransition()
 {
-    SceneResult result = await MySceneManager
-        .TransitionAsync(_targetScene, _loadingScene)
-        .CancelWith(destroyCancellationToken);
+    try
+    {
+        SceneResult result = await MySceneManager
+            .TransitionAsync(_targetScene, _loadingScene)
+            .CancelWith(Application.exitCancellationToken);
 
-    Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+        Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+    }
+    catch (OperationCanceledException)
+    {
+        // Left Play Mode before it finished. Nothing to clean up.
+    }
 }
 ```
+
+:::warning
+Don't pass `destroyCancellationToken` from a component in the scene the transition unloads. That token fires halfway through, when the scene goes, and cancels the transition it started. Use a token whose owner outlives the operation.
+:::
 
 :::info
 The sample touches `MySceneManager` from `Start`, never from `Awake` or `OnEnable`. The static manager is created after the first scene has finished loading, so reaching for it any earlier throws when the scene happens to be the first one.
