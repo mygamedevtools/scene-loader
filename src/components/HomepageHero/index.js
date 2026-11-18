@@ -4,13 +4,13 @@ import clsx from "clsx";
 import styles from "./styles.module.css";
 import Translate from '@docusaurus/Translate';
 
-const SCENE_START = require("@site/static/img/scene-start.jpg").default;
 const SCENE_LEVEL1 = require("@site/static/img/scene-level1.jpg").default;
+const SCENE_LEVEL2 = require("@site/static/img/scene-level2.jpg").default;
 
-/** Two real frames from the 3D Game Kit, rendered out of the editor. */
+/** Two real frames from the 3D Game Kit running My Scene Manager, captured in Play Mode. */
 const SCENES = [
-  { url: SCENE_START, name: "Start.unity" },
   { url: SCENE_LEVEL1, name: "Level1.unity" },
+  { url: SCENE_LEVEL2, name: "Level2.unity" },
 ];
 
 const SLANT = 32;   // how far the cut leans over the hero's height, in % of width
@@ -207,7 +207,7 @@ export default function Hero() {
           <div className={styles.railOp}>
             <span className={styles.railCls}>MySceneManager</span>.
             <span className={styles.railFn}>TransitionAsync</span>(
-            <span className={styles.railStr}>&quot;Level1&quot;</span>,{" "}
+            <span className={styles.railStr}>&quot;Level2&quot;</span>,{" "}
             <span className={styles.railStr}>&quot;Loading&quot;</span>)
           </div>
           <div className={styles.chips}>
