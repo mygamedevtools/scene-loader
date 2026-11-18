@@ -1,5 +1,12 @@
 # Changelog
 
+# [5.1.0](https://github.com/mygamedevtools/scene-loader/compare/5.0.0...5.1.0) (2026-11-18)
+
+
+### Features
+
+* restyle the samples with the My Gamedev Tools design system ([#116](https://github.com/mygamedevtools/scene-loader/issues/116)) ([0d64206](https://github.com/mygamedevtools/scene-loader/commit/0d6420637298fb70ec760fcfdfab8cacc6299c18))
+
 # [5.0.0](https://github.com/mygamedevtools/scene-loader/compare/4.1.3...5.0.0) (2026-08-30)
 
 
