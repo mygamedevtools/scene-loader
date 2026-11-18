@@ -1,3 +1,5 @@
+#if ENABLE_UGUI
+// Needs uGUI (legacy Text), which the package does not depend on: compiled only when com.unity.ugui is installed.
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,3 +23,4 @@ namespace MyGameDevTools.SceneLoading
         protected override void OnProgressed(float progress) => _text.text = Mathf.CeilToInt(progress * 100).ToString();
     }
 }
+#endif

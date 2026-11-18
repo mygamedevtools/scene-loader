@@ -1,3 +1,5 @@
+#if ENABLE_PERFORMANCE_TESTING
+// Needs com.unity.test-framework.performance, which the package does not depend on.
 using System.Collections;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
@@ -190,3 +192,4 @@ namespace MyGameDevTools.SceneLoading.Tests.Performance
         }
     }
 }
+#endif
