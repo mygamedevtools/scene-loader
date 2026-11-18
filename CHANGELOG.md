@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/mygamedevtools/scene-loader/compare/5.1.0...5.1.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* compile in projects without uGUI or Performance Testing ([#118](https://github.com/mygamedevtools/scene-loader/issues/118)) ([6c79d16](https://github.com/mygamedevtools/scene-loader/commit/6c79d165418cc7f33c9dd449e36f5d99c92e1880))
+
 # [5.1.0](https://github.com/mygamedevtools/scene-loader/compare/5.0.0...5.1.0) (2026-11-18)
 
 
