@@ -89,3 +89,6 @@ crashlytics-build.properties
 node_modules/
 # Project Auditor settings, recreated by the Editor
 ProjectSettings/ProjectAuditorSettings.asset
+
+# Asset Store listing: kept local, not in the repo
+store/

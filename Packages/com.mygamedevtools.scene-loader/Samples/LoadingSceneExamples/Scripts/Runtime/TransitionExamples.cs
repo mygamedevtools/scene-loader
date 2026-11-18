@@ -235,40 +235,61 @@ public class TransitionExamples : MonoBehaviour
 
     /// <summary>
     /// <c>async void</c> because a UI callback has nothing to await it — the same shape a button
-    /// handler in your own project would have. The operation is cancelled if this object goes
-    /// away mid-flight, which is what <see cref="SceneOperation.CancelWith"/> is for.
+    /// handler in your own project would have. <see cref="SceneOperation.CancelWith"/> ties the
+    /// operation to a token; here it is <see cref="Application.exitCancellationToken"/>, so leaving
+    /// Play Mode or quitting mid-flight cancels it.
     /// </summary>
+    /// <remarks>
+    /// Not <c>destroyCancellationToken</c>: this component lives in the room the transition
+    /// unloads, so that token fires halfway through every transition it starts and cancels it.
+    /// Pick a token whose owner outlives the operation.
+    /// </remarks>
     async void AwaitTransition()
     {
-        SceneResult result = await MySceneManager
-            .TransitionAsync(_targetScene, _loadingScene)
-            .CancelWith(destroyCancellationToken);
+        try
+        {
+            SceneResult result = await MySceneManager
+                .TransitionAsync(_targetScene, _loadingScene)
+                .CancelWith(Application.exitCancellationToken);
 
-        Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+            Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+        }
+        catch (OperationCanceledException)
+        {
+            // Left Play Mode before it finished. Nothing to clean up.
+        }
     }
 
     VisualElement BuildRow(Example example, int index)
     {
+        // The kit's list row (mgt-*) for the look; the sample's own classes (example*) for
+        // the layout and the selected state, in RoomScreen.uss.
         VisualElement row = new();
+        row.AddToClassList("mgt-list-item");
         row.AddToClassList("example");
 
         VisualElement head = new();
-        head.AddToClassList("example__head");
+        head.AddToClassList("mgt-list-item__head");
 
         Label name = new(example.Name);
+        name.AddToClassList("mgt-text");
+        name.AddToClassList("mgt-text--strong");
         name.AddToClassList("example__name");
 
+        // Neutral on purpose: the kit keeps colored badges for status, and a tag is a category.
         Label tag = new(example.Tag);
+        tag.AddToClassList("mgt-badge");
         tag.AddToClassList("example__tag");
-        tag.AddToClassList($"example__tag--{example.Tag.ToLowerInvariant()}");
 
         head.Add(name);
         head.Add(tag);
 
         Label description = new(example.Description);
-        description.AddToClassList("example__desc");
+        description.AddToClassList("mgt-text");
+        description.AddToClassList("mgt-text--muted");
 
         Label code = new(example.Code);
+        code.AddToClassList("mgt-code");
         code.AddToClassList("example__code");
 
         row.Add(head);
