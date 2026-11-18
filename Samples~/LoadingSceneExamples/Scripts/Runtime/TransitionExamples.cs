@@ -235,16 +235,29 @@ public class TransitionExamples : MonoBehaviour
 
     /// <summary>
     /// <c>async void</c> because a UI callback has nothing to await it — the same shape a button
-    /// handler in your own project would have. The operation is cancelled if this object goes
-    /// away mid-flight, which is what <see cref="SceneOperation.CancelWith"/> is for.
+    /// handler in your own project would have. <see cref="SceneOperation.CancelWith"/> ties the
+    /// operation to a token; here it is <see cref="Application.exitCancellationToken"/>, so leaving
+    /// Play Mode or quitting mid-flight cancels it.
     /// </summary>
+    /// <remarks>
+    /// Not <c>destroyCancellationToken</c>: this component lives in the room the transition
+    /// unloads, so that token fires halfway through every transition it starts and cancels it.
+    /// Pick a token whose owner outlives the operation.
+    /// </remarks>
     async void AwaitTransition()
     {
-        SceneResult result = await MySceneManager
-            .TransitionAsync(_targetScene, _loadingScene)
-            .CancelWith(destroyCancellationToken);
+        try
+        {
+            SceneResult result = await MySceneManager
+                .TransitionAsync(_targetScene, _loadingScene)
+                .CancelWith(Application.exitCancellationToken);
 
-        Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+            Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+        }
+        catch (OperationCanceledException)
+        {
+            // Left Play Mode before it finished. Nothing to clean up.
+        }
     }
 
     VisualElement BuildRow(Example example, int index)
