@@ -2,7 +2,9 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.TestTools;
+#if ENABLE_UGUI
 using UnityEngine.UI;
+#endif
 #if ENABLE_TMP
 using TMPro;
 #endif
@@ -28,6 +30,7 @@ namespace MyGameDevTools.SceneLoading.Tests
             Object.DestroyImmediate(_loadingBehavior.gameObject);
         }
 
+#if ENABLE_UGUI
         [UnityTest]
         public IEnumerator SliderFeedback()
         {
@@ -59,6 +62,7 @@ namespace MyGameDevTools.SceneLoading.Tests
 
             Assert.AreEqual(Mathf.CeilToInt(.5f * 100).ToString(), text.text);
         }
+#endif
 
 #if ENABLE_TMP
         [UnityTest]

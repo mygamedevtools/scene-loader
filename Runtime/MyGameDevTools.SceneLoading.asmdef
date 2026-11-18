@@ -4,7 +4,8 @@
     "references": [
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:9e24947de15b9834991c9d8411ea37cf",
-        "GUID:84651a3751eca9349aac36a66bba901b"
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -23,6 +24,11 @@
             "name": "com.unity.ugui",
             "expression": "2",
             "define": "ENABLE_TMP"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "1.0",
+            "define": "ENABLE_UGUI"
         },
         {
             "name": "com.unity.addressables",

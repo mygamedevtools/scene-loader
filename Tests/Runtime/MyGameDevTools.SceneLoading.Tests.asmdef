@@ -8,7 +8,8 @@
         "GUID:69448af7b92c7f342b298e06a37122aa",
         "GUID:84651a3751eca9349aac36a66bba901b",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:c0dd0d10738d4ad4a9de57c559d0ca1b"
+        "GUID:c0dd0d10738d4ad4a9de57c559d0ca1b",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -36,6 +37,16 @@
             "name": "com.unity.addressables",
             "expression": "1.19",
             "define": "ENABLE_ADDRESSABLES"
+        },
+        {
+            "name": "com.unity.ugui",
+            "expression": "1.0",
+            "define": "ENABLE_UGUI"
+        },
+        {
+            "name": "com.unity.test-framework.performance",
+            "expression": "1.0",
+            "define": "ENABLE_PERFORMANCE_TESTING"
         }
     ],
     "noEngineReferences": false
