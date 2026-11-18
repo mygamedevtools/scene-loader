@@ -67,22 +67,23 @@ const config = {
           // Point "Edit this page" at the translation rather than the English
           // source when browsing a localized page.
           editLocalizedFiles: true,
-          // 5.0.0 is the released default at /docs/. `current` documents the
-          // 5.1.0 pre-release (the design-system sample and its fixes) and
-          // serves from /docs/next/ with an unreleased banner until it ships;
-          // then cut a 5.1.0 snapshot, make it `lastVersion`, and set
-          // includeCurrentVersion back to false while `current` matches it.
-          includeCurrentVersion: true,
-          lastVersion: '5.0.0',
+          // 5.1.0 (the My Gamedev Tools redesign) is the default at /docs/.
+          //
+          // `current` — the docs/ folder everyone edits — is not published while
+          // its content is identical to the released snapshot: a version labelled
+          // "Unreleased" that reads the same as 5.1.x only makes the dropdown
+          // harder to use. Set this back to true when work on the next version
+          // starts diverging, and give `current` a label, `path: 'next'` and
+          // `banner: 'unreleased'` again at that point.
+          includeCurrentVersion: false,
+          lastVersion: '5.1.0',
           versions: {
-            current: {
-              label: '5.1.0 (pre-release)',
-              path: 'next',
-              banner: 'unreleased'
-            },
-            '5.0.0': {
+            '5.1.0': {
               // Minor-level label: patch releases don't change the docs, so
               // this only needs a bump when a new minor ships.
+              label: '5.1.x'
+            },
+            '5.0.0': {
               label: '5.0.x'
             },
             '4.1.0': {
@@ -167,8 +168,7 @@ const config = {
             items: [
               {
                 label: 'From 4.x to 5.x',
-                // 5.0.0 is still the pre-release version, so this guide lives
-                // 5.0.0 is the default version, so this is the released path.
+                // Unversioned path: resolves to the default version's guide.
                 to: 'docs/upgrades/from-4-to-5'
               },
               {
