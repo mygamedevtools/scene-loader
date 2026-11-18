@@ -7,6 +7,10 @@
   overflow: hidden;
   padding: 7rem 0 6rem;
   min-height: 40rem;
+  /* data-theme="dark" on the element switches the --mgt-* tokens; Infima's hero
+     variables are resolved at :root, so set the colors here directly. */
+  background-color: var(--mgt-color-bg);
+  color: var(--mgt-color-text);
 }
 
 .heroBackground {
@@ -29,7 +33,7 @@
 .cut {
   position: absolute;
   inset: 0;
-  background: #dceef7;
+  background: var(--mgt-color-text);
   pointer-events: none;
   will-change: clip-path, opacity;
 }
@@ -37,11 +41,12 @@
 .heroOverlay {
   position: absolute;
   inset: 0;
+  /* Ink over the footage, heavier toward the bottom where the rail sits. */
   background: linear-gradient(
     180deg,
-    rgba(4, 16, 26, 0.52) 0%,
-    rgba(4, 16, 26, 0.62) 55%,
-    rgba(4, 16, 26, 0.78) 100%
+    color-mix(in srgb, var(--mgt-color-bg) 55%, transparent) 0%,
+    color-mix(in srgb, var(--mgt-color-bg) 66%, transparent) 55%,
+    color-mix(in srgb, var(--mgt-color-bg) 82%, transparent) 100%
   );
 }
 
@@ -50,10 +55,11 @@
   bottom: 1.25rem;
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.8rem;
-  color: #cfe6f3;
-  background: rgba(6, 26, 42, 0.82);
+  color: var(--mgt-color-text-muted);
+  background: color-mix(in srgb, var(--mgt-color-bg) 85%, transparent);
+  border: 1px solid var(--mgt-color-border);
   padding: 0.25rem 0.6rem;
-  border-radius: 3px;
+  border-radius: var(--mgt-radius-sm);
 }
 
 .sceneTagOut {
@@ -67,18 +73,55 @@
 .heroContent {
   position: relative;
   z-index: 1;
-  color: var(--ifm-color-white);
+  color: var(--mgt-color-text);
   padding: 2rem;
+}
+
+/* Eyebrow: three stripe bars, then an uppercase mono label. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mgt-space-3);
+  margin: 0 0 1.25rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: var(--mgt-font-size-sm);
+  font-weight: var(--mgt-font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--mgt-font-letter-spacing-label);
+  color: var(--mgt-color-accent);
+}
+
+.eyebrowBars {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.eyebrowBars i {
+  width: 24px;
+  height: 6px;
+  background: var(--mgt-color-stripe-1);
+}
+
+.eyebrowBars i:nth-child(2) {
+  background: var(--mgt-color-stripe-2);
+}
+
+.eyebrowBars i:nth-child(3) {
+  background: var(--mgt-color-stripe-3);
 }
 
 .heroTitle {
   font-size: 4rem;
+  line-height: var(--mgt-font-line-height-tight);
   margin-bottom: 1rem;
+  /* --ifm-heading-color is resolved at :root, so it would be ink in light mode. */
+  color: var(--mgt-color-text);
 }
 
 .heroSubtitle {
   font-size: 1.5rem;
   margin-bottom: 2rem;
+  color: var(--mgt-color-text-muted);
 }
 
 .indexCta {
@@ -88,16 +131,9 @@
   gap: 1rem;
 }
 
+/* Colors come from .button--primary (cream on ink inside this dark-scoped hero). */
 .buttonCta {
-  background-color: #0054a3;
-  color: var(--ifm-color-white);
-  padding: 0.75rem 2rem;
-  font-size: 1.25rem;
-  border-radius: 0.5rem;
-}
-
-.buttonCta:hover {
-  background-color: #004c93;
+  padding-inline: 2rem;
 }
 
 .indexCtaGitHubButtonWrapper {
@@ -120,24 +156,29 @@
   flex-direction: column;
   gap: 0.65rem;
   padding: 0.85rem 1.15rem 0.95rem;
-  border-radius: 7px;
-  background: rgba(5, 18, 30, 0.76);
-  border: 1px solid rgba(177, 212, 224, 0.26);
+  border-radius: var(--mgt-radius-md);
+  background: color-mix(in srgb, var(--mgt-color-surface) 88%, transparent);
+  border: 1px solid var(--mgt-color-border);
   text-align: left;
 }
 
+/* Same code colors as the site's Prism theme. */
 .railOp {
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.72rem;
-  color: rgba(177, 212, 224, 0.6);
+  color: var(--mgt-color-code-comment);
+}
+
+.railCls {
+  color: var(--mgt-color-code-keyword);
 }
 
 .railFn {
-  color: #b1d4e0;
+  color: var(--mgt-color-code-text);
 }
 
 .railStr {
-  color: #aedca2;
+  color: var(--mgt-color-code-string);
 }
 
 .chips {
@@ -145,39 +186,40 @@
   gap: 0.3rem;
 }
 
-/* Colours lifted from the sample's OperationHud.uss / Shared.uss so the hero
-   and the shipped debug HUD agree on what each state looks like. */
+/* Mirrors the UI kit's .mgt-phase chips (Brand.uss) used by the sample's HUD, so the hero
+   and the shipped HUD agree on what each state looks like. */
 .chip {
   flex: 1;
   text-align: center;
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.63rem;
-  letter-spacing: 0.08em;
+  font-weight: var(--mgt-font-weight-medium);
+  letter-spacing: var(--mgt-font-letter-spacing-label);
   text-transform: uppercase;
-  padding: 0.3rem 0.2rem;
-  border-radius: 4px;
+  padding: 0.25rem 0.2rem;
+  border-radius: var(--mgt-radius-pill);
   white-space: nowrap;
-  color: rgb(92, 102, 115);
-  border: 1px solid rgb(46, 52, 61);
-}
-
-.chipPast {
-  color: rgb(125, 139, 153);
-  border-color: rgb(58, 68, 80);
-}
-
-.chipNow {
-  background: #5189bd;
-  border-color: #5189bd;
-  color: #fff;
-  font-weight: 500;
+  color: var(--mgt-color-text-muted);
+  border: 1px solid var(--mgt-color-border);
+  transition-property: background-color, border-color, color;
+  transition-duration: 140ms;
 }
 
 .chipDone {
-  background: #4a9d6a;
-  border-color: #4a9d6a;
-  color: #fff;
-  font-weight: 500;
+  color: var(--mgt-color-success-text);
+  border-color: var(--mgt-color-success-border);
+}
+
+.chipCurrent {
+  color: var(--mgt-color-warning-text);
+  background: var(--mgt-color-warning-bg);
+  border-color: var(--mgt-color-warning-border);
+}
+
+.chipCompleted {
+  color: var(--mgt-color-on-success);
+  background: var(--mgt-color-success);
+  border-color: var(--mgt-color-success);
 }
 
 .meter {
@@ -188,22 +230,22 @@
 
 .track {
   flex: 1;
-  height: 5px;
+  height: 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--mgt-color-border);
   overflow: hidden;
 }
 
 .track i {
   display: block;
   height: 100%;
-  background: #b1d4e0;
+  background: var(--mgt-color-accent);
 }
 
 .pct {
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.72rem;
-  color: #dceef7;
+  color: var(--mgt-color-text);
   font-variant-numeric: tabular-nums;
   min-width: 2.4rem;
   text-align: right;

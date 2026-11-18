@@ -1,5 +1,5 @@
 .lead {
-  color: var(--ifm-color-emphasis-700);
+  color: var(--mgt-color-text-muted);
   margin-bottom: 2rem;
 }
 
@@ -32,7 +32,7 @@
 }
 
 .pointIcon {
-  color: var(--ifm-color-primary);
+  color: var(--mgt-color-accent);
   margin-top: 0.2rem;
 }
 
@@ -43,7 +43,7 @@
 
 .pointText {
   margin: 0;
-  color: var(--ifm-color-emphasis-700);
+  color: var(--mgt-color-text-muted);
   font-size: 0.95rem;
   line-height: 1.55;
 }

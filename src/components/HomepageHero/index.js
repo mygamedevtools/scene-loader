@@ -4,13 +4,13 @@ import clsx from "clsx";
 import styles from "./styles.module.css";
 import Translate from '@docusaurus/Translate';
 
-const SCENE_START = require("@site/static/img/scene-start.jpg").default;
 const SCENE_LEVEL1 = require("@site/static/img/scene-level1.jpg").default;
+const SCENE_LEVEL2 = require("@site/static/img/scene-level2.jpg").default;
 
-/** Two real frames from the 3D Game Kit, rendered out of the editor. */
+/** Two real frames from the 3D Game Kit running My Scene Manager, captured in Play Mode. */
 const SCENES = [
-  { url: SCENE_START, name: "Start.unity" },
   { url: SCENE_LEVEL1, name: "Level1.unity" },
+  { url: SCENE_LEVEL2, name: "Level2.unity" },
 ];
 
 const SLANT = 32;   // how far the cut leans over the hero's height, in % of width
@@ -64,12 +64,15 @@ const stateAt = (t) => {
 
 const progressAt = (t) => (t < 0.34 ? 0 : inv(t, 0.34, 0.68));
 
+/**
+ * Same states as the UI kit's .mgt-phase chips in the sample's HUD: passed phases are
+ * done, the running one is current, and Completed gets the solid success fill.
+ */
 const chipClass = (i, active) => {
   if (i === active) {
-    // Completed carries its own colour in the sample's OperationHud
-    return clsx(styles.chip, active === STATES.length - 1 ? styles.chipDone : styles.chipNow);
+    return clsx(styles.chip, active === STATES.length - 1 ? styles.chipCompleted : styles.chipCurrent);
   }
-  return clsx(styles.chip, i < active ? styles.chipPast : null);
+  return clsx(styles.chip, i < active ? styles.chipDone : null);
 };
 
 export default function Hero() {
@@ -145,7 +148,9 @@ export default function Hero() {
   const restProgress = progressAt(REST);
 
   return (
-    <header className={clsx("hero hero--primary", styles.hero)}>
+    // The hero sits over game footage, so it always uses the dark tokens, like the
+    // runtime screens in the samples. data-theme scopes the --mgt-* variables to it.
+    <header className={clsx("hero", styles.hero)} data-theme="dark">
       <div className={styles.heroBackground} aria-hidden="true">
         <div
           className={styles.sceneLayer}
@@ -171,12 +176,20 @@ export default function Hero() {
       </div>
 
       <div className={clsx("container", styles.heroContent)}>
+        <p className={styles.eyebrow}>
+          <span className={styles.eyebrowBars} aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <Translate id="homepage.heroEyebrow">Scene loading for Unity</Translate>
+        </p>
         <h1 className={clsx("hero__title", styles.heroTitle)}>My Scene Manager</h1>
         <p className={clsx("hero__subtitle", styles.heroSubtitle)}>
-          <Translate id="homepage.heroSubtitle">Enhance your scene management experience in Unity.</Translate>
+          <Translate id="homepage.heroSubtitle">Scene transitions, in one line.</Translate>
         </p>
         <div className={styles.indexCta}>
-          <Link className={clsx("button", styles.buttonCta)} to="/docs/intro">
+          <Link className={clsx("button button--primary button--lg", styles.buttonCta)} to="/docs/intro">
             <Translate id="homepage.callToAction.label">Get Started</Translate>
           </Link>
           <span className={styles.indexCtaGitHubButtonWrapper}>
@@ -192,8 +205,9 @@ export default function Hero() {
 
         <div className={styles.rail} aria-hidden="true">
           <div className={styles.railOp}>
-            MySceneManager.<span className={styles.railFn}>TransitionAsync</span>(
-            <span className={styles.railStr}>&quot;Level1&quot;</span>,{" "}
+            <span className={styles.railCls}>MySceneManager</span>.
+            <span className={styles.railFn}>TransitionAsync</span>(
+            <span className={styles.railStr}>&quot;Level2&quot;</span>,{" "}
             <span className={styles.railStr}>&quot;Loading&quot;</span>)
           </div>
           <div className={styles.chips}>

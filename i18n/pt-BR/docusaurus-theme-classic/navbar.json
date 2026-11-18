@@ -4,7 +4,7 @@
     "description": "The title in the navbar"
   },
   "logo.alt": {
-    "message": "My GameDev Tools Logo",
+    "message": "My Gamedev Tools",
     "description": "The alt text of navbar logo"
   },
   "item.label.Docs": {

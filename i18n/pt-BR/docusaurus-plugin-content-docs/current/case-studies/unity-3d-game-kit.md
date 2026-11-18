@@ -7,7 +7,7 @@ description: Uma integração real, passo a passo — substituindo o carregador 
 
 O [3D Game Kit](https://assetstore.unity.com/packages/templates/tutorials/3d-game-kit-115747) da Unity é um jogo pequeno e completo com carregamento de cenas próprio: uma corrotina em `SceneController` que faz fade para um overlay de carregamento, chama `SceneManager.LoadSceneAsync` em modo single, teleporta o jogador para a entrada certa e faz o fade de volta. É a forma a que a maioria dos projetos chega por conta própria, o que o torna um bom assunto para mostrar o que uma integração realmente toca — e o que não toca.
 
-Esta página percorre essa integração na Unity `6000.5`, render pipeline built-in, uGUI, sem Addressables. Toda cena está nas Build Settings, então uma `string` simples é tudo de que uma referência precisa.
+Esta página percorre essa integração na Unity `6000.6`, Universal Render Pipeline, uGUI, sem Addressables. Toda cena está nas Build Settings, então uma `string` simples é tudo de que uma referência precisa.
 
 :::tip
 Duas das correções da 5.0 do pacote saíram exatamente desta integração: o fader rodando em tempo escalado e sem limite, e o `MinimumDisplayTime` vivendo no exemplo em vez de no pacote. A página descreve o resultado na 5.0, onde nenhuma das duas precisa de contorno.
@@ -27,7 +27,7 @@ SaveAllData → ReleaseControl → ScreenFader.FadeSceneOut(Loading) → ClearPe
 → LoadAllData → teleportar o jogador para a entrada → ScreenFader.FadeSceneIn → GainControl
 ```
 
-`Scenes/UI/Loading.unity` estava nas Build Settings mas sem uso — uma câmera, um `EventSystem`, pós-processamento e cópias antigas dos canvases.
+`Scenes/UI/Loading.unity` vinha com o kit, mas nada a carregava — uma câmera, um `EventSystem`, pós-processamento e cópias antigas dos canvases.
 
 Três coisas se destacam. O visual do carregamento vive num overlay que precisa sobreviver às cenas, então ele é `DontDestroyOnLoad`. Cada passo depois do fade precisa ser sequenciado à mão. E o carregamento em modo single destrói tudo, então qualquer coisa que deva persistir também precisa ser `DontDestroyOnLoad`.
 
@@ -71,6 +71,20 @@ Com o visual do carregamento nas mãos da cena, o `ScreenFader` perde o fade `Lo
 -public CanvasGroup loadingCanvasGroup;
  public CanvasGroup gameOverCanvasGroup;
 
+ public static IEnumerator FadeSceneIn()
+ {
+     CanvasGroup canvasGroup;
+     if (Instance.faderCanvasGroup.alpha > 0.1f)
+         canvasGroup = Instance.faderCanvasGroup;
+-    else if (Instance.gameOverCanvasGroup.alpha > 0.1f)
+-        canvasGroup = Instance.gameOverCanvasGroup;
+-    else
+-        canvasGroup = Instance.loadingCanvasGroup;
++    else
++        canvasGroup = Instance.gameOverCanvasGroup;
+     …
+ }
+
  public static IEnumerator FadeSceneOut(FadeType fadeType = FadeType.Black)
  {
      CanvasGroup canvasGroup;
@@ -109,12 +123,12 @@ Apague o caminho antigo em vez de deixá-lo dormente. Uma única fonte da verdad
      PersistentDataManager.SaveAllData();
 
      if (m_PlayerInput == null)
-         m_PlayerInput = FindObjectOfType<PlayerInput>();
+         m_PlayerInput = FindFirstObjectByType<PlayerInput>();
      if (m_PlayerInput) m_PlayerInput.ReleaseControl();
 -    yield return StartCoroutine(ScreenFader.FadeSceneOut(ScreenFader.FadeType.Loading));
 -    PersistentDataManager.ClearPersisters();
 -    yield return SceneManager.LoadSceneAsync(newSceneName);
--    m_PlayerInput = FindObjectOfType<PlayerInput>();
+-    m_PlayerInput = FindFirstObjectByType<PlayerInput>();
 -    if (m_PlayerInput) m_PlayerInput.ReleaseControl();
 -    PersistentDataManager.LoadAllData();
 -    SceneTransitionDestination entrance = GetDestination(destinationTag);
@@ -139,7 +153,7 @@ Apague o caminho antigo em vez de deixá-lo dormente. Uma única fonte da verdad
 +        if (scene.name != newSceneName)
 +            return;
 +
-+        m_PlayerInput = FindObjectOfType<PlayerInput>();
++        m_PlayerInput = FindFirstObjectByType<PlayerInput>();
 +        if (m_PlayerInput) m_PlayerInput.ReleaseControl();
 +        PersistentDataManager.LoadAllData();
 +        SceneTransitionDestination entrance = GetDestination(destinationTag);

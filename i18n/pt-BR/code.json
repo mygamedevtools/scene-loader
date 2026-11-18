@@ -310,8 +310,11 @@
     "message": "Marcadores",
     "description": "The title of the tag list page"
   },
+  "homepage.heroEyebrow": {
+    "message": "Carregamento de cenas para Unity"
+  },
   "homepage.heroSubtitle": {
-    "message": "Enriqueça sua experiência de gerenciamento de cenas no Unity."
+    "message": "Transições de cena, em uma linha."
   },
   "homepage.callToAction.label": {
     "message": "Começar Agora"

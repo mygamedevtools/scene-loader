@@ -65,7 +65,7 @@ Toda tela de carregamento do exemplo permanece visível por pelo menos **dois se
 
 ### O HUD de operação {/* #the-operation-hud */}
 
-A barra no topo da tela é a cena `SceneListenerHUD`. Ela mostra a cena ativa, o tipo de operação em execução e seu progresso, e acende cada fase do ciclo de vida da operação conforme ela avança:
+O painel no canto superior direito é a cena `SceneListenerHUD`. Ela mostra a cena ativa, o tipo de operação em execução e seu progresso, e acende cada fase do ciclo de vida da operação conforme ela avança:
 
 `Resolving → ScreenIn → Unloading → Loading → Activating → ScreenOut → Completed`
 
@@ -96,18 +96,29 @@ SceneParameters parameters = new[] { _targetScene, _additiveScene };
 MySceneManager.TransitionAsync(parameters, _loadingScene);
 ```
 
-E o exemplo aguardado é `async void`, o mesmo formato que um handler de botão no seu próprio projeto teria. A operação é cancelada se o objeto for destruído no meio do caminho, e é para isso que `CancelWith` serve:
+E o exemplo aguardado é `async void`, o mesmo formato que um handler de botão no seu próprio projeto teria. `CancelWith` liga a operação a um token, aqui `Application.exitCancellationToken`, então sair do Play Mode ou fechar o jogo no meio do caminho a cancela:
 
 ```cs
 async void AwaitTransition()
 {
-    SceneResult result = await MySceneManager
-        .TransitionAsync(_targetScene, _loadingScene)
-        .CancelWith(destroyCancellationToken);
+    try
+    {
+        SceneResult result = await MySceneManager
+            .TransitionAsync(_targetScene, _loadingScene)
+            .CancelWith(Application.exitCancellationToken);
 
-    Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+        Debug.Log($"Transition finished with {result.GetScenes().Length} scene(s) loaded.");
+    }
+    catch (OperationCanceledException)
+    {
+        // Left Play Mode before it finished. Nothing to clean up.
+    }
 }
 ```
+
+:::warning
+Não passe o `destroyCancellationToken` de um componente que está na cena que a transição descarrega. Esse token dispara no meio do caminho, quando a cena sai, e cancela a própria transição. Use um token cujo dono sobreviva à operação.
+:::
 
 :::info
 O exemplo acessa `MySceneManager` a partir de `Start`, nunca de `Awake` ou `OnEnable`. O manager estático é criado depois que a primeira cena termina de carregar, então tentar acessá-lo antes disso lança uma exceção quando a cena em questão é justamente a primeira.
