@@ -67,17 +67,19 @@ const config = {
           // Point "Edit this page" at the translation rather than the English
           // source when browsing a localized page.
           editLocalizedFiles: true,
-          // 5.0.0 has shipped, so it is the default at /docs/.
-          //
-          // `current` — the docs/ folder everyone edits — is not published while
-          // its content is identical to the released snapshot: a version labelled
-          // "Unreleased" that reads the same as 5.0.x only makes the dropdown
-          // harder to use. Set this back to true when work on the next version
-          // starts diverging, and give `current` a label and an unreleased banner
-          // again at that point.
-          includeCurrentVersion: false,
+          // 5.0.0 is the released default at /docs/. `current` documents the
+          // 5.1.0 pre-release (the design-system sample and its fixes) and
+          // serves from /docs/next/ with an unreleased banner until it ships;
+          // then cut a 5.1.0 snapshot, make it `lastVersion`, and set
+          // includeCurrentVersion back to false while `current` matches it.
+          includeCurrentVersion: true,
           lastVersion: '5.0.0',
           versions: {
+            current: {
+              label: '5.1.0 (pre-release)',
+              path: 'next',
+              banner: 'unreleased'
+            },
             '5.0.0': {
               // Minor-level label: patch releases don't change the docs, so
               // this only needs a bump when a new minor ships.
