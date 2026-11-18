@@ -23,14 +23,21 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
     [SerializeField]
     float _slideSeconds = .42f;
 
+    [Tooltip("One cycle of the eyebrow animation: the bars light up in turn, hold, then fade out together.")]
+    [SerializeField]
+    float _eyebrowCycleSeconds = .8f;
+
+    [Tooltip("Opacity of an eyebrow bar while it is off, so the eyebrow never disappears.")]
+    [Range(0, 1)]
+    [SerializeField]
+    float _eyebrowDimOpacity = .2f;
+
     VisualElement _left;
     VisualElement _right;
     VisualElement _content;
-    VisualElement _mark;
     VisualElement _fill;
     Label _value;
-
-    float _spin;
+    VisualElement[] _eyebrowBars;
 
     protected override void Awake()
     {
@@ -39,12 +46,13 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
         _left    = root.Q<VisualElement>("panel-left");
         _right   = root.Q<VisualElement>("panel-right");
         _content = root.Q<VisualElement>("content");
-        _mark    = root.Q<VisualElement>("mark");
         _fill    = root.Q<VisualElement>("fill");
         _value   = root.Q<Label>("value");
 
-        // USS has no @keyframes, so the ring is stepped from the panel's own scheduler.
-        _mark.schedule.Execute(SpinMark).Every(16);
+        // The mark stays still (the brand doesn't animate it); the eyebrow's three bars carry the
+        // motion instead. USS has no @keyframes, so they are stepped from the panel's scheduler.
+        _eyebrowBars = root.Query(className: "mgt-eyebrow__bar").ToList().ToArray();
+        root.schedule.Execute(AnimateEyebrow).Every(16);
 
         base.Awake();
     }
@@ -123,10 +131,26 @@ public class AnimatedLoadingScreen : LoadingScreenComponent
         _fill.style.width = Length.Percent(percent);
     }
 
-    void SpinMark()
+    /// <summary>
+    /// Lights the bars in order (tomato, amber, teal), holds them, then fades all three out
+    /// together. Wall-clock time, so the speed does not depend on how often the scheduler fires.
+    /// </summary>
+    void AnimateEyebrow()
     {
-        _spin = (_spin + 4f) % 360f;
-        _mark.style.rotate = new StyleRotate(new Rotate(new Angle(_spin, AngleUnit.Degree)));
+        float t = Mathf.Repeat(Time.unscaledTime / Mathf.Max(.1f, _eyebrowCycleSeconds), 1f);
+        float fadeOut = 1f - Smooth((t - .78f) / .12f);
+
+        for (int i = 0; i < _eyebrowBars.Length; i++)
+        {
+            float on = Smooth((t - i * .2f) / .08f) * fadeOut;
+            _eyebrowBars[i].style.opacity = Mathf.Lerp(_eyebrowDimOpacity, 1f, on);
+        }
+    }
+
+    static float Smooth(float x)
+    {
+        x = Mathf.Clamp01(x);
+        return x * x * (3f - 2f * x);
     }
 
     long Milliseconds() => (long)(Mathf.Max(0, _slideSeconds) * 1000f);

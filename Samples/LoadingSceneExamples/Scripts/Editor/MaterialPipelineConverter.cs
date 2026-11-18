@@ -15,14 +15,66 @@ using UnityEditor.Rendering.HighDefinition;
 #endif
 #endif
 
+/// <summary>
+/// Offers to upgrade the sample's Built-in materials to the project's render pipeline.
+/// </summary>
+/// <remarks>
+/// It checks after every domain reload and again whenever the sample's materials are imported.
+/// The second hook is the one that matters on a fresh import: Unity compiles the sample's scripts
+/// and reloads before it imports the materials, so the reload check alone finds nothing to upgrade.
+/// </remarks>
 [InitializeOnLoad]
 public static class MaterialPipelineConverter
 {
-    const string _partialPath = "Loading Scene Examples/Materials";
+    const string IgnoredKey = "MyGameDevTools.SceneLoading.Samples.MaterialUpgradeIgnored";
+
+    static bool _scheduled;
+    static string _materialsFolder;
 
     static MaterialPipelineConverter()
     {
-        EditorApplication.delayCall += ConvertMaterials;
+        Schedule();
+    }
+
+    /// <summary>Runs <see cref="ConvertMaterials"/> once, after the current import or reload settles.</summary>
+    internal static void Schedule()
+    {
+        if (_scheduled)
+            return;
+
+        _scheduled = true;
+        EditorApplication.delayCall += () =>
+        {
+            _scheduled = false;
+            ConvertMaterials();
+        };
+    }
+
+    /// <summary>
+    /// The sample's Materials folder, found from this script (<c>&lt;sample&gt;/Scripts/Editor</c>)
+    /// rather than by name: the Package Manager names an imported sample's folder after its
+    /// display name and version. Null while the sample is read from inside the package, where
+    /// upgrading would rewrite the package's own files.
+    /// </summary>
+    internal static string MaterialsFolder()
+    {
+        // Cached until the next domain reload: the postprocessor asks on every import.
+        if (!string.IsNullOrEmpty(_materialsFolder))
+            return _materialsFolder;
+
+        foreach (string guid in AssetDatabase.FindAssets($"{nameof(MaterialPipelineConverter)} t:MonoScript"))
+        {
+            string script = AssetDatabase.GUIDToAssetPath(guid);
+            if (System.IO.Path.GetFileNameWithoutExtension(script) != nameof(MaterialPipelineConverter))
+                continue;
+            if (!script.StartsWith("Assets/"))
+                continue;
+
+            string sample = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(script)));
+            return _materialsFolder = System.IO.Path.Combine(sample ?? string.Empty, "Materials").Replace('\\', '/');
+        }
+
+        return null;
     }
 
     public static void ConvertMaterials()
@@ -32,9 +84,16 @@ public static class MaterialPipelineConverter
         if (!renderPipeline)
             return;
 
-        string[] materialPaths = AssetDatabase.FindAssets("t:Material")
+        // Asked once per session: "Ignore" means not now, not on every reload.
+        if (SessionState.GetBool(IgnoredKey, false))
+            return;
+
+        string folder = MaterialsFolder();
+        if (string.IsNullOrEmpty(folder) || !AssetDatabase.IsValidFolder(folder))
+            return;
+
+        string[] materialPaths = AssetDatabase.FindAssets("t:Material", new[] { folder })
             .Select(AssetDatabase.GUIDToAssetPath)
-            .Where(path => path.Contains(_partialPath))
             .ToArray();
 
         if (materialPaths.Length == 0)
@@ -49,13 +108,20 @@ public static class MaterialPipelineConverter
             return;
 
         List<MaterialUpgrader> upgraders = GetMaterialUpgraders(renderPipeline);
-        if (upgraders.Count > 0 && EditorUtility.DisplayDialog("Sample Material Upgrader", "The sample materials have to be upgraded to match your render pipeline. Would you like to upgrade them now?", "Upgrade", "Ignore"))
+        if (upgraders.Count == 0)
+            return;
+
+        if (EditorUtility.DisplayDialog("Sample Material Upgrader", "The sample materials have to be upgraded to match your render pipeline. Would you like to upgrade them now?", "Upgrade", "Ignore"))
         {
             foreach (Material material in materials)
             {
                 MaterialUpgrader.Upgrade(material, upgraders, MaterialUpgrader.UpgradeFlags.None);
             }
             AssetDatabase.Refresh();
+        }
+        else
+        {
+            SessionState.SetBool(IgnoredKey, true);
         }
 #endif
     }
@@ -75,6 +141,24 @@ public static class MaterialPipelineConverter
         return upgraders;
     }
 #endif
+}
+
+/// <summary>
+/// Schedules the upgrade check when the sample's materials are imported, which on a fresh import
+/// happens after the domain reload that runs the converter's static constructor.
+/// </summary>
+class MaterialPipelineConverterPostprocessor : AssetPostprocessor
+{
+    static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+    {
+        string folder = MaterialPipelineConverter.MaterialsFolder();
+        if (string.IsNullOrEmpty(folder))
+            return;
+
+        string prefix = folder + "/";
+        if (importedAssets.Any(path => path.StartsWith(prefix) && path.EndsWith(".mat")))
+            MaterialPipelineConverter.Schedule();
+    }
 }
 
 #if CONVERT_MATERIALS

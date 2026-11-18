@@ -6,13 +6,11 @@
         LoadingBehavior anywhere in it — the screen creates its own LoadingProgress and gates
         the transition on that.
     -->
-    <ui:VisualElement name="root" class="screen minimal">
-        <ui:VisualElement class="minimal__row">
-            <ui:Label name="value" text="0%" class="minimal__value" />
+    <ui:VisualElement name="root" class="mgt-root mgt-screen minimal">
+        <ui:Label name="value" text="0%" class="mgt-value minimal__value" />
+        <ui:VisualElement class="mgt-progress mgt-progress--thin minimal__progress">
+            <ui:VisualElement name="fill" class="mgt-progress__fill" />
         </ui:VisualElement>
-        <ui:VisualElement class="minimal__track">
-            <ui:VisualElement name="fill" class="minimal__fill" />
-        </ui:VisualElement>
-        <ui:Label text="UI TOOLKIT SCREEN · OWNS ITS LOADINGPROGRESS" class="minimal__hint" />
+        <ui:Label text="UI TOOLKIT SCREEN · OWNS ITS LOADINGPROGRESS" class="mgt-label minimal__hint" />
     </ui:VisualElement>
 </ui:UXML>

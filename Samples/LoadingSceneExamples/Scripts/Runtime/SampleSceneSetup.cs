@@ -111,16 +111,41 @@ public static class SampleSceneSetup
     }
 
     /// <summary>
-    /// Finds the scene wherever the sample ended up: read from the package during development,
-    /// or copied under <c>Assets/Samples</c> once imported.
+    /// Finds the scene wherever the sample ended up: read from the package during development, or
+    /// copied under <c>Assets/Samples</c> once imported, where the Package Manager names the folder
+    /// after the sample's display name and its version. So the folder name is never matched;
+    /// the sample's own scenes are found next to each other instead.
     /// </summary>
     static string FindScenePath(string sceneName)
     {
-        return AssetDatabase.FindAssets($"{sceneName} t:Scene")
-            .Select(AssetDatabase.GUIDToAssetPath)
-            .FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path) == sceneName &&
-                path.Contains("LoadingSceneExamples"));
+        // The room that is running sits in the same folder as every other scene of the sample.
+        string path = SceneInFolder(Path.GetDirectoryName(SceneManager.GetActiveScene().path), sceneName);
+        if (path != null)
+            return path;
+
+        // Otherwise, from wherever this script is: <sample>/Scripts/Runtime/SampleSceneSetup.cs.
+        foreach (string guid in AssetDatabase.FindAssets($"{nameof(SampleSceneSetup)} t:MonoScript"))
+        {
+            string script = AssetDatabase.GUIDToAssetPath(guid);
+            if (Path.GetFileNameWithoutExtension(script) != nameof(SampleSceneSetup))
+                continue;
+
+            string sample = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(script)));
+            path = SceneInFolder(Path.Combine(sample ?? string.Empty, "Scenes"), sceneName);
+            if (path != null)
+                return path;
+        }
+
+        return null;
+    }
+
+    static string SceneInFolder(string folder, string sceneName)
+    {
+        if (string.IsNullOrEmpty(folder))
+            return null;
+
+        string path = Path.Combine(folder, sceneName + ".unity").Replace('\\', '/');
+        return AssetDatabase.LoadAssetAtPath<SceneAsset>(path) != null ? path : null;
     }
 #else
     public static int RegisterScenes() => 0;
