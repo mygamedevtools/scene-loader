@@ -54,7 +54,7 @@ SceneResult result = await op;   // or op.Cancel(), or yield return op.ToCorouti
 
 Here it is running in Unity's 3D Game Kit — the coroutine loader above replaced by that one call ([case study](https://scene-loader.mygamedevtools.com/docs/case-studies/unity-3d-game-kit)):
 
-https://github.com/user-attachments/assets/946ef030-e0d3-4021-bf62-21a7cb6c2eae
+https://github.com/user-attachments/assets/88c918fd-75c7-43a3-b340-61b8dae23987
 
 ## 🚀 Features
 
