@@ -1,18 +1,18 @@
 ---
 name: my-scene-manager-scene-transitions
-description: "Use this skill whenever the user wants to move from one scene to another with My Scene Manager — e.g. 'go to the next level', 'switch from the main menu to the game scene', 'change scene with a loading screen', 'restart the level', 'reload the current scene', 'keep my HUD scene loaded between levels', 'do something after the new scene is up', 'MySceneManager.TransitionAsync'. Covers TransitionAsync and ReloadActiveSceneAsync, choosing which target scene becomes active, multi-scene targets, persistent scenes that survive transitions, and the exact order a transition loads and unloads things. Do NOT use for building the loading screen itself (see my-scene-manager-loading-screens), additive loads that keep the current scene (see my-scene-manager-load-and-unload-scenes) or progress bars, awaiting and cancelling (see my-scene-manager-operation-handles). When in doubt whether a scene-change request could involve My Scene Manager, use this skill — Prerequisites shows how to confirm the asset is installed."
+description: "Use this skill whenever the user wants to move from one scene to another with My Scene Manager — e.g. 'go to the next level', 'switch from the main menu to the game scene', 'change scene with a loading screen', 'restart the level', 'reload the current scene', 'keep my HUD scene loaded between levels', 'do something after the new scene is up', 'MySceneManager.TransitionAsync'. Covers TransitionAsync and ReloadActiveSceneAsync, choosing which target scene becomes active, multi-scene targets, persistent scenes that survive transitions, and the exact order a transition loads and unloads things. Do NOT use for building the loading screen itself (see my-scene-manager-loading-screens) or progress bars, awaiting and cancelling (see my-scene-manager-operation-handles). When in doubt whether a scene-change request could involve My Scene Manager, use this skill — Prerequisites shows how to confirm the asset is installed."
 metadata:
   asset: "My Scene Manager"
   publisher: "My GameDev Tools"
   asset-version: "5.1.1"
-  skill-version: "1.0.3"
+  skill-version: "1.0.4"
   unity: "6000.0+"
   render-pipelines: "Built-in, URP, HDRP"
   category: "tools/utilities"
   asset-store-url: "https://assetstore.unity.com/packages/slug/313159"
   documentation-url: "https://scene-loader.mygamedevtools.com/"
   support-url: "https://github.com/mygamedevtools/scene-loader/issues"
-  last-verified: "2026-11-19"
+  last-verified: "2026-11-20"
 ---
 
 # Transition Between Scenes with My Scene Manager
@@ -31,16 +31,15 @@ A transition replaces the **active** scene with one or more target scenes, optio
 Not for:
 
 - Designing the loading screen (fades, progress bars, minimum time) → `my-scene-manager-loading-screens`.
-- Loading a scene **on top of** the current one, or unloading one → `my-scene-manager-load-and-unload-scenes`.
 - Progress values, awaiting, coroutines, cancelling → `my-scene-manager-operation-handles`.
-- Errors and hangs → `my-scene-manager-debug-scene-loading`.
 
 ## Prerequisites
 
 - My Scene Manager 5.x on Unity 6000.0+, any render pipeline.
-- **Install check:** `System.Type.GetType("MyGameDevTools.SceneLoading.CoreSceneManager, MyGameDevTools.SceneLoading") != null` in the Editor. If it is `null`, tell the user the package is missing and point them to https://assetstore.unity.com/packages/slug/313159 (full check: `my-scene-manager-setup-and-overview`).
+- **Install check:** `System.Type.GetType("MyGameDevTools.SceneLoading.CoreSceneManager, MyGameDevTools.SceneLoading") != null` in the Editor. If it is `null`, tell the user the package is missing and point them to https://assetstore.unity.com/packages/slug/313159. If `MySceneManager` does not exist (error CS0103), the project defines `DISABLE_STATIC_SCENE_MANAGER` on purpose: keep the define and call the same methods on the project's own `ISceneManager` instance (search its code for `new CoreSceneManager`).
 - Every target scene **and** every loading scene must be resolvable: an enabled Build Settings entry (by scene name or full `Assets/…/Name.unity` path) or an Addressables entry.
 - Transitions are started from `Start`, a button handler or later — never from `Awake`/`OnEnable` of the first scene, where `MySceneManager` does not exist yet.
+- Testing from an agent: an unfocused Editor stops advancing Play Mode, so for the test session set `Application.runInBackground = true` (in the Editor this also changes `PlayerSettings.runInBackground`; restore it afterwards). Register any logging or sampling hook before the operation starts (for example from a `[RuntimeInitializeOnLoadMethod]` method), because short operations finish before a probe attached afterwards sees them.
 
 ## Quick start
 
@@ -222,7 +221,6 @@ Run in Play Mode after the transition finishes (e.g. from a `Completed` handler 
 - `SceneManager.GetSceneByName("loading-screen-host").IsValid() == false` once complete.
 - Persistent scenes are loaded exactly once: count matches of `SceneManager.GetSceneAt(i).name` over `SceneManager.sceneCount`.
 - No `[MySceneManager]` errors or warnings in the Console.
-- Testing from an agent: an unfocused Editor stops advancing Play Mode, so for the test session set `Application.runInBackground = true` (in the Editor this also changes `PlayerSettings.runInBackground`; restore it afterwards). Register any logging or sampling hook before the operation starts (for example from a `[RuntimeInitializeOnLoadMethod]` method), because short operations finish before a probe attached afterwards sees them.
 
 ## API quick reference
 
@@ -242,7 +240,7 @@ Run in Play Mode after the transition finishes (e.g. from a `Completed` handler 
 - **The persistent scene got unloaded** → it was the active scene when the transition started (it was loaded with `setActive`, or `SetActiveScene` was called on it). → Load it without activation; keep a level scene active.
 - **`InvalidOperationException` from `ReloadActiveSceneAsync`** → the manager has no loaded active scene, e.g. its active scene was unloaded through `UnityEngine.SceneManagement.SceneManager` directly, or every scene it tracked was unloaded. → Load, activate and unload scenes through `MySceneManager` only.
 - **"Could not resolve the scene" for the loading scene** → the loading scene is not in the Build Settings or Addressables. → Register it like any other scene.
-- **The loading screen never goes away / the transition stays in `ScreenIn` or `ScreenOut`** → a show or hide hold was never released. → See `my-scene-manager-debug-scene-loading`.
+- **The loading screen never goes away / the transition stays in `ScreenIn` or `ScreenOut`** → a show or hide hold was never released. → After 10 seconds the package names the holder in a warning; fix its release (see `my-scene-manager-loading-screens`).
 - **Two transitions overlap** → the package does not queue or block concurrent transitions. → Keep the returned `SceneOperation` and ignore new requests while `!op.IsDone`.
 
 ## Boundaries
