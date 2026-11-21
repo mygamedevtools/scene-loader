@@ -7,27 +7,11 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace MyGameDevTools.SceneLoading.Editor
 {
-    /// <summary>
-    /// Copies the AI Skills this package ships to the folders coding agents read skills from.
-    /// </summary>
-    /// <remarks>
-    /// Unity's AI Assistant finds the skills in the package's <c>AIAssistantSkills</c> folder by itself.
-    /// Other agents (Claude Code, Codex, Copilot, Cursor, Gemini CLI) only look in folders of their own
-    /// at the project root, so the skills need a copy there.
-    /// <br/><br/>
-    /// Running it again updates the copies. It only touches folders named after this package's skills,
-    /// and removes copies of skills a newer version no longer ships, so outdated instructions never stay
-    /// behind. Other skills in those folders are left alone.
-    /// </remarks>
     static class AISkillsInstaller
     {
         internal const string SkillsFolderName = "AIAssistantSkills";
         internal const string SkillPrefix = "my-scene-manager-";
 
-        /// <summary>
-        /// Project-relative folders that agents read skills from: <c>.agents/skills</c> is the shared
-        /// convention most agents read, and Claude Code reads <c>.claude/skills</c>.
-        /// </summary>
         internal static readonly string[] AgentSkillFolders = { ".agents/skills", ".claude/skills" };
 
         [MenuItem("Tools/My Scene Manager/Install AI Skills for Coding Agents")]
@@ -47,11 +31,6 @@ namespace MyGameDevTools.SceneLoading.Editor
             Debug.Log($"[MySceneManager] Installed {skills.Count} AI Skills into {string.Join(" and ", AgentSkillFolders)}: {string.Join(", ", skills)}.");
         }
 
-        /// <summary>
-        /// Copies every skill folder under <paramref name="sourceRoot"/> into each of
-        /// <see cref="AgentSkillFolders"/> under <paramref name="projectRoot"/>, replacing earlier copies.
-        /// </summary>
-        /// <returns>The names of the installed skills.</returns>
         internal static IReadOnlyList<string> Install(string sourceRoot, string projectRoot)
         {
             if (!Directory.Exists(sourceRoot))
@@ -68,7 +47,6 @@ namespace MyGameDevTools.SceneLoading.Editor
                 string destinationRoot = Path.Combine(projectRoot, agentFolder);
                 Directory.CreateDirectory(destinationRoot);
 
-                // Copies of skills a newer version renamed or dropped would otherwise keep giving agents outdated instructions.
                 foreach (string existing in Directory.GetDirectories(destinationRoot, SkillPrefix + "*"))
                 {
                     if (!skillNames.Contains(Path.GetFileName(existing)))
@@ -91,7 +69,6 @@ namespace MyGameDevTools.SceneLoading.Editor
         {
             Directory.CreateDirectory(destination);
 
-            // Unity's .meta files mean nothing to agents and would clutter folders outside the Asset Database.
             foreach (string file in Directory.GetFiles(source).Where(file => !file.EndsWith(".meta")))
                 File.Copy(file, Path.Combine(destination, Path.GetFileName(file)));
 

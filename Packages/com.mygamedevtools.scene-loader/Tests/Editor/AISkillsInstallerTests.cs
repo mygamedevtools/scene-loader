@@ -5,9 +5,6 @@ using UnityEditor.PackageManager;
 
 namespace MyGameDevTools.SceneLoading.Tests
 {
-    /// <summary>
-    /// Covers copying the package's AI Skills to the folders coding agents read.
-    /// </summary>
     public class AISkillsInstallerTests
     {
         string _root;
@@ -82,7 +79,6 @@ namespace MyGameDevTools.SceneLoading.Tests
         [Test]
         public void ThePackageShipsSkillsWhereUnityAIAssistantFindsThem()
         {
-            // Unity's AI Assistant only discovers a package's skills at <package>/AIAssistantSkills/<skill>/SKILL.md.
             PackageInfo package = PackageInfo.FindForAssembly(typeof(AISkillsInstaller).Assembly);
             Assert.IsNotNull(package);
 
