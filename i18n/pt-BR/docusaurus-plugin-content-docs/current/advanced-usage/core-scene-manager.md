@@ -72,6 +72,7 @@ flowchart LR
 
 A interface `ISceneManager` define que os métodos `LoadAsync`, `UnloadAsync`, `TransitionAsync` e `ReloadActiveSceneAsync` retornam um [`SceneOperation`](./scene-operation.md) — de forma **síncrona**, antes de o trabalho começar.
 Isso significa que você pode dar _await_ nele, ou se inscrever nos eventos `SceneLoaded` ou `SceneUnloaded` para receber as mesmas cenas.
+O `SceneUnloaded` entrega cada cena depois que ela foi descarregada, quando ela [já não é válida](./my-scene-manager.md#events), então compare-a com uma `Scene` guardada no carregamento em vez de usar o nome.
 
 :::info
 Você também pode aguardar a conclusão desses métodos em coroutines:

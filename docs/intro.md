@@ -13,6 +13,7 @@ sidebar_position: 1
 * **A Handle For Every Operation**: Progress, phase, per-scene events and cancellation, all attached *after* the call rather than decided before it.
 * **Await It Any Way You Like**: `await` directly, bridge to `Task`, or `yield return` it from a coroutine.
 * **Loading Screens Beyond Scenes**: Scenes, prefabs or UI Toolkit documents, with built-in components for each.
+* **Skills For AI Agents**: The package ships [AI Skills](./getting-started/ai-agent-skills.md) that teach Unity AI Assistant and coding agents how to use it.
 
 ## Installation
 

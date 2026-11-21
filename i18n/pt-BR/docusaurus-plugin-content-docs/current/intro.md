@@ -13,6 +13,7 @@ sidebar_position: 1
 * **Um Handle Para Cada Operação**: Progresso, fase, eventos por cena e cancelamento, tudo conectado *depois* da chamada, em vez de decidido antes dela.
 * **Aguarde Do Jeito Que Preferir**: Use `await` diretamente, converta para `Task` ou faça `yield return` a partir de uma coroutine.
 * **Telas de Carregamento Além de Cenas**: Cenas, prefabs ou documentos do UI Toolkit, com componentes integrados para cada um.
+* **Skills Para Agentes de IA**: O pacote inclui [AI Skills](./getting-started/ai-agent-skills.md) que ensinam o Unity AI Assistant e agentes de programação a usá-lo.
 
 ## Instalação {/* #installation */}
 

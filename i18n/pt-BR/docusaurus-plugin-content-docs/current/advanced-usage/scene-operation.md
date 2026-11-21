@@ -63,6 +63,11 @@ E os eventos:
 | `SceneLoaded` / `SceneUnloaded` | Uma vez por cena |
 | `Completed` | Uma vez, ao terminar — seja sucesso, cancelamento ou falha. Inscrever-se depois da conclusão o invoca imediatamente. |
 
+:::warning
+O `SceneUnloaded` dispara **depois** que cada descarregamento termina, então a `Scene` que ele entrega já não é válida: seu `name` e seu `path` estão vazios e `IsValid()` retorna `false`.
+Compare-a com `==` a uma `Scene` guardada no carregamento, em vez de verificar o nome. Veja os [eventos do My Scene Manager](./my-scene-manager.md#events) para um exemplo.
+:::
+
 :::note
 Um inscrito que lança exceção é reportado através do [`SceneManagerLog`](./logging.md) e contido. Ele não vai fazer a operação falhar, nem vai impedir os outros inscritos ou os awaiters de rodar.
 :::
