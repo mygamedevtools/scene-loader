@@ -18,6 +18,10 @@ Import the sample through the **Package Manager**.
 
 The sample assets will be installed to `Samples/My Scene Manager/<version>/Loading Scene Examples`.
 
+:::note
+The sample uses `MySceneManager`, so its scripts are not compiled in projects that define [`DISABLE_STATIC_SCENE_MANAGER`](../advanced-usage/my-scene-manager.md#static-api).
+:::
+
 ## Scriptable Render Pipeline Compatibility
 
 When importing the sample into a project with an active **Scriptable Render Pipeline**, a dialog will appear asking if you want to automatically upgrade the sample materials.
