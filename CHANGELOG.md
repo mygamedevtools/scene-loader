@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.2](https://github.com/mygamedevtools/scene-loader/compare/5.1.1...5.1.2) (2026-11-21)
+
+
+### Bug Fixes
+
+* compile with DISABLE_STATIC_SCENE_MANAGER defined ([#120](https://github.com/mygamedevtools/scene-loader/issues/120)) ([1b413bc](https://github.com/mygamedevtools/scene-loader/commit/1b413bc48a44a3c23f916e8ac93c7c2206b1f284))
+
 ## [5.1.1](https://github.com/mygamedevtools/scene-loader/compare/5.1.0...5.1.1) (2026-11-18)
 
 
