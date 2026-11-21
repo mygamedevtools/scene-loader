@@ -1,5 +1,12 @@
 # Changelog
 
+# [5.2.0](https://github.com/mygamedevtools/scene-loader/compare/5.1.2...5.2.0) (2026-11-21)
+
+
+### Features
+
+* ship AI skills that teach agents to use the package ([#119](https://github.com/mygamedevtools/scene-loader/issues/119)) ([44225ec](https://github.com/mygamedevtools/scene-loader/commit/44225ecf0ff032240540fa4129ef155bfd2d5134))
+
 ## [5.1.2](https://github.com/mygamedevtools/scene-loader/compare/5.1.1...5.1.2) (2026-11-21)
 
 
