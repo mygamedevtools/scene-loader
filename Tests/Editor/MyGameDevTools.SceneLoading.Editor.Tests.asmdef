@@ -2,6 +2,7 @@
     "name": "MyGameDevTools.SceneLoading.Editor.Tests",
     "rootNamespace": "MyGameDevTools.SceneLoading.Tests",
     "references": [
+        "MyGameDevTools.SceneLoading.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
