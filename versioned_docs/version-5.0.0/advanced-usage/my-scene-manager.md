@@ -51,6 +51,23 @@ MySceneManager.TransitionAsync("target", "loading");      // with a loading scre
 | `ActiveSceneChanged` | The previous and current active scene |
 | `OperationStarted` | Every operation this manager starts, **before** it runs |
 
+:::warning[`SceneUnloaded` passes a scene that is gone]
+`SceneUnloaded` is raised **after** the unload has finished, so the `Scene` it passes is no longer valid: its `name` and `path` are empty and `IsValid()` returns `false`.
+Its handle is kept, so compare it with `==` to a `Scene` you saved at load time instead of checking its name:
+
+```cs
+Scene hud = (await MySceneManager.LoadAsync("hud")).GetScene();
+
+MySceneManager.SceneUnloaded += scene =>
+{
+  if (scene == hud)            // works: the handle is kept
+    OnHudUnloaded();
+
+  // scene.name == "hud" is never true here: the name is already empty
+};
+```
+:::
+
 `OperationStarted` is the attach point for global instrumentation — it hands you the `SceneOperation` before its first state change, which is the only moment from which you can observe the whole lifecycle:
 
 ```cs

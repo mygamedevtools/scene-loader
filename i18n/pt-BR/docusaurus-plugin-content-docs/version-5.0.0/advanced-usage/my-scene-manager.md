@@ -52,6 +52,23 @@ O `MySceneManager` repassa os mesmos eventos da API de instância:
 | `ActiveSceneChanged` | A cena ativa anterior e a atual |
 | `OperationStarted` | Toda operação que este gerenciador inicia, **antes** de ela rodar |
 
+:::warning[`SceneUnloaded` entrega uma cena que já não existe]
+O `SceneUnloaded` é disparado **depois** que o descarregamento termina, então a `Scene` que ele entrega já não é válida: seu `name` e seu `path` estão vazios e `IsValid()` retorna `false`.
+O handle dela é mantido, então compare-a com `==` a uma `Scene` que você guardou no carregamento, em vez de verificar o nome:
+
+```cs
+Scene hud = (await MySceneManager.LoadAsync("hud")).GetScene();
+
+MySceneManager.SceneUnloaded += scene =>
+{
+  if (scene == hud)            // funciona: o handle é mantido
+    OnHudUnloaded();
+
+  // scene.name == "hud" nunca é verdadeiro aqui: o nome já está vazio
+};
+```
+:::
+
 `OperationStarted` é o ponto de encaixe para instrumentação global — ele te entrega o `SceneOperation` antes da primeira mudança de estado, o único momento a partir do qual dá para observar o ciclo de vida inteiro:
 
 ```cs
