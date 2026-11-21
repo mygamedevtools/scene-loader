@@ -59,7 +59,10 @@ namespace MyGameDevTools.SceneLoading
         public event Action<float> Progressed;
         /// <summary>Fires once per scene loaded.</summary>
         public event Action<Scene> SceneLoaded;
-        /// <summary>Fires once per scene unloaded.</summary>
+        /// <summary>
+        /// Fires once per scene unloaded, after the unload has finished: the <see cref="Scene"/> passed is no longer valid,
+        /// with an empty <c>name</c> and <c>path</c>. Compare it with <c>==</c> to a <see cref="Scene"/> captured at load time instead of checking its name.
+        /// </summary>
         public event Action<Scene> SceneUnloaded;
         /// <summary>Fires on every <see cref="State"/> change.</summary>
         public event Action<SceneOperation> StateChanged;
