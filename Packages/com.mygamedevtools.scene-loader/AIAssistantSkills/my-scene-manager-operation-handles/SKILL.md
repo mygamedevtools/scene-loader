@@ -1,18 +1,18 @@
 ---
 name: my-scene-manager-operation-handles
-description: "Use this skill whenever the user wants to track, wait for, or cancel a My Scene Manager scene operation — e.g. 'show a progress bar for the scene load', 'await the scene load', 'do something after the level finishes loading', 'cancel the load if the player quits', 'wait for these two loads together', 'log every scene load for analytics', 'OperationCanceledException from TransitionAsync'. Covers the SceneOperation handle returned by LoadAsync, UnloadAsync, TransitionAsync and ReloadActiveSceneAsync: await, ToCoroutine, AsTask, Progress and its events, State phases, Result, Cancel and CancelWith, WhenAll and WhenAny, and global OperationStarted listeners. Do NOT use for choosing what to load (see my-scene-manager-load-and-unload-scenes) or loading-screen visuals (see my-scene-manager-loading-screens). When in doubt whether a scene-loading progress or async request could involve My Scene Manager, use this skill — Prerequisites shows how to confirm the asset is installed."
+description: "Use this skill whenever the user wants to track, wait for, or cancel a My Scene Manager scene operation — e.g. 'show a progress bar for the scene load', 'await the scene load', 'do something after the level finishes loading', 'cancel the load if the player quits', 'wait for these two loads together', 'log every scene load for analytics', 'OperationCanceledException from TransitionAsync'. Covers the SceneOperation handle returned by LoadAsync, UnloadAsync, TransitionAsync and ReloadActiveSceneAsync: await, ToCoroutine, AsTask, Progress and its events, State phases, Result, Cancel and CancelWith, WhenAll and WhenAny, and global OperationStarted listeners. Do NOT use for loading-screen visuals (see my-scene-manager-loading-screens). When in doubt whether a scene-loading progress or async request could involve My Scene Manager, use this skill — Prerequisites shows how to confirm the asset is installed."
 metadata:
   asset: "My Scene Manager"
   publisher: "My GameDev Tools"
   asset-version: "5.1.1"
-  skill-version: "1.0.4"
+  skill-version: "1.0.5"
   unity: "6000.0+"
   render-pipelines: "Built-in, URP, HDRP"
   category: "tools/utilities"
   asset-store-url: "https://assetstore.unity.com/packages/slug/313159"
   documentation-url: "https://scene-loader.mygamedevtools.com/"
   support-url: "https://github.com/mygamedevtools/scene-loader/issues"
-  last-verified: "2026-11-19"
+  last-verified: "2026-11-20"
 ---
 
 # Track, Await and Cancel My Scene Manager Operations
@@ -31,17 +31,16 @@ Every My Scene Manager call — `LoadAsync`, `UnloadAsync`, `TransitionAsync`, `
 
 Not for:
 
-- Which scenes to load or unload → `my-scene-manager-load-and-unload-scenes`.
 - Switching scenes or reloading → `my-scene-manager-scene-transitions`.
 - A progress bar **inside a loading screen** → `my-scene-manager-loading-screens` (use the feedback components there).
-- Faulted operations you cannot explain → `my-scene-manager-debug-scene-loading`.
 
 ## Prerequisites
 
 - My Scene Manager 5.x on Unity 6000.0+, any render pipeline.
-- **Install check:** `System.Type.GetType("MyGameDevTools.SceneLoading.SceneOperation, MyGameDevTools.SceneLoading") != null` in the Editor. If `null`, tell the user the package is missing: https://assetstore.unity.com/packages/slug/313159.
+- **Install check:** `System.Type.GetType("MyGameDevTools.SceneLoading.SceneOperation, MyGameDevTools.SceneLoading") != null` in the Editor. If `null`, tell the user the package is missing: https://assetstore.unity.com/packages/slug/313159. If `MySceneManager` does not exist (error CS0103), the project defines `DISABLE_STATIC_SCENE_MANAGER` on purpose: keep the define and call the same methods on the project's own `ISceneManager` instance (search its code for `new CoreSceneManager`).
 - Code using the handle lives in a script that has `using MyGameDevTools.SceneLoading;`.
 - Operations are started from `Start` or later, never from `Awake`/`OnEnable` of the first scene.
+- Testing from an agent: an unfocused Editor stops advancing Play Mode, so for the test session set `Application.runInBackground = true` (in the Editor this also changes `PlayerSettings.runInBackground`; restore it afterwards). Register any logging or sampling hook before the operation starts (for example from a `[RuntimeInitializeOnLoadMethod]` method), because short operations finish before a probe attached afterwards sees them.
 
 ## Quick start
 
@@ -176,7 +175,7 @@ Expected result: the bar moves from 0 to 1, `Level1` becomes active, and the Con
    | `Completed` / `Canceled` / `Faulted` | Terminal |
 2. Each phase occurs at most once, in this order, and operations skip phases they do not use (a plain load never sees `ScreenIn`).
 3. "Target is active, screen is starting to hide" is `ScreenOut`; "screen fully gone" is `Completed` (or the `await` returning).
-4. Per-scene events: `op.SceneLoaded` and `op.SceneUnloaded` fire once per scene. `op.Completed` fires once on any terminal state; subscribing after completion invokes the handler immediately.
+4. Per-scene events: `op.SceneLoaded` and `op.SceneUnloaded` fire once per scene. In `SceneUnloaded` the scene is already gone (`name` and `path` are empty), so compare it with a `Scene` you kept. `op.Completed` fires once on any terminal state; subscribing after completion invokes the handler immediately.
 5. A subscriber that throws is logged and contained; it never faults the operation or blocks other subscribers.
 
 **Expected result:** handlers fire once at the intended phase.
@@ -268,7 +267,6 @@ Expected result: the bar moves from 0 to 1, `Level1` becomes active, and the Con
 - Global listeners: one `OperationStarted` call per operation started (count them in a test).
 - Console: no "subscriber threw, and was contained" errors and no unhandled exceptions from `async void` methods.
 - Exercise every path you wrote, not only the happy one: cancel or back out mid-load (and, for exit tokens, exit Play Mode while loading) and check the Console for unhandled exceptions and the scene list for leftovers a few seconds later.
-- Testing from an agent: an unfocused Editor stops advancing Play Mode, so for the test session set `Application.runInBackground = true` (in the Editor this also changes `PlayerSettings.runInBackground`; restore it afterwards). Register any logging or sampling hook before the operation starts (for example from a `[RuntimeInitializeOnLoadMethod]` method), because short operations finish before a probe attached afterwards sees them.
 
 ## API quick reference
 

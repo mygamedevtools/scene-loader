@@ -17,12 +17,9 @@ Every skill has at least two scenarios: one `basic` and one `intermediate` or `a
 
 | Skill | Scenarios |
 |---|---|
-| `my-scene-manager-setup-and-overview` | S001 check install (basic), S002 set up the sample (intermediate) |
-| `my-scene-manager-scene-transitions` | S001 play button (basic), S002 persistent HUD level flow (advanced) |
-| `my-scene-manager-load-and-unload-scenes` | S001 toggle pause scene (basic), S002 stream an Addressables dungeon (intermediate) |
+| `my-scene-manager-scene-transitions` | S001 play button (basic), S002 persistent HUD level flow (advanced), S003 HUD disappears (intermediate), S004 lighting scene piles up (advanced) |
 | `my-scene-manager-loading-screens` | S001 fade and progress bar in a uGUI project (basic), S002 wait for a curtain animation (advanced), S003 loading screen in a UI Toolkit project (intermediate) |
-| `my-scene-manager-operation-handles` | S001 progress bar (basic), S002 fix a self-canceling transition (intermediate) |
-| `my-scene-manager-debug-scene-loading` | S001 scene not in the Build Settings (basic), S002 stuck loading screen while paused (advanced) |
+| `my-scene-manager-operation-handles` | S001 progress bar (basic), S002 fix a self-canceling transition (intermediate), S003 back out of a load (advanced) |
 
 ## Test project
 

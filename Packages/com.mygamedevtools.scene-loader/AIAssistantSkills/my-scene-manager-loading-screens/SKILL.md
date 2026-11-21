@@ -5,14 +5,14 @@ metadata:
   asset: "My Scene Manager"
   publisher: "My GameDev Tools"
   asset-version: "5.1.1"
-  skill-version: "1.1.4"
+  skill-version: "1.1.5"
   unity: "6000.0+"
   render-pipelines: "Built-in, URP, HDRP"
   category: "tools/utilities"
   asset-store-url: "https://assetstore.unity.com/packages/slug/313159"
   documentation-url: "https://scene-loader.mygamedevtools.com/"
   support-url: "https://github.com/mygamedevtools/scene-loader/issues"
-  last-verified: "2026-11-19"
+  last-verified: "2026-11-20"
 ---
 
 # Build Loading Screens for My Scene Manager
@@ -33,12 +33,11 @@ Not for:
 
 - Calling `TransitionAsync` / `ReloadActiveSceneAsync` → `my-scene-manager-scene-transitions`.
 - A progress bar in a HUD that is not a loading screen → `my-scene-manager-operation-handles`.
-- A transition stuck on its loading screen → `my-scene-manager-debug-scene-loading` (then come back here to fix the component).
 
 ## Prerequisites
 
 - My Scene Manager 5.x on Unity 6000.0+, any render pipeline.
-- **Install check:** `System.Type.GetType("MyGameDevTools.SceneLoading.CoreSceneManager, MyGameDevTools.SceneLoading") != null` in the Editor. If `null`, tell the user the package is missing: https://assetstore.unity.com/packages/slug/313159.
+- **Install check:** `System.Type.GetType("MyGameDevTools.SceneLoading.CoreSceneManager, MyGameDevTools.SceneLoading") != null` in the Editor. If `null`, tell the user the package is missing: https://assetstore.unity.com/packages/slug/313159. If `MySceneManager` does not exist (error CS0103), the project defines `DISABLE_STATIC_SCENE_MANAGER` on purpose: keep the define and call the same methods on the project's own `ISceneManager` instance (search its code for `new CoreSceneManager`).
 - **Pick the UI framework before writing any UI.** Follow the project, not a default:
   1. If the user named one ("UI Toolkit", "UXML", "Canvas", "uGUI"), use it.
   2. Otherwise inspect the project, ignoring `Assets/Samples/` and `Assets/TextMesh Pro/`: UI Toolkit is in use if `Assets/` has `.uxml` files or `PanelSettings` assets; uGUI is in use if scenes or prefabs contain a `Canvas` (YAML class `!u!223`). The snippet below reports both.
@@ -60,6 +59,7 @@ Not for:
 - uGUI path only: `LoadingFader`, `LoadingFeedbackSlider` and `LoadingFeedbackText` need `com.unity.ugui`; `LoadingFeedbackTextMeshPro` needs `com.unity.ugui` 2.x (or `com.unity.textmeshpro` 2.2+).
 - UI Toolkit path only: a `PanelSettings` asset. Reuse the project's; if there is none, create one with `Assets > Create > UI Toolkit > Panel Settings Asset` and check that its **Theme Style Sheet** is assigned.
 - A loading **scene** must be resolvable like any scene: an enabled Build Settings entry or an Addressables entry.
+- Testing from an agent: an unfocused Editor stops advancing Play Mode, so for the test session set `Application.runInBackground = true` (in the Editor this also changes `PlayerSettings.runInBackground`; restore it afterwards). Register any logging or sampling hook before the operation starts (for example from a `[RuntimeInitializeOnLoadMethod]` method), because short operations finish before a probe attached afterwards sees them.
 
 ## Quick start
 
@@ -311,7 +311,7 @@ The package's `LoadingBehavior` and `MinimumDisplayTime` work with UI Toolkit as
 **Goal:** reuse a finished screen instead of building one.
 
 **Steps:**
-1. Import *Loading Scene Examples* (see `my-scene-manager-setup-and-overview`).
+1. Import *Loading Scene Examples* (Package Manager > My Scene Manager > Samples).
 2. Copy the one matching the project's framework out of the sample folder, so re-importing the sample does not overwrite edits:
    - UI Toolkit: `Scenes/Loading_Animated.unity` with `Scripts/Runtime/AnimatedLoadingScreen.cs`, `UI/LoadingScreenAnimated.uxml`/`.uss` (a sliding-panels screen), or `Scripts/Runtime/UIDocumentLoadingScreen.cs` for a document screen with no scene.
    - uGUI: `Scenes/Loading_Screen.unity` or `Prefabs/LoadingScreen.prefab` (`LoadingBehavior`, `LoadingFader`, `MinimumDisplayTime`, `LoadingFeedbackSlider`, `LoadingFeedbackText`).
@@ -457,7 +457,6 @@ How the gates work: a transition waits at the **show** gate before it unloads th
 - Play Mode (a loading scene must be an enabled Build Settings entry): the transition's `StateChanged` sequence contains `ScreenIn` and `ScreenOut`, then `Completed`; afterwards the loading scene is not loaded and no `loading-screen-host` scene remains.
 - Console: no "found no LoadingBehavior", "Found N LoadingBehaviors" or "has been waiting 10 seconds" messages.
 - The progress element is visible: its fill and track colors differ, and its value reaches 1 before `ScreenOut`. Judge fades and minimum time from per-frame samples of the screen's opacity, not from the scene list alone.
-- Testing from an agent: an unfocused Editor stops advancing Play Mode, so for the test session set `Application.runInBackground = true` (in the Editor this also changes `PlayerSettings.runInBackground`; restore it afterwards). Register any logging or sampling hook before the operation starts (for example from a `[RuntimeInitializeOnLoadMethod]` method), because short operations finish before a probe attached afterwards sees them.
 
 ## API quick reference
 
@@ -488,7 +487,7 @@ How the gates work: a transition waits at the **show** gate before it unloads th
 - **The fade-out finishes and the screen is empty for a while** → a minimum time implemented with `HoldHide`. → Use `HoldCompletion` / `MinimumDisplayTime`.
 - **A custom hold seems ignored** → it was taken late (after the transition read the gate, e.g. in `Start` or later). → Take holds in `OnBound()`, `Awake` or `OnEnable`.
 - **A prefab or UI Toolkit document screen disappears when the old scene unloads** → its objects were not adopted. → Call `host.Adopt(gameObject)` in `PrepareAsync`.
-- **uGUI feedback component types are missing** → uGUI/TextMeshPro not installed. → See `my-scene-manager-setup-and-overview`.
+- **uGUI feedback component types are missing** → uGUI/TextMeshPro not installed. → Install `com.unity.ugui` (2.x also covers TextMeshPro).
 
 ## Boundaries
 
