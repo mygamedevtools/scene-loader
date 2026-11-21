@@ -116,6 +116,17 @@ Check the full installation guide in the [documentation](https://scene-loader.my
 4. Paste `https://github.com/mygamedevtools/scene-loader.git#upm` into url.
 5. Click `Add`.
 
+## 🤖 AI Agent Skills
+
+The package ships AI Skills: instructions that teach AI agents how to use it correctly, in the `SKILL.md` format most agents read. They live in `Packages/com.mygamedevtools.scene-loader/AIAssistantSkills/`.
+
+* **Coding agents** (Claude Code, Codex, GitHub Copilot, Cursor, Gemini CLI and others) read skills from folders at your project root. Click `Tools > My Scene Manager > Install AI Skills for Coding Agents` to copy them to `.agents/skills/` and `.claude/skills/`. Click it again after updating the package to refresh the copies.
+* **Any other agent**: add this line to your project's `AGENTS.md` (or your agent's instructions file):
+    ```
+    For scene loading, transitions and loading screens, read the skills in Packages/com.mygamedevtools.scene-loader/AIAssistantSkills/ before writing code.
+    ```
+* **Unity AI Assistant** (a paid Unity feature) finds them on its own. New skills start as **Deny**: allow them in `Preferences > AI > Skills` (`Unity > Settings > AI > Skills` on macOS).
+
 ## 📚 Documentation
 
 The detailed documentation including usage guides, examples, update guides, and tutorials are available in the [official documentation](https://scene-loader.mygamedevtools.com/).
