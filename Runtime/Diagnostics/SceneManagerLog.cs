@@ -29,6 +29,8 @@ namespace MyGameDevTools.SceneLoading
 
         static ILogHandler _handler = Debug.unityLogger.logHandler;
 
+        const string Source = "MySceneManager";
+
         static SceneLogLevel DefaultLevel => Debug.isDebugBuild ? SceneLogLevel.Warning : SceneLogLevel.Error;
 
         /// <summary>Logs at <see cref="SceneLogLevel.Error"/>.</summary>
@@ -55,7 +57,7 @@ namespace MyGameDevTools.SceneLoading
                 // "{0}" rather than passing the message as the format string: a message that
                 // happens to contain braces — a scene path, a serialized value — would otherwise
                 // be parsed as a format specifier and throw.
-                handler.LogFormat(logType, null, "{0}", $"[{nameof(MySceneManager)}] {message}");
+                handler.LogFormat(logType, null, "{0}", $"[{Source}] {message}");
             }
             catch (System.Exception exception)
             {
@@ -68,7 +70,7 @@ namespace MyGameDevTools.SceneLoading
                 if (ReferenceEquals(handler, fallback))
                     return;
 
-                fallback.LogFormat(LogType.Error, null, "{0}", $"[{nameof(MySceneManager)}] The assigned {nameof(Handler)} threw, so this went to the console instead: {message} — {exception}");
+                fallback.LogFormat(LogType.Error, null, "{0}", $"[{Source}] The assigned {nameof(Handler)} threw, so this went to the console instead: {message} — {exception}");
             }
         }
 

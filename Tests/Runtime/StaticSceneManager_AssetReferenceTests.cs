@@ -1,4 +1,4 @@
-#if ENABLE_ADDRESSABLES
+#if ENABLE_ADDRESSABLES && !DISABLE_STATIC_SCENE_MANAGER
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine.AddressableAssets;

@@ -1,3 +1,4 @@
+#if !DISABLE_STATIC_SCENE_MANAGER
 using System;
 using NUnit.Framework;
 
@@ -56,3 +57,4 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
     }
 }
+#endif

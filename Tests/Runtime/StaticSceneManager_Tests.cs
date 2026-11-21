@@ -1,3 +1,4 @@
+#if !DISABLE_STATIC_SCENE_MANAGER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -231,3 +232,4 @@ namespace MyGameDevTools.SceneLoading.Tests
         }
     }
 }
+#endif

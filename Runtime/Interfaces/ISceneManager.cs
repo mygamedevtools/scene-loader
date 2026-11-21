@@ -25,6 +25,9 @@ namespace MyGameDevTools.SceneLoading
         event Action<Scene, Scene> ActiveSceneChanged;
         /// <summary>
         /// Reports when a scene gets unloaded.
+        /// <br/>
+        /// It is raised after the unload has finished, so the <see cref="Scene"/> passed is no longer valid: its <c>name</c> and <c>path</c> are empty and <see cref="Scene.IsValid()"/> returns <see langword="false"/>.
+        /// Its handle is kept, so comparing it with <c>==</c> to a <see cref="Scene"/> captured at load time still works, but checking its name does not.
         /// </summary>
         event Action<Scene> SceneUnloaded;
         /// <summary>
