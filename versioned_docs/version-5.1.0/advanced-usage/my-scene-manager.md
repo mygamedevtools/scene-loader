@@ -21,6 +21,12 @@ internal static void Initialize()
 You can optionally disable the `MySceneManager` static class entirely if you wish to manually handle the `CoreSceneManager` lifecycle and/or extend any functionality.
 To do it, simply define the scripting symbol `DISABLE_STATIC_SCENE_MANAGER` on your scripting compilation settings.
 
+With the symbol defined, the importable [Loading Scene Examples](../samples/loading-scene-examples.md) sample is not compiled, since it uses `MySceneManager`.
+
+:::warning
+Versions `5.0.0` to `5.1.1` fail to compile with the symbol defined (`CS0103` in `SceneManagerLog.cs`). Update to `5.1.2` or later.
+:::
+
 ## The four methods
 
 It does not expose the internal `CoreSceneManager` instance, so it mirrors the same four operations statically:
@@ -50,6 +56,23 @@ MySceneManager.TransitionAsync("target", "loading");      // with a loading scre
 | `SceneLoaded` / `SceneUnloaded` | Once per scene |
 | `ActiveSceneChanged` | The previous and current active scene |
 | `OperationStarted` | Every operation this manager starts, **before** it runs |
+
+:::warning[`SceneUnloaded` passes a scene that is gone]
+`SceneUnloaded` is raised **after** the unload has finished, so the `Scene` it passes is no longer valid: its `name` and `path` are empty and `IsValid()` returns `false`.
+Its handle is kept, so compare it with `==` to a `Scene` you saved at load time instead of checking its name:
+
+```cs
+Scene hud = (await MySceneManager.LoadAsync("hud")).GetScene();
+
+MySceneManager.SceneUnloaded += scene =>
+{
+  if (scene == hud)            // works: the handle is kept
+    OnHudUnloaded();
+
+  // scene.name == "hud" is never true here: the name is already empty
+};
+```
+:::
 
 `OperationStarted` is the attach point for global instrumentation — it hands you the `SceneOperation` before its first state change, which is the only moment from which you can observe the whole lifecycle:
 

@@ -62,6 +62,11 @@ And the events:
 | `SceneLoaded` / `SceneUnloaded` | Once per scene |
 | `Completed` | Once when it finishes — success, cancellation and fault alike. Subscribing after completion invokes it immediately. |
 
+:::warning
+`SceneUnloaded` fires **after** each unload has finished, so the `Scene` it passes is no longer valid: its `name` and `path` are empty and `IsValid()` returns `false`.
+Compare it with `==` to a `Scene` saved at load time instead of checking its name. See [My Scene Manager events](./my-scene-manager.md#events) for an example.
+:::
+
 :::note
 A subscriber that throws is reported through [`SceneManagerLog`](./logging.md) and contained. It will not fault the operation, and it will not prevent the other subscribers or the awaiters from running.
 :::

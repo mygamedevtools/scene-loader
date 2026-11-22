@@ -22,6 +22,12 @@ internal static void Initialize()
 Se quiser, você pode desabilitar a classe estática `MySceneManager` por completo, caso prefira controlar manualmente o ciclo de vida do `CoreSceneManager` e/ou estender alguma funcionalidade.
 Para isso, basta definir o _scripting symbol_ `DISABLE_STATIC_SCENE_MANAGER` nas configurações de compilação do seu projeto.
 
+Com o símbolo definido, o exemplo importável [Loading Scene Examples](../samples/loading-scene-examples.md) não é compilado, já que ele usa o `MySceneManager`.
+
+:::warning
+As versões `5.0.0` a `5.1.1` não compilam com o símbolo definido (`CS0103` em `SceneManagerLog.cs`). Atualize para a `5.1.2` ou mais recente.
+:::
+
 ## Os quatro métodos {/* #the-four-methods */}
 
 Ele não expõe a instância interna de `CoreSceneManager`, então espelha as mesmas quatro operações de forma estática:
@@ -51,6 +57,23 @@ O `MySceneManager` repassa os mesmos eventos da API de instância:
 | `SceneLoaded` / `SceneUnloaded` | Uma vez por cena |
 | `ActiveSceneChanged` | A cena ativa anterior e a atual |
 | `OperationStarted` | Toda operação que este gerenciador inicia, **antes** de ela rodar |
+
+:::warning[`SceneUnloaded` entrega uma cena que já não existe]
+O `SceneUnloaded` é disparado **depois** que o descarregamento termina, então a `Scene` que ele entrega já não é válida: seu `name` e seu `path` estão vazios e `IsValid()` retorna `false`.
+O handle dela é mantido, então compare-a com `==` a uma `Scene` que você guardou no carregamento, em vez de verificar o nome:
+
+```cs
+Scene hud = (await MySceneManager.LoadAsync("hud")).GetScene();
+
+MySceneManager.SceneUnloaded += scene =>
+{
+  if (scene == hud)            // funciona: o handle é mantido
+    OnHudUnloaded();
+
+  // scene.name == "hud" nunca é verdadeiro aqui: o nome já está vazio
+};
+```
+:::
 
 `OperationStarted` é o ponto de encaixe para instrumentação global — ele te entrega o `SceneOperation` antes da primeira mudança de estado, o único momento a partir do qual dá para observar o ciclo de vida inteiro:
 

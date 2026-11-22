@@ -19,6 +19,10 @@ Importe o exemplo através do **Package Manager**.
 
 Os arquivos do exemplo serão instalados em `Samples/My Scene Manager/<version>/Loading Scene Examples`.
 
+:::note
+O exemplo usa o `MySceneManager`, então seus scripts não são compilados em projetos que definem [`DISABLE_STATIC_SCENE_MANAGER`](../advanced-usage/my-scene-manager.md#static-api).
+:::
+
 ## Compatibilidade com Scriptable Render Pipeline {/* #scriptable-render-pipeline-compatibility */}
 
 Ao importar o exemplo em um projeto com um **Scriptable Render Pipeline** ativo, uma caixa de diálogo aparecerá perguntando se você deseja atualizar automaticamente os materiais do exemplo.
